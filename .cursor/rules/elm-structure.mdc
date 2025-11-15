@@ -1,0 +1,185 @@
+---
+description: Guidelines for structuring Elm web applications based on official Elm architecture principles
+globs: src/**/*.elm
+alwaysApply: true
+---
+
+# Structuring Elm Web Apps
+
+This rule is based on the [official Elm guide for structuring web apps](https://guide.elm-lang.org/webapps/structure).
+
+## Core Principle: Build Modules Around Types
+
+**All modules should be built around a central type.** This is the fundamental principle for organizing Elm code.
+
+## Page-Based Structure
+
+For web applications, structure your code around pages:
+
+```
+src/
+├── Main.elm
+├── Page/
+│   ├── Home.elm
+│   ├── Search.elm
+│   ├── Author.elm
+│   └── ...
+```
+
+Each `Page` module follows The Elm Architecture with:
+- `Model` type
+- `init` function
+- `update` function
+- `view` function
+- Helper functions as needed
+
+## Do Not Plan Ahead
+
+**Resist the urge to create shared modules early.** This is critical:
+
+- ❌ Don't try to define modules that can be used in multiple places
+- ❌ Don't try to share functions between pages initially
+- ❌ Don't create `Post`, `User`, or other domain modules until you see actual patterns emerge
+
+Instead:
+- ✅ Start with page modules
+- ✅ Keep growing those modules longer and longer
+- ✅ Add types and functions as needed within the page module
+- ✅ Only extract to a separate module when you have a custom type with multiple helper functions
+
+### Why This Works
+
+Early abstractions often fail because:
+- Pages that seem similar are actually different (e.g., `EditablePost` vs `ViewablePost`)
+- Requirements diverge as you build (publication dates, caching, server storage)
+- Shared modules become bloated trying to handle competing concerns
+
+The Elm compiler makes refactoring cheap and reliable, so you can extract modules later when patterns are clear.
+
+## Avoid JavaScript Defensive Instincts
+
+### File Length
+
+- ❌ **Don't:** Prefer shorter files (this is a JavaScript concern)
+- ✅ **Do:** Let files grow long (2000+ lines is fine in Elm)
+- ✅ **Do:** Use comment headers and helper functions to organize long files
+
+In JavaScript, long files risk sneaky mutations. In Elm, that's impossible. Push your limit on file length to gain confidence.
+
+### Architecture Perfection
+
+- ❌ **Don't:** Try to get architecture right from the beginning
+- ✅ **Do:** Start simple and refactor as patterns emerge
+
+Refactoring in Elm is cheap and reliable. You can make changes across 20 files with confidence.
+
+## Don't Split by MVC Pattern
+
+- ❌ **Don't:** Create separate `Model`, `Update`, and `View` modules
+- ✅ **Do:** Keep `Model`, `update`, and `view` in the same module
+
+Splitting by MVC leads to unclear boundaries. What if `Post.estimatedReadTime` is used in both `update` and `view`? Where does it belong? This creates ontological debates instead of clear code.
+
+**Build each module around a type, and you rarely run into these questions.**
+
+## Don't Think in Terms of Components
+
+- ❌ **Don't:** Create components with local state and methods (React-style)
+- ✅ **Do:** Write helper functions that take arguments
+
+Components are objects (local state + methods), and Elm doesn't have objects. Instead:
+
+- Write `viewSidebar` function and pass it whatever arguments it needs
+- Put sidebar state in your existing `Model` if needed
+- Only create a separate module if you have a custom type with multiple helper functions
+
+**Writing a `viewSidebar` function does NOT mean you need a corresponding `update` and `Model`.**
+
+## Examples
+
+Good examples of this structure:
+- [elm-spa-example](https://github.com/rtfeldman/elm-spa-example)
+- [package.elm-lang.org](https://github.com/elm/package.elm-lang.org)
+
+## When to Extract a Module
+
+Extract a module when:
+1. You have a custom type
+2. You have multiple helper functions related to that type
+3. The type and functions are used in multiple places
+
+But wait until you see this pattern emerge naturally, don't plan for it upfront.
+
+## Code Examples
+
+### Good: Page-Based Structure
+
+```elm
+-- Page/Home.elm
+module Page.Home exposing (Model, init, update, view)
+
+type alias Model =
+    { posts : List Post
+    , searchQuery : String
+    }
+
+type Msg
+    = SearchChanged String
+    | PostClicked PostId
+
+init : Model
+init =
+    { posts = []
+    , searchQuery = ""
+    }
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        SearchChanged query ->
+            ( { model | searchQuery = query }, Cmd.none )
+        -- ...
+
+view : Model -> Html Msg
+view model =
+    -- ...
+
+-- Helper functions stay in the same module
+filteredPosts : Model -> List Post
+filteredPosts model =
+    -- ...
+```
+
+### Bad: Premature Abstraction
+
+```elm
+-- Post.elm (created too early)
+module Post exposing (Post, view, update)
+
+-- Trying to handle both editable and viewable posts
+-- becomes a mess of competing concerns
+```
+
+### Good: Helper Functions, Not Components
+
+```elm
+-- In Page/Home.elm
+viewSidebar : Model -> Html Msg
+viewSidebar model =
+    div [ class "sidebar" ]
+        [ viewSidebarHeader model.user
+        , viewSidebarMenu model.menuItems
+        ]
+
+-- No separate Sidebar module needed!
+-- No separate Sidebar.Model or Sidebar.update needed!
+```
+
+### Bad: Component Thinking
+
+```elm
+-- Sidebar.elm (unnecessary)
+module Sidebar exposing (Model, init, update, view)
+
+-- This is over-engineering for a simple view function
+```

@@ -1,0 +1,281 @@
+---
+description: Application stack and technology choices for elm-poker
+globs:
+alwaysApply: true
+---
+
+# Application Stack
+
+This document outlines the technology stack and major dependencies used in the elm-poker application.
+
+## Core Platform
+
+-   **Elm Version**: 0.19.1
+-   **Application Type**: Browser Application (SPA)
+-   **Architecture**: The Elm Architecture (TEA)
+
+## Direct Dependencies
+
+### elm/browser (1.0.2)
+
+**Purpose**: Browser application framework for single-page applications
+
+**Usage**:
+
+-   `Browser.application` - Full SPA with URL routing
+-   Handles URL changes and link clicks
+-   Provides `Browser.Document` type for page structure
+
+**When to use**:
+
+-   For any page-level routing
+-   When you need to handle browser navigation
+-   For managing URL state
+
+**Example**:
+
+```elm
+main : Program () Model Msg
+main =
+    Browser.application
+        { init = \flags url key -> ( init, Cmd.none )
+        , onUrlRequest = onUrlRequest
+        , onUrlChange = onUrlChange
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        }
+```
+
+### elm/core (1.0.5)
+
+**Purpose**: Core Elm functionality
+
+**Usage**:
+
+-   Fundamental types and functions
+-   `Cmd` and `Sub` for side effects
+-   Basic data structures and utilities
+
+**When to use**:
+
+-   Always available, no explicit import needed for core functionality
+-   Use for basic operations, data manipulation, and side effects
+
+### elm/html (1.0.1)
+
+**Purpose**: HTML rendering library
+
+**Usage**:
+
+-   `Html` type for rendering HTML elements
+-   Standard HTML tags and attributes
+-   Event handlers
+
+**When to use**:
+
+-   When you need direct HTML rendering (not using elm-ui)
+-   For compatibility with HTML-based libraries
+-   Currently available but not primary UI choice
+
+**Note**: The application primarily uses `mdgriffith/elm-ui` for UI, but `elm/html` is available for compatibility.
+
+### elm/url (1.0.0)
+
+**Purpose**: URL parsing and routing
+
+**Usage**:
+
+-   `Url` type for parsing URLs
+-   `Url.Parser` for route matching
+-   URL query parameters and fragments
+
+**When to use**:
+
+-   Parsing URL paths for routing
+-   Extracting query parameters
+-   Building URL parsers for navigation
+
+**Example**:
+
+```elm
+import Url exposing (Url)
+import Url.Parser exposing (Parser, (</>), s, top)
+
+type Route
+    = Home
+    | Game
+
+routeParser : Parser (Route -> a) a
+routeParser =
+    Url.Parser.oneOf
+        [ Url.Parser.map Home top
+        , Url.Parser.map Game (s "game")
+        ]
+```
+
+### mdgriffith/elm-ui (1.1.8)
+
+**Purpose**: Declarative UI library with layout-first design
+
+**Usage**:
+
+-   `Element` module for UI components
+-   Layout-first approach (rows, columns, padding, spacing)
+-   Styled components without CSS
+
+**When to use**:
+
+-   **Primary UI library** for all visual components
+-   When you need responsive layouts
+-   For consistent styling and spacing
+-   When you want type-safe styling
+
+**Key Concepts**:
+
+-   `Element.layout` - Root layout function
+-   `Element.text` - Text rendering
+-   `Element.row`, `Element.column` - Layout containers
+-   `Element.padding`, `Element.spacing` - Spacing utilities
+-   `Element.Attributes` - Styling attributes
+
+**Example**:
+
+```elm
+import Element
+
+view : Model -> Browser.Document Msg
+view model =
+    { title = "My App"
+    , body =
+        [ Element.layout
+            [ Element.padding 20 ]
+            (Element.column
+                [ Element.spacing 10 ]
+                [ Element.text "Hello"
+                , Element.text model.value
+                ]
+            )
+        ]
+    }
+```
+
+**Guidelines**:
+
+-   Prefer `elm-ui` over `elm/html` for new UI components
+-   Use `Element` types throughout the application
+-   Leverage layout-first approach for responsive design
+
+## Indirect Dependencies
+
+### elm/json (1.1.4)
+
+**Purpose**: JSON encoding and decoding
+
+**Usage**:
+
+-   `Json.Decode` for parsing JSON
+-   `Json.Encode` for creating JSON
+-   Type-safe JSON handling
+
+**When to use**:
+
+-   API communication
+-   Local storage serialization
+-   Any JSON data handling
+
+### elm/time (1.0.0)
+
+**Purpose**: Time and date handling
+
+**Usage**:
+
+-   `Time.Posix` for timestamps
+-   `Time.Zone` for timezones
+-   Date formatting and manipulation
+
+**When to use**:
+
+-   Displaying dates/times
+-   Scheduling events
+-   Time-based game logic
+
+### elm/virtual-dom (1.0.5)
+
+**Purpose**: Virtual DOM implementation
+
+**Usage**:
+
+-   Used internally by `elm/html`
+-   Not directly imported
+-   Handles efficient DOM updates
+
+**When to use**:
+
+-   Not used directly - dependency of `elm/html`
+
+## Build Tools
+
+### elm-watch (1.2.3)
+
+**Purpose**: Development server with hot reloading
+
+**Usage**:
+
+-   `npm run watch` - Start development server with hot reload
+-   `npm run build` - Build optimized production bundle
+-   Automatic compilation on file changes
+
+**Commands**:
+
+```bash
+npm run watch    # Development mode with hot reload
+npm run build    # Production build (optimized)
+```
+
+**Configuration**:
+
+-   Configured in `elm-watch.json`
+-   Output directory: `dist/`
+-   Copies `index.html` to dist on build
+
+## Application Structure
+
+### Entry Point
+
+-   **Main Module**: `src/Main.elm`
+-   **Application Type**: `Browser.application` (SPA)
+-   **Initialization**: Takes flags, URL, and navigation key
+
+### Current Architecture
+
+-   Standard Elm Architecture (Model-Update-View)
+-   URL routing handlers (`onUrlRequest`, `onUrlChange`)
+-   Subscriptions support (currently none)
+
+### UI Framework Choice
+
+-   **Primary**: `mdgriffith/elm-ui` (Element-based)
+-   **Available**: `elm/html` (for compatibility)
+-   **Recommendation**: Use `elm-ui` for all new UI components
+
+## Development Guidelines
+
+1. **UI Library**: Always prefer `elm-ui` (`Element`) over `elm/html` for new components
+2. **Routing**: Use `elm/url` with `Browser.application` for SPA routing
+3. **Side Effects**: Use `Cmd` and `Sub` from `elm/core` for side effects
+4. **Build**: Use `npm run watch` during development, `npm run build` for production
+5. **Architecture**: Follow The Elm Architecture pattern (Model, Msg, update, view)
+
+## Version Management
+
+-   All dependencies are pinned to specific versions
+-   Update dependencies using `elm install <package>`
+-   Check `elm.json` for current versions
+-   Test thoroughly after dependency updates
+
+## Future Considerations
+
+-   Consider adding `elm/http` if API communication is needed
+-   Consider `elm/random` for game logic requiring randomness
+-   Consider `elm/svg` if custom graphics are needed
