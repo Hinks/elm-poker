@@ -228,7 +228,7 @@ view model =
                         [ Font.color colors.text
                         ]
                         (Element.text "PokerNight App")
-                    , viewNavigation colors
+                    , viewNavigation colors model.page
                     , Element.el
                         [ Element.alignRight
                         ]
@@ -243,26 +243,39 @@ view model =
     }
 
 
-viewNavigation : Theme.ColorPalette -> Element.Element Msg
-viewNavigation colors =
+viewNavigation : Theme.ColorPalette -> Page -> Element.Element Msg
+viewNavigation colors page =
     Element.row
         [ Element.spacing 15
         ]
-        [ navButton colors Home
-        , navButton colors Players
-        , navButton colors Game
-        , navButton colors Champion
+        [ navButton colors Home page
+        , navButton colors Players page
+        , navButton colors Game page
+        , navButton colors Champion page
         ]
 
 
-navButton : Theme.ColorPalette -> Route -> Element.Element Msg
-navButton colors route =
+navButton : Theme.ColorPalette -> Route -> Page -> Element.Element Msg
+navButton colors route page =
+    let
+        active =
+            isActive { link = route, page = page }
+
+        attributes =
+            [ Element.padding 10
+            , Element.spacing 5
+            , Background.color colors.primary
+            , Font.color colors.text
+            ]
+                ++ (if active then
+                        [ Font.underline ]
+
+                    else
+                        []
+                   )
+    in
     Input.button
-        [ Element.padding 10
-        , Element.spacing 5
-        , Background.color colors.primary
-        , Font.color colors.text
-        ]
+        attributes
         { onPress = Just (NavigateTo route)
         , label = Element.text ("[ " ++ routeToString route ++ " ]")
         }
@@ -333,6 +346,34 @@ viewThemeToggle theme =
 
 
 -- Helper functions
+
+
+isActive : { link : Route, page : Page } -> Bool
+isActive { link, page } =
+    case ( link, page ) of
+        ( Home, HomePage _ ) ->
+            True
+
+        ( Home, _ ) ->
+            False
+
+        ( Players, PlayersPage _ ) ->
+            True
+
+        ( Players, _ ) ->
+            False
+
+        ( Game, GamePage _ ) ->
+            True
+
+        ( Game, _ ) ->
+            False
+
+        ( Champion, ChampionPage _ ) ->
+            True
+
+        ( Champion, _ ) ->
+            False
 
 
 routeParser : Parser (Route -> a) a
