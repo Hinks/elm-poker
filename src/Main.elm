@@ -50,24 +50,22 @@ view model =
                 [ Element.width Element.fill
                 , Element.spacing 0
                 ]
-                [ -- Title row
+                [ -- Title row with navigation
                   Element.row
                     [ Element.width Element.fill
                     , Element.padding 20
-                    , Element.spacing 0
+                    , Element.spacing 15
                     ]
                     [ Element.el
                         [ Font.color colors.text
                         ]
                         (Element.text "PokerNight App")
+                    , viewNavigation colors
                     , Element.el
                         [ Element.alignRight
                         ]
                         (viewThemeToggle model.theme)
                     ]
-
-                -- Navigation row
-                , viewNavigation colors
 
                 -- Content area
                 , Element.el
@@ -85,10 +83,7 @@ view model =
 viewNavigation : Theme.ColorPalette -> Element.Element Msg
 viewNavigation colors =
     Element.row
-        [ Element.width Element.fill
-        , Element.padding 15
-        , Element.spacing 15
-        , Background.color colors.surface
+        [ Element.spacing 15
         ]
         [ navButton colors Home
         , navButton colors Players
