@@ -1,12 +1,22 @@
 module Main exposing (main)
 
-import Browser exposing (UrlRequest)
+import Browser
+import Browser.Navigation as Navigation
 import Element
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
+import Page.Champion
+import Page.Game
+import Page.Home
+import Page.Players
 import Theme exposing (Theme(..))
 import Url exposing (Url)
+import Url.Parser exposing ((</>), Parser, s, top)
+
+
+
+-- MODEL
 
 
 type Route
@@ -17,22 +27,74 @@ type Route
 
 
 type alias Model =
-    { value : String
+    { currentRoute : Route
     , theme : Theme
+    , navigationKey : Navigation.Key
     }
+
+
+init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+init _ url key =
+    ( { currentRoute = parseRoute url
+      , theme = Theme.defaultTheme
+      , navigationKey = key
+      }
+    , Cmd.none
+    )
+
+
+
+-- UPDATE
 
 
 type Msg
     = NoOp
     | NavigateTo Route
+    | RouteChanged Route
     | ThemeToggled
 
 
-init : Model
-init =
-    { value = "Hello, World cool"
-    , theme = Theme.defaultTheme
-    }
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
+        NavigateTo route ->
+            ( model
+            , Navigation.pushUrl model.navigationKey (routeToPath route)
+            )
+
+        RouteChanged route ->
+            ( { model | currentRoute = route }
+            , Cmd.none
+            )
+
+        ThemeToggled ->
+            ( { model
+                | theme =
+                    case model.theme of
+                        Light ->
+                            Dark
+
+                        Dark ->
+                            Light
+              }
+            , Cmd.none
+            )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
+
+
+
+-- VIEW
 
 
 view : Model -> Browser.Document Msg
@@ -68,12 +130,7 @@ view model =
                     ]
 
                 -- Content area
-                , Element.el
-                    [ Element.width Element.fill
-                    , Element.padding 20
-                    , Font.color colors.text
-                    ]
-                    (Element.text model.value)
+                , viewPageContent model
                 ]
             )
         ]
@@ -103,6 +160,22 @@ navButton colors route =
         { onPress = Just (NavigateTo route)
         , label = Element.text ("[ " ++ routeToString route ++ " ]")
         }
+
+
+viewPageContent : Model -> Element.Element Msg
+viewPageContent model =
+    case model.currentRoute of
+        Home ->
+            Page.Home.view model.theme
+
+        Players ->
+            Page.Players.view model.theme
+
+        Game ->
+            Page.Game.view model.theme
+
+        Champion ->
+            Page.Champion.view model.theme
 
 
 viewThemeToggle : Theme -> Element.Element Msg
@@ -141,6 +214,41 @@ viewThemeToggle theme =
         }
 
 
+
+-- Helper functions
+
+
+routeParser : Parser (Route -> a) a
+routeParser =
+    Url.Parser.oneOf
+        [ Url.Parser.map Home top
+        , Url.Parser.map Players (s "players")
+        , Url.Parser.map Game (s "game")
+        , Url.Parser.map Champion (s "champion")
+        ]
+
+
+parseRoute : Url -> Route
+parseRoute url =
+    Maybe.withDefault Home (Url.Parser.parse routeParser url)
+
+
+routeToPath : Route -> String
+routeToPath route =
+    case route of
+        Home ->
+            "/"
+
+        Players ->
+            "/players"
+
+        Game ->
+            "/game"
+
+        Champion ->
+            "/champion"
+
+
 routeToString : Route -> String
 routeToString route =
     case route of
@@ -157,49 +265,25 @@ routeToString route =
             "Champion"
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
-        NavigateTo route ->
-            -- Placeholder for navigation - can be wired to routing later
-            ( model, Cmd.none )
-
-        ThemeToggled ->
-            ( { model
-                | theme =
-                    case model.theme of
-                        Light ->
-                            Dark
-
-                        Dark ->
-                            Light
-              }
-            , Cmd.none
-            )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-onUrlRequest : UrlRequest -> Msg
+onUrlRequest : Browser.UrlRequest -> Msg
 onUrlRequest urlRequest =
-    NoOp
+    case urlRequest of
+        Browser.Internal url ->
+            NavigateTo (parseRoute url)
+
+        Browser.External _ ->
+            NoOp
 
 
 onUrlChange : Url -> Msg
 onUrlChange url =
-    NoOp
+    RouteChanged (parseRoute url)
 
 
 main : Program () Model Msg
 main =
     Browser.application
-        { init = \flags url key -> ( init, Cmd.none )
+        { init = init
         , onUrlRequest = onUrlRequest
         , onUrlChange = onUrlChange
         , update = update

@@ -13,23 +13,26 @@ This rule defines the standard structure and ordering for Elm files following Th
 Elm files must follow this exact order:
 
 1. **Module declaration and imports**
-2. **Main function** (comes first after imports)
-3. **Model section** (`-- MODEL` comment)
+2. **Model section** (`-- MODEL` comment)
     - Model type definition
     - init function (last in Model section)
-4. **Update section** (`-- UPDATE` comment)
+3. **Update section** (`-- UPDATE` comment)
     - Msg type (placed immediately above update function)
     - update function
     - Helper functions for updating the model (used in update)
-5. **Subscriptions and Ports** (`-- SUBSCRIPTIONS` comment)
+4. **Subscriptions and Ports** (`-- SUBSCRIPTIONS` comment)
     - subscriptions function
     - port declarations (if any)
-6. **View section** (`-- VIEW` comment)
+5. **View section** (`-- VIEW` comment)
     - view function
     - view helper functions (placed directly under view)
-7. **Other helper functions** (general utility functions)
-8. **JSON decoders** (`-- JSON` comment, if any)
+6. **Other helper functions** (general utility functions)
+7. **JSON decoders** (`-- JSON` comment, if any)
     - JSON decoders and encoders
+8. **URL handling functions** (for Browser.application)
+    - onUrlRequest function
+    - onUrlChange function
+9. **Main function** (placed at the bottom, immediately after onUrlRequest and onUrlChange)
 
 ## Section Comments
 
@@ -44,6 +47,10 @@ Each major section must be marked with a comment:
 
 -- VIEW
 
+-- JSON
+
+-- MAIN
+
 ```
 
 ## Code Example
@@ -54,18 +61,7 @@ module Page.Home exposing (Model, Msg, init, update, view)
 import Browser
 import Element
 import Json.Decode as Decode
-
--- Main function comes first after imports
-main : Program () Model Msg
-main =
-    Browser.application
-        { init = init
-        , update = update
-        , view = view
-        , subscriptions = subscriptions
-        , onUrlRequest = onUrlRequest
-        , onUrlChange = onUrlChange
-        }
+import Url exposing (Url)
 
 -- MODEL
 type alias Model =
@@ -87,6 +83,7 @@ type Msg
     = UserNameChanged UserName
     | Increment
     | Decrement
+    | NoOp
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -99,6 +96,9 @@ update msg model =
 
         Decrement ->
             ( decrementPoint model, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 -- Helper functions for updating the model (used in update)
 incrementPoint : Model -> Model
@@ -159,11 +159,37 @@ decodeModel =
     Decode.map2 Model
         (Decode.map UserName (Decode.field "userName" Decode.string))
         (Decode.map Count (Decode.field "point" Decode.int))
+
+onUrlRequest : Browser.UrlRequest -> Msg
+onUrlRequest urlRequest =
+    case urlRequest of
+        Browser.Internal _ ->
+            NoOp
+
+        Browser.External _ ->
+            NoOp
+
+onUrlChange : Url -> Msg
+onUrlChange _ =
+    NoOp
+
+-- Main function comes at the bottom, immediately after onUrlRequest and onUrlChange
+main : Program () Model Msg
+main =
+    Browser.application
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        , onUrlRequest = onUrlRequest
+        , onUrlChange = onUrlChange
+        }
+
 ```
 
 ## Key Rules
 
-1. **Main function placement**: The `main` function must come immediately after imports, before any other definitions.
+1. **Main function placement**: The `main` function must be placed at the bottom of the file, immediately after the `onUrlRequest` and `onUrlChange` functions (for `Browser.application`). This keeps the main function close to the URL handling functions it references.
 
 2. **Model section**:
 
@@ -182,23 +208,46 @@ decodeModel =
     - `view` function comes first
     - View helper functions are placed directly under `view`
 
-5. **Section comments**: Always include section comments (`-- MODEL`, `-- UPDATE`, `-- VIEW`, `-- SUBSCRIPTIONS`, `-- JSON`) to clearly separate major sections.
+5. **JSON decoders placement**: JSON decoders and encoders should be placed after helper functions and before URL handling functions (for `Browser.application`).
 
-6. **Grouping**: Related functions should be grouped together within their sections.
+6. **Section comments**: Always include section comments (`-- MODEL`, `-- UPDATE`, `-- VIEW`, `-- SUBSCRIPTIONS`, `-- JSON`, `-- MAIN`) to clearly separate major sections.
+
+7. **Grouping**: Related functions should be grouped together within their sections.
 
 ## Bad Examples
 
-### ❌ Wrong: Main function not first after imports
+### ❌ Wrong: Main function not at the bottom after onUrlRequest and onUrlChange
 
 ```elm
 module Main exposing (main)
 
 import Browser
+import Url exposing (Url)
 
+-- MODEL
 type alias Model = { value : String }
 
-main : Program () Model Msg  -- Should be right after imports!
-main = ...
+init : Model
+init = { value = "" }
+
+-- UPDATE
+type Msg = NoOp
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model = ( model, Cmd.none )
+
+-- VIEW
+view : Model -> Browser.Document Msg
+view model = { title = "App", body = [] }
+
+main : Program () Model Msg  -- Should be at the bottom after onUrlRequest and onUrlChange!
+main = Browser.application { ... }
+
+onUrlRequest : Browser.UrlRequest -> Msg  -- Should come before main!
+onUrlRequest _ = NoOp
+
+onUrlChange : Url -> Msg  -- Should come before main!
+onUrlChange _ = NoOp
 ```
 
 ### ❌ Wrong: Msg type not immediately above update
