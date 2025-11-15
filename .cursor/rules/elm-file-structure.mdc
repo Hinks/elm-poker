@@ -1,0 +1,256 @@
+---
+description: Standard structure and ordering for Elm files following The Elm Architecture
+globs: **/*.elm
+alwaysApply: true
+---
+
+# Elm File Structure
+
+This rule defines the standard structure and ordering for Elm files following The Elm Architecture (TEA).
+
+## File Structure Order
+
+Elm files must follow this exact order:
+
+1. **Module declaration and imports**
+2. **Main function** (comes first after imports)
+3. **Model section** (`-- MODEL` comment)
+    - Model type definition
+    - init function (last in Model section)
+4. **Update section** (`-- UPDATE` comment)
+    - Msg type (placed immediately above update function)
+    - update function
+    - Helper functions for updating the model (used in update)
+5. **Subscriptions and Ports** (`-- SUBSCRIPTIONS` comment)
+    - subscriptions function
+    - port declarations (if any)
+6. **View section** (`-- VIEW` comment)
+    - view function
+    - view helper functions (placed directly under view)
+7. **Other helper functions** (general utility functions)
+8. **JSON decoders** (`-- JSON` comment, if any)
+    - JSON decoders and encoders
+
+## Section Comments
+
+Each major section must be marked with a comment:
+
+```elm
+-- MODEL
+
+-- UPDATE
+
+-- SUBSCRIPTIONS
+
+-- VIEW
+
+```
+
+## Code Example
+
+```elm
+module Page.Home exposing (Model, Msg, init, update, view)
+
+import Browser
+import Element
+import Json.Decode as Decode
+
+-- Main function comes first after imports
+main : Program () Model Msg
+main =
+    Browser.application
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        , onUrlRequest = onUrlRequest
+        , onUrlChange = onUrlChange
+        }
+
+-- MODEL
+type alias Model =
+    { userName : UserName
+    , point : Count
+    }
+
+type UserName = UserName String
+type Count = Count Int
+
+init : Model
+init =
+    { userName = UserName "Bob"
+    , point = Count 0
+    }
+
+-- UPDATE
+type Msg
+    = UserNameChanged UserName
+    | Increment
+    | Decrement
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        UserNameChanged newValue ->
+            ( { model | userName = newValue }, Cmd.none )
+
+        Increment ->
+            ( incrementPoint model, Cmd.none )
+
+        Decrement ->
+            ( decrementPoint model, Cmd.none )
+
+-- Helper functions for updating the model (used in update)
+incrementPoint : Model -> Model
+incrementPoint model =
+    case model.point of
+        Count n ->
+            { model | point = Count (n + 1) }
+
+decrementPoint : Model -> Model
+decrementPoint model =
+    case model.point of
+        Count n ->
+            { model | point = Count (n - 1) }
+
+-- SUBSCRIPTIONS
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+-- VIEW
+view : Model -> Browser.Document Msg
+view model =
+    { title = "Home"
+    , body =
+        [ Element.layout [] (viewContent model)
+        ]
+    }
+
+viewContent : Model -> Element.Element Msg
+viewContent model =
+    Element.column []
+        [ viewHeader model
+        , viewBody model
+        ]
+
+viewHeader : Model -> Element.Element Msg
+viewHeader model =
+    case model.point of
+        Count n ->
+            Element.text ("Point: " ++ String.fromInt n)
+
+viewBody : Model -> Element.Element Msg
+viewBody model =
+    case model.userName of
+        UserName name ->
+            Element.text name
+
+-- Helper functions (general utilities)
+formatValue : UserName -> UserName
+formatValue value =
+    case value of
+        UserName name ->
+            UserName (String.trim name)
+
+-- JSON
+decodeModel : Decode.Decoder Model
+decodeModel =
+    Decode.map2 Model
+        (Decode.map UserName (Decode.field "userName" Decode.string))
+        (Decode.map Count (Decode.field "point" Decode.int))
+```
+
+## Key Rules
+
+1. **Main function placement**: The `main` function must come immediately after imports, before any other definitions.
+
+2. **Model section**:
+
+    - Model type definition comes first
+    - Types used by the Model (e.g., `Route`, `UserName`, `Count`) can be placed above `init`
+    - `init` function comes last in the Model section
+    - Helper types that are only used by helper functions should NOT be in the Model section (place them with their helper functions instead)
+
+3. **Update section**:
+
+    - `Msg` type must be placed immediately above the `update` function (they are closely related)
+    - Helper functions used by `update` come after the `update` function
+
+4. **View section**:
+
+    - `view` function comes first
+    - View helper functions are placed directly under `view`
+
+5. **Section comments**: Always include section comments (`-- MODEL`, `-- UPDATE`, `-- VIEW`, `-- SUBSCRIPTIONS`, `-- JSON`) to clearly separate major sections.
+
+6. **Grouping**: Related functions should be grouped together within their sections.
+
+## Bad Examples
+
+### ❌ Wrong: Main function not first after imports
+
+```elm
+module Main exposing (main)
+
+import Browser
+
+type alias Model = { value : String }
+
+main : Program () Model Msg  -- Should be right after imports!
+main = ...
+```
+
+### ❌ Wrong: Msg type not immediately above update
+
+```elm
+type alias Model = { value : String }
+
+type Msg = NoOp
+
+-- Some other function here
+
+update : Msg -> Model -> ( Model, Cmd Msg )  -- Msg should be right above!
+update msg model = ...
+```
+
+### ❌ Wrong: Helper type in Model section
+
+```elm
+-- MODEL
+type alias Model = { value : String }
+
+type FormatOption = Trim | Uppercase  -- Should be with helper function, not in Model section!
+
+init : Model
+init = { value = "" }
+
+-- Helper functions (general utilities)
+formatValue : FormatOption -> String -> String  -- FormatOption is only used here
+formatValue option value =
+    case option of
+        Trim -> String.trim value
+        Uppercase -> String.toUpper value
+```
+
+### ❌ Wrong: Missing section comments
+
+```elm
+type alias Model = { value : String }  -- Missing -- MODEL comment
+
+init : Model
+init = { value = "" }
+
+type Msg = NoOp  -- Missing -- UPDATE comment
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model = ...
+```
+
+## Benefits
+
+-   Consistent file structure across the codebase
+-   Easy to locate specific sections
+-   Clear separation of concerns
+-   Improved readability and maintainability
+-   Follows The Elm Architecture pattern naturally
