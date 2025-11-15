@@ -6,13 +6,20 @@ import Element.Input as Input
 import Url exposing (Url)
 
 
+type Route
+    = Home
+    | Players
+    | Game
+    | Champion
+
+
 type alias Model =
     { value : String }
 
 
 type Msg
     = NoOp
-    | NavigateTo String
+    | NavigateTo Route
 
 
 init : Model
@@ -39,16 +46,7 @@ view model =
                     [ Element.text "PokerNight App" ]
 
                 -- Navigation row
-                , Element.row
-                    [ Element.width Element.fill
-                    , Element.padding 15
-                    , Element.spacing 15
-                    ]
-                    [ navButton "Home"
-                    , navButton "Players"
-                    , navButton "Game"
-                    , navButton "Champion"
-                    ]
+                , viewNavigation
 
                 -- Content area
                 , Element.el
@@ -62,15 +60,45 @@ view model =
     }
 
 
-navButton : String -> Element.Element Msg
-navButton label =
+viewNavigation : Element.Element Msg
+viewNavigation =
+    Element.row
+        [ Element.width Element.fill
+        , Element.padding 15
+        , Element.spacing 15
+        ]
+        [ navButton Home
+        , navButton Players
+        , navButton Game
+        , navButton Champion
+        ]
+
+
+navButton : Route -> Element.Element Msg
+navButton route =
     Input.button
         [ Element.padding 10
         , Element.spacing 5
         ]
-        { onPress = Just (NavigateTo label)
-        , label = Element.text ("[ " ++ label ++ " ]")
+        { onPress = Just (NavigateTo route)
+        , label = Element.text ("[ " ++ routeToString route ++ " ]")
         }
+
+
+routeToString : Route -> String
+routeToString route =
+    case route of
+        Home ->
+            "Home"
+
+        Players ->
+            "Players"
+
+        Game ->
+            "Game"
+
+        Champion ->
+            "Champion"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
