@@ -301,10 +301,10 @@ viewThemeToggle theme =
         toggleText =
             case theme of
                 Light ->
-                    "🌙 Dark"
+                    "Dark"
 
                 Dark ->
-                    "☀️ Light"
+                    "Light"
     in
     Input.button
         [ Element.padding 10
