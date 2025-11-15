@@ -26,8 +26,16 @@ type Route
     | Champion
 
 
+type Page
+    = HomePage Page.Home.Model
+    | PlayersPage Page.Players.Model
+    | GamePage Page.Game.Model
+    | ChampionPage Page.Champion.Model
+    | NotFound
+
+
 type alias Model =
-    { currentRoute : Route
+    { page : Page
     , theme : Theme
     , navigationKey : Navigation.Key
     }
@@ -35,7 +43,11 @@ type alias Model =
 
 init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init _ url key =
-    ( { currentRoute = parseRoute url
+    let
+        route =
+            parseRoute url
+    in
+    ( { page = initPage route
       , theme = Theme.defaultTheme
       , navigationKey = key
       }
@@ -43,32 +55,87 @@ init _ url key =
     )
 
 
+initPage : Route -> Page
+initPage route =
+    case route of
+        Home ->
+            HomePage Page.Home.init
+
+        Players ->
+            PlayersPage Page.Players.init
+
+        Game ->
+            GamePage Page.Game.init
+
+        Champion ->
+            ChampionPage Page.Champion.init
+
+
 
 -- UPDATE
 
 
 type Msg
-    = NoOp
+    = ClickedLink Browser.UrlRequest
+    | ChangedUrl Url
     | NavigateTo Route
-    | RouteChanged Route
+    | GotHomeMsg Page.Home.Msg
+    | GotPlayersMsg Page.Players.Msg
+    | GotGameMsg Page.Game.Msg
+    | GotChampionMsg Page.Champion.Msg
     | ThemeToggled
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
+        ClickedLink urlRequest ->
+            case urlRequest of
+                Browser.External href ->
+                    ( model, Navigation.load href )
+
+                Browser.Internal url ->
+                    ( model, Navigation.pushUrl model.navigationKey (Url.toString url) )
+
+        ChangedUrl url ->
+            updateUrl url model
 
         NavigateTo route ->
             ( model
             , Navigation.pushUrl model.navigationKey (routeToPath route)
             )
 
-        RouteChanged route ->
-            ( { model | currentRoute = route }
-            , Cmd.none
-            )
+        GotHomeMsg homeMsg ->
+            case model.page of
+                HomePage home ->
+                    toHome model (Page.Home.update homeMsg home)
+
+                _ ->
+                    ( model, Cmd.none )
+
+        GotPlayersMsg playersMsg ->
+            case model.page of
+                PlayersPage players ->
+                    toPlayers model (Page.Players.update playersMsg players)
+
+                _ ->
+                    ( model, Cmd.none )
+
+        GotGameMsg gameMsg ->
+            case model.page of
+                GamePage game ->
+                    toGame model (Page.Game.update gameMsg game)
+
+                _ ->
+                    ( model, Cmd.none )
+
+        GotChampionMsg championMsg ->
+            case model.page of
+                ChampionPage champion ->
+                    toChampion model (Page.Champion.update championMsg champion)
+
+                _ ->
+                    ( model, Cmd.none )
 
         ThemeToggled ->
             ( { model
@@ -82,6 +149,45 @@ update msg model =
               }
             , Cmd.none
             )
+
+
+toHome : Model -> ( Page.Home.Model, Cmd Page.Home.Msg ) -> ( Model, Cmd Msg )
+toHome model ( home, cmd ) =
+    ( { model | page = HomePage home }
+    , Cmd.map GotHomeMsg cmd
+    )
+
+
+toPlayers : Model -> ( Page.Players.Model, Cmd Page.Players.Msg ) -> ( Model, Cmd Msg )
+toPlayers model ( players, cmd ) =
+    ( { model | page = PlayersPage players }
+    , Cmd.map GotPlayersMsg cmd
+    )
+
+
+toGame : Model -> ( Page.Game.Model, Cmd Page.Game.Msg ) -> ( Model, Cmd Msg )
+toGame model ( game, cmd ) =
+    ( { model | page = GamePage game }
+    , Cmd.map GotGameMsg cmd
+    )
+
+
+toChampion : Model -> ( Page.Champion.Model, Cmd Page.Champion.Msg ) -> ( Model, Cmd Msg )
+toChampion model ( champion, cmd ) =
+    ( { model | page = ChampionPage champion }
+    , Cmd.map GotChampionMsg cmd
+    )
+
+
+updateUrl : Url -> Model -> ( Model, Cmd Msg )
+updateUrl url model =
+    let
+        route =
+            parseRoute url
+    in
+    ( { model | page = initPage route }
+    , Cmd.none
+    )
 
 
 
@@ -164,18 +270,29 @@ navButton colors route =
 
 viewPageContent : Model -> Element.Element Msg
 viewPageContent model =
-    case model.currentRoute of
-        Home ->
-            Page.Home.view model.theme
+    case model.page of
+        HomePage home ->
+            Page.Home.view home model.theme
+                |> Element.map GotHomeMsg
 
-        Players ->
-            Page.Players.view model.theme
+        PlayersPage players ->
+            Page.Players.view players model.theme
+                |> Element.map GotPlayersMsg
 
-        Game ->
-            Page.Game.view model.theme
+        GamePage game ->
+            Page.Game.view game model.theme
+                |> Element.map GotGameMsg
 
-        Champion ->
-            Page.Champion.view model.theme
+        ChampionPage champion ->
+            Page.Champion.view champion model.theme
+                |> Element.map GotChampionMsg
+
+        NotFound ->
+            Element.el
+                [ Element.width Element.fill
+                , Element.padding 20
+                ]
+                (Element.text "Not Found")
 
 
 viewThemeToggle : Theme -> Element.Element Msg
@@ -267,17 +384,12 @@ routeToString route =
 
 onUrlRequest : Browser.UrlRequest -> Msg
 onUrlRequest urlRequest =
-    case urlRequest of
-        Browser.Internal url ->
-            NavigateTo (parseRoute url)
-
-        Browser.External _ ->
-            NoOp
+    ClickedLink urlRequest
 
 
 onUrlChange : Url -> Msg
 onUrlChange url =
-    RouteChanged (parseRoute url)
+    ChangedUrl url
 
 
 main : Program () Model Msg
