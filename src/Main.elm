@@ -23,6 +23,7 @@ type alias Model =
     { page : Page
     , theme : Theme
     , navigationKey : Navigation.Key
+    , playersPageState : Maybe Page.Players.Model
     }
 
 
@@ -80,7 +81,16 @@ update msg model =
         GotPlayersMsg playersMsg ->
             case model.page of
                 PlayersPage players ->
-                    toPlayers model (Page.Players.update playersMsg players)
+                    let
+                        ( updatedPlayers, cmd ) =
+                            Page.Players.update playersMsg players
+                    in
+                    ( { model
+                        | page = PlayersPage updatedPlayers
+                        , playersPageState = Just updatedPlayers
+                      }
+                    , Cmd.map GotPlayersMsg cmd
+                    )
 
                 _ ->
                     ( model, Cmd.none )
@@ -124,7 +134,10 @@ toHome model ( home, cmd ) =
 
 toPlayers : Model -> ( Page.Players.Model, Cmd Page.Players.Msg ) -> ( Model, Cmd Msg )
 toPlayers model ( players, cmd ) =
-    ( { model | page = PlayersPage players }
+    ( { model
+        | page = PlayersPage players
+        , playersPageState = Just players
+      }
     , Cmd.map GotPlayersMsg cmd
     )
 
@@ -151,7 +164,7 @@ updateUrl url model =
                 |> toHome model
 
         Just Players ->
-            ( Page.Players.init, Cmd.none )
+            ( Page.Players.init model.playersPageState, Cmd.none )
                 |> toPlayers model
 
         Just Game ->
@@ -168,7 +181,7 @@ updateUrl url model =
 
 init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init _ url key =
-    updateUrl url { page = NotFound, theme = Theme.defaultTheme, navigationKey = key }
+    updateUrl url { page = NotFound, theme = Theme.defaultTheme, navigationKey = key, playersPageState = Nothing }
 
 
 

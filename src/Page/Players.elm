@@ -31,14 +31,19 @@ type Table
     = Table (List Player)
 
 
-init : Model
-init =
-    { pageName = "Players"
-    , players = []
-    , newPlayerName = ""
-    , seatingArrangement = Nothing
-    , playerListCollapsed = False
-    }
+init : Maybe Model -> Model
+init maybeExistingModel =
+    case maybeExistingModel of
+        Just existingModel ->
+            existingModel
+
+        Nothing ->
+            { pageName = "Players"
+            , players = []
+            , newPlayerName = ""
+            , seatingArrangement = Nothing
+            , playerListCollapsed = False
+            }
 
 
 
