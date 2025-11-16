@@ -330,13 +330,7 @@ viewThemeToggle theme =
                     Theme.getColors Light |> .primary
             )
         , Font.color
-            (case theme of
-                Light ->
-                    Theme.getColors Dark |> .text
-
-                Dark ->
-                    Theme.getColors Light |> .text
-            )
+            (Theme.getColors theme |> .text)
         ]
         { onPress = Just ThemeToggled
         , label = Element.text toggleText
