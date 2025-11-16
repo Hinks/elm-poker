@@ -10,25 +10,29 @@ This rule defines the standard structure and ordering for Elm files following Th
 
 ## File Structure Order
 
-Elm files must follow this exact order:
+Elm files should follow this general order:
 
 1. **Module declaration and imports**
-2. **Model section** (`-- MODEL` comment)
+2. **Model section** (`-- MODEL` comment, recommended for files 200+ lines)
     - Model type definition
-    - init function (last in Model section)
-3. **Update section** (`-- UPDATE` comment)
+    - init function placement:
+        - **Small modules**: At the bottom of the MODEL section
+        - **Large files** (like Main.elm): Can be placed closer to the `main` function for better organization
+3. **Update section** (`-- UPDATE` comment, recommended for files 200+ lines)
     - Msg type (placed immediately above update function)
     - update function
     - Helper functions for updating the model (used in update)
-4. **Subscriptions and Ports** (`-- SUBSCRIPTIONS` comment)
+4. **Subscriptions and Ports** (`-- SUBSCRIPTIONS` comment, only if subscriptions exist)
     - subscriptions function
     - port declarations (if any)
-5. **View section** (`-- VIEW` comment)
+    - **Note**: Don't add this section if there are no subscriptions
+5. **View section** (`-- VIEW` comment, recommended for files 200+ lines)
     - view function
     - view helper functions (placed directly under view)
 6. **Other helper functions** (general utility functions)
-7. **JSON decoders** (`-- JSON` comment, if any)
+7. **JSON decoders** (`-- JSON` comment, only if JSON decoders exist)
     - JSON decoders and encoders
+    - **Note**: Don't add this section if there are no JSON decoders
 8. **URL handling functions** (for Browser.application)
     - onUrlRequest function
     - onUrlChange function
@@ -36,21 +40,24 @@ Elm files must follow this exact order:
 
 ## Section Comments
 
-Each major section must be marked with a comment:
+Section comments are **recommended** (not mandatory) and help organize code:
+
+-   **For files 200+ lines**: Include section comments (`-- MODEL`, `-- UPDATE`, `-- VIEW`, etc.) to improve readability
+-   **For shorter files**: Section comments are optional but can still be helpful
+-   **Only add comments for sections that exist**: Don't add `-- SUBSCRIPTIONS` if there are no subscriptions, don't add `-- JSON` if there are no JSON decoders
 
 ```elm
 -- MODEL
 
 -- UPDATE
 
--- SUBSCRIPTIONS
+-- SUBSCRIPTIONS  (only if subscriptions exist)
 
 -- VIEW
 
--- JSON
+-- JSON  (only if JSON decoders exist)
 
 -- MAIN
-
 ```
 
 ## Code Example
@@ -195,7 +202,9 @@ main =
 
     - Model type definition comes first
     - Types used by the Model (e.g., `Route`, `UserName`, `Count`) can be placed above `init`
-    - `init` function comes last in the Model section
+    - `init` function placement:
+        - **Small modules**: Place at the bottom of the MODEL section (recommended)
+        - **Large files** (like Main.elm): Can be placed closer to the `main` function for better organization
     - Helper types that are only used by helper functions should NOT be in the Model section (place them with their helper functions instead)
 
 3. **Update section**:
@@ -210,7 +219,11 @@ main =
 
 5. **JSON decoders placement**: JSON decoders and encoders should be placed after helper functions and before URL handling functions (for `Browser.application`).
 
-6. **Section comments**: Always include section comments (`-- MODEL`, `-- UPDATE`, `-- VIEW`, `-- SUBSCRIPTIONS`, `-- JSON`, `-- MAIN`) to clearly separate major sections.
+6. **Section comments**:
+
+    - **Recommended** for files 200+ lines to improve readability
+    - Optional for shorter files
+    - Only add comments for sections that actually exist (don't add `-- SUBSCRIPTIONS` if there are no subscriptions)
 
 7. **Grouping**: Related functions should be grouped together within their sections.
 
@@ -282,19 +295,21 @@ formatValue option value =
         Uppercase -> String.toUpper value
 ```
 
-### ❌ Wrong: Missing section comments
+### ✅ Acceptable: Missing section comments in short files
 
 ```elm
-type alias Model = { value : String }  -- Missing -- MODEL comment
+type alias Model = { value : String }
 
 init : Model
 init = { value = "" }
 
-type Msg = NoOp  -- Missing -- UPDATE comment
+type Msg = NoOp
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = ...
 ```
+
+**Note**: For short files (< 200 lines), section comments are optional. For longer files, they improve readability.
 
 ## Benefits
 

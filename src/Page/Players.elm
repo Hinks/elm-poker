@@ -1,9 +1,9 @@
 module Page.Players exposing (Model, Msg, init, update, view)
 
 import Element
-import Element.Background as Background
-import Element.Font as Font
-import Element.Input as Input
+import Element.Background
+import Element.Font
+import Element.Input
 import Html.Events
 import Json.Decode as Decode
 import Theme exposing (Theme)
@@ -85,7 +85,7 @@ view model theme =
     Element.el
         [ Element.width Element.fill
         , Element.padding 20
-        , Font.color colors.text
+        , Element.Font.color colors.text
         ]
         (Element.column
             [ Element.width Element.fill
@@ -109,23 +109,23 @@ viewAddPlayerSection model colors =
             [ Element.width Element.fill
             , Element.spacing 10
             ]
-            [ Input.text
+            [ Element.Input.text
                 [ Element.width (Element.fillPortion 3)
                 , Element.padding 8
-                , Background.color colors.surface
-                , Font.color colors.text
+                , Element.Background.color colors.surface
+                , Element.Font.color colors.text
                 , onEnterPress AddPlayer
                 ]
                 { onChange = PlayerNameChanged
                 , text = model.newPlayerName
-                , placeholder = Just (Input.placeholder [] (Element.text "Enter player name"))
-                , label = Input.labelHidden "Player name"
+                , placeholder = Just (Element.Input.placeholder [] (Element.text "Enter player name"))
+                , label = Element.Input.labelHidden "Player name"
                 }
-            , Input.button
+            , Element.Input.button
                 [ Element.padding 8
                 , Element.width (Element.fillPortion 1)
-                , Background.color colors.primary
-                , Font.color colors.text
+                , Element.Background.color colors.primary
+                , Element.Font.color colors.text
                 ]
                 { onPress = Just AddPlayer
                 , label = Element.text "Add"
@@ -139,7 +139,7 @@ viewDivider colors =
     Element.el
         [ Element.width Element.fill
         , Element.height (Element.px 1)
-        , Background.color colors.border
+        , Element.Background.color colors.border
         ]
         Element.none
 
@@ -153,8 +153,8 @@ viewCurrentPlayersSection model colors =
         [ Element.text "Current Players:"
         , if List.isEmpty model.players then
             Element.el
-                [ Font.color colors.textSecondary
-                , Font.italic
+                [ Element.Font.color colors.textSecondary
+                , Element.Font.italic
                 ]
                 (Element.text "No players added yet.")
 
@@ -183,10 +183,10 @@ viewPlayerRow index player colors =
             [ Element.width Element.fill
             ]
             (Element.text ("- " ++ playerName))
-        , Input.button
+        , Element.Input.button
             [ Element.padding 8
-            , Background.color colors.accent
-            , Font.color colors.text
+            , Element.Background.color colors.accent
+            , Element.Font.color colors.text
             ]
             { onPress = Just (RemovePlayer index)
             , label = Element.text "Remove"

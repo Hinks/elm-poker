@@ -1,0 +1,183 @@
+---
+description: Standard import patterns and syntax conventions for elm-ui Element module and elm/html
+globs: **/*.elm
+alwaysApply: true
+---
+
+# Elm Syntax Conventions
+
+This rule defines standard import patterns and syntax conventions for using `mdgriffith/elm-ui` Element module and `elm/html`.
+
+## Element Module Imports
+
+When using `elm-ui`, follow these import patterns:
+
+### When Using Only elm-ui Modules
+
+If your module **only** uses elm-ui modules (no `Html` or `Html.Attributes`), you can use aliases:
+
+```elm
+import Element exposing (Element)
+import Element.Background as Background
+import Element.Font as Font
+import Element.Input as Input
+```
+
+**Usage with aliases:**
+
+```elm
+Element.el
+    [ Background.color (Element.rgb255 150 150 250)
+    , Font.size 16
+    ]
+    (Element.text "Hello")
+```
+
+### When Mixing elm-ui with Html
+
+If your module uses **both** elm-ui modules **and** `Html`/`Html.Attributes`, use fully qualified names without aliases to avoid confusion:
+
+```elm
+import Element exposing (Element)
+import Element.Background
+import Element.Font
+import Html exposing (Html)
+import Html.Attributes as Attr
+```
+
+**Usage with fully qualified names:**
+
+```elm
+Element.el
+    [ Element.Background.color (Element.rgb255 150 150 250)
+    , Element.Font.size 16
+    ]
+    (Element.text "Hello")
+```
+
+**Guidelines:**
+
+-   Use `import Element exposing (Element)` to expose only the Element type
+-   **Only elm-ui**: Aliases are fine (`import Element.Background as Background`)
+-   **Mixed with Html**: Use fully qualified names without aliases (`import Element.Background`)
+-   This prevents confusion between `Element.Font.color` and `Html.Attributes.style`
+
+### Additional Common Imports
+
+You may also need:
+
+```elm
+import Element.Font
+import Element.Input
+```
+
+### Code Example: Mixed elm-ui and Html
+
+```elm
+import Element exposing (Element)
+import Element.Background
+import Html exposing (Html)
+import Html.Attributes as Attr
+
+main : Html msg
+main =
+    Element.layout []
+        -- layout converts from Element to Html
+        box
+
+box : Element a
+box =
+    Element.el
+        [ Element.centerX -- these two centers the div
+        , Element.centerY
+        , Element.Background.color (Element.rgb255 150 150 250)
+        , Element.width (Element.px 150)
+        , Element.height (Element.px 150)
+        ]
+        (Element.el
+            -- these two centers the Element.text in div
+            [ Element.centerX, Element.centerY ]
+            (Element.text "CENTERED")
+        )
+```
+
+### Code Example: Only elm-ui
+
+```elm
+import Element exposing (Element)
+import Element.Background as Background
+import Element.Font as Font
+
+box : Element a
+box =
+    Element.el
+        [ Element.centerX
+        , Element.centerY
+        , Background.color (Element.rgb255 150 150 250)
+        , Font.size 16
+        ]
+        (Element.text "Hello")
+```
+
+## Html Module Imports
+
+When using `elm/html`, follow these import patterns:
+
+### Standard Imports
+
+```elm
+import Html exposing (Html)
+import Html.Attributes as Attr
+```
+
+**Guidelines:**
+
+-   Use `import Html exposing (Html)` to expose only the Html type
+-   Use `import Html.Attributes as Attr` with the `Attr` alias
+-   This allows clear usage: `Html.div`, `Html.text`, `Attr.class`, `Attr.id`
+
+### Code Example
+
+```elm
+import Html exposing (Html)
+import Html.Attributes as Attr
+
+myDiv : Html msg
+myDiv =
+    Html.div
+        [ Attr.class "container"
+        , Attr.id "main-content"
+        ]
+        [ Html.text "Hello, World!" ]
+```
+
+## General Import Guidelines
+
+**Import patterns:**
+
+-   ✅ `import Html exposing (Html)` (expose only the type)
+-   ✅ `import Element exposing (Element)` (expose only the type)
+-   ✅ `import Html.Attributes as Attr` (with alias)
+-   ✅ `import Element.Background as Background` (alias OK if only elm-ui)
+-   ✅ `import Element.Background` (fully qualified when mixing with Html)
+
+**Decision rule:**
+
+-   **Only elm-ui modules**: Aliases are acceptable and can improve readability
+-   **Mixed elm-ui + Html**: Use fully qualified names to avoid confusion
+
+**Benefits:**
+
+-   Clear namespace separation
+-   Easy to identify where functions come from
+-   Prevents naming conflicts
+-   Better code readability
+-   Type-only exposing keeps the namespace clean while allowing concise type annotations
+
+## Benefits
+
+-   Consistent import patterns across the codebase
+-   Clear namespace separation for Element and Html submodules
+-   Concise code without excessive module prefixes
+-   Easy to identify Element and Html-related imports
+-   Prevents naming conflicts through qualified imports
