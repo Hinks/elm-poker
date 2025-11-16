@@ -189,8 +189,13 @@ init _ url key =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    case model.page of
+        GamePage game ->
+            Sub.map GotGameMsg (Page.Game.subscriptions game)
+
+        _ ->
+            Sub.none
 
 
 
