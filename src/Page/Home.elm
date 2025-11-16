@@ -1,8 +1,7 @@
 module Page.Home exposing (Model, Msg, init, update, view)
 
-import Element exposing (rgb255)
+import Element
 import Element.Font as Font
-import Icons
 import Theme exposing (Theme)
 
 
@@ -41,13 +40,32 @@ update msg model =
 
 
 view : Model -> Theme -> Element.Element Msg
-view model theme =
+view _ theme =
     let
         colors =
             Theme.getColors theme
     in
-    Element.column
-        [ Font.color colors.text ]
-        [ Element.text ("Home Content - " ++ model.pageName)
-        , Element.html (Icons.pokerChip { size = 256, color = rgb255 0 170 0, spinSpeed = 3 })
+    Element.el
+        [ Element.width Element.fill
+        , Element.padding 20
+        , Font.color colors.text
         ]
+        (Element.column
+            [ Element.spacing 16
+            , Element.width Element.fill
+            ]
+            [ Element.el
+                [ Font.size 32
+                , Font.bold
+                , Font.color colors.text
+                ]
+                (Element.text "Welcome to Office Poker Night!")
+            , Element.paragraph
+                [ Font.size 18
+                , Font.color colors.textSecondary
+                , Element.spacing 4
+                ]
+                [ Element.text "Organize players, view chip values, track blinds, and pick the champion."
+                ]
+            ]
+        )
