@@ -228,14 +228,7 @@ view model theme =
             , Element.height Element.fill
             , Element.spacing 20
             ]
-            [ Element.column
-                [ Element.width Element.fill
-                , Element.height Element.fill
-                , Element.spacing 20
-                ]
-                [ viewBlindsSection model colors
-                , viewBlindControls model colors
-                ]
+            [ viewBlindsSection model colors
             , viewChips model.chips colors
             ]
         )
@@ -361,6 +354,65 @@ viewBlindsSection model colors =
                 }
             , Element.text "(min)"
             ]
+        , -- Blind control buttons
+          Element.row
+            [ Element.spacing 10
+            , Element.centerX
+            ]
+            [ Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress = Just StartPauseTimer
+                , label =
+                    Element.text
+                        (case model.timerState of
+                            Running ->
+                                "Pause"
+
+                            Paused ->
+                                "Start"
+
+                            Stopped ->
+                                "Start"
+                        )
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress = Just ResetTimer
+                , label = Element.text "Reset"
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress =
+                    if model.currentBlindIndex > 0 then
+                        Just BlindIndexDown
+
+                    else
+                        Nothing
+                , label = Element.text "↓"
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress =
+                    if model.currentBlindIndex < List.length model.blinds - 1 then
+                        Just BlindIndexUp
+
+                    else
+                        Nothing
+                , label = Element.text "↑"
+                }
+            ]
         ]
 
 
@@ -386,69 +438,6 @@ viewBlindBox label value colors =
             , Element.centerX
             ]
             (Element.text value)
-        ]
-
-
-viewBlindControls : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBlindControls model colors =
-    let
-        startPauseText =
-            case model.timerState of
-                Running ->
-                    "Pause"
-
-                Paused ->
-                    "Start"
-
-                Stopped ->
-                    "Start"
-    in
-    Element.row
-        [ Element.spacing 10
-        , Element.centerX
-        ]
-        [ Input.button
-            [ Element.padding 10
-            , Background.color colors.primary
-            , Font.color colors.text
-            ]
-            { onPress = Just StartPauseTimer
-            , label = Element.text startPauseText
-            }
-        , Input.button
-            [ Element.padding 10
-            , Background.color colors.primary
-            , Font.color colors.text
-            ]
-            { onPress = Just ResetTimer
-            , label = Element.text "Reset"
-            }
-        , Input.button
-            [ Element.padding 10
-            , Background.color colors.primary
-            , Font.color colors.text
-            ]
-            { onPress =
-                if model.currentBlindIndex > 0 then
-                    Just BlindIndexDown
-
-                else
-                    Nothing
-            , label = Element.text "↓"
-            }
-        , Input.button
-            [ Element.padding 10
-            , Background.color colors.primary
-            , Font.color colors.text
-            ]
-            { onPress =
-                if model.currentBlindIndex < List.length model.blinds - 1 then
-                    Just BlindIndexUp
-
-                else
-                    Nothing
-            , label = Element.text "↑"
-            }
         ]
 
 
