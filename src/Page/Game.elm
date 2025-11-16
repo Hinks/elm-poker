@@ -262,98 +262,121 @@ viewBlindsSection model colors =
             , Element.centerX
             ]
             (Element.text "CURRENT BLINDS")
-        , -- Small and Big Blind boxes
+        , -- Small and Big Blind boxes with aligned content
           case currentBlind of
             Just blind ->
-                Element.row
+                Element.column
                     [ Element.width Element.fill
                     , Element.spacing 20
-                    , Element.centerX
                     ]
-                    [ viewBlindBox "SMALL" (formatBlindValue blind.smallBlind) colors
-                    , viewBlindBox "BIG" (formatBlindValue blind.bigBlind) colors
+                    [ -- Top row: Small and Big Blind boxes
+                      Element.row
+                        [ Element.width Element.fill
+                        , Element.spacing 20
+                        , Element.centerX
+                        ]
+                        [ viewBlindBox "SMALL" (formatBlindValue blind.smallBlind) colors
+                        , viewBlindBox "BIG" (formatBlindValue blind.bigBlind) colors
+                        ]
+                    , -- Bottom row: Blind Duration, Next Blind level in, and Upcoming Levels
+                      Element.row
+                        [ Element.width Element.fill
+                        , Element.spacing 20
+                        , Element.centerX
+                        ]
+                        [ -- Left: Blind Duration
+                          Element.el
+                            [ Element.width (Element.fillPortion 1)
+                            ]
+                            (Element.column
+                                [ Element.spacing 10
+                                , Element.centerX
+                                ]
+                                [ Element.row
+                                    [ Element.spacing 10
+                                    , Element.centerX
+                                    ]
+                                    [ Element.el
+                                        [ Font.size 16
+                                        ]
+                                        (Element.text "Blind Duration:")
+                                    , Input.text
+                                        [ Element.width (Element.px 80)
+                                        , Element.padding 8
+                                        , Background.color colors.background
+                                        , Font.color colors.text
+                                        , Element.htmlAttribute
+                                            (if isInputDisabled then
+                                                Html.Attributes.disabled True
+
+                                             else
+                                                Html.Attributes.disabled False
+                                            )
+                                        ]
+                                        { onChange = BlindDurationChanged
+                                        , text = String.fromInt (model.blindDuration // 60)
+                                        , placeholder = Nothing
+                                        , label = Input.labelHidden "Blind duration in minutes"
+                                        }
+                                    , Element.text "(min)"
+                                    ]
+                                ]
+                            )
+                        , -- Center: Next Blind level in with remaining time
+                          Element.el
+                            [ Element.width (Element.fillPortion 1)
+                            ]
+                            (Element.column
+                                [ Element.spacing 10
+                                , Element.centerX
+                                ]
+                                [ Element.el
+                                    [ Font.size 16
+                                    , Font.bold
+                                    ]
+                                    (Element.text "Next Blind level in:")
+                                , Element.el
+                                    [ Font.size 16
+                                    , Font.family [ Font.monospace ]
+                                    ]
+                                    (Element.text ("[ " ++ formatTime model.remainingTime ++ " remaining ]"))
+                                ]
+                            )
+                        , -- Right: Upcoming Levels
+                          Element.el
+                            [ Element.width (Element.fillPortion 1)
+                            ]
+                            (Element.column
+                                [ Element.spacing 10
+                                , Element.centerX
+                                ]
+                                [ Element.el
+                                    [ Font.size 16
+                                    , Font.bold
+                                    ]
+                                    (Element.text "Upcoming Levels:")
+                                , Element.column
+                                    [ Element.spacing 5 ]
+                                    (List.indexedMap
+                                        (\idx upcomingBlind ->
+                                            Element.text
+                                                ("Level "
+                                                    ++ String.fromInt (model.currentBlindIndex + idx + 2)
+                                                    ++ ":  "
+                                                    ++ formatBlindValue upcomingBlind.smallBlind
+                                                    ++ " / "
+                                                    ++ formatBlindValue upcomingBlind.bigBlind
+                                                )
+                                        )
+                                        upcomingBlinds
+                                    )
+                                ]
+                            )
+                        ]
                     ]
 
             Nothing ->
                 Element.text "No blind level"
-        , -- Next Blind level and Upcoming Levels row
-          Element.row
-            [ Element.width Element.fill
-            , Element.spacing 40
-            ]
-            [ -- Left side: Next Blind level in
-              Element.column
-                [ Element.width (Element.fillPortion 1)
-                , Element.spacing 10
-                ]
-                [ Element.el
-                    [ Font.size 16
-                    , Font.bold
-                    ]
-                    (Element.text "Next Blind level in:")
-                , Element.el
-                    [ Font.size 16
-                    , Font.family [ Font.monospace ]
-                    ]
-                    (Element.text ("[ " ++ formatTime model.remainingTime ++ " remaining ]"))
-                ]
-            , -- Right side: Upcoming Levels
-              Element.column
-                [ Element.width (Element.fillPortion 1)
-                , Element.spacing 10
-                ]
-                [ Element.el
-                    [ Font.size 16
-                    , Font.bold
-                    ]
-                    (Element.text "Upcoming Levels:")
-                , Element.column
-                    [ Element.spacing 5 ]
-                    (List.indexedMap
-                        (\idx blind ->
-                            Element.text
-                                ("Level "
-                                    ++ String.fromInt (model.currentBlindIndex + idx + 2)
-                                    ++ ":  "
-                                    ++ formatBlindValue blind.smallBlind
-                                    ++ " / "
-                                    ++ formatBlindValue blind.bigBlind
-                                )
-                        )
-                        upcomingBlinds
-                    )
-                ]
-            ]
-        , -- Blind Duration input
-          Element.row
-            [ Element.width Element.fill
-            , Element.spacing 10
-            , Element.centerX
-            ]
-            [ Element.el
-                [ Font.size 16
-                ]
-                (Element.text "Blind Duration:")
-            , Input.text
-                [ Element.width (Element.px 80)
-                , Element.padding 8
-                , Background.color colors.background
-                , Font.color colors.text
-                , Element.htmlAttribute
-                    (if isInputDisabled then
-                        Html.Attributes.disabled True
-
-                     else
-                        Html.Attributes.disabled False
-                    )
-                ]
-                { onChange = BlindDurationChanged
-                , text = String.fromInt (model.blindDuration // 60)
-                , placeholder = Nothing
-                , label = Input.labelHidden "Blind duration in minutes"
-                }
-            , Element.text "(min)"
-            ]
         , -- Blind control buttons
           Element.row
             [ Element.spacing 10
