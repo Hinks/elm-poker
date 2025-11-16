@@ -1,7 +1,11 @@
 module Page.Players exposing (Model, Msg, init, update, view)
 
 import Element
+import Element.Background as Background
 import Element.Font as Font
+import Element.Input as Input
+import Html.Events
+import Json.Decode as Decode
 import Theme exposing (Theme)
 
 
@@ -11,12 +15,20 @@ import Theme exposing (Theme)
 
 type alias Model =
     { pageName : String
+    , players : List Player
+    , newPlayerName : String
     }
+
+
+type Player
+    = Player String
 
 
 init : Model
 init =
     { pageName = "Players"
+    , players = []
+    , newPlayerName = ""
     }
 
 
@@ -25,14 +37,39 @@ init =
 
 
 type Msg
-    = NoOp
+    = PlayerNameChanged String
+    | AddPlayer
+    | RemovePlayer Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
+        PlayerNameChanged name ->
+            ( { model | newPlayerName = name }, Cmd.none )
+
+        AddPlayer ->
+            if String.trim model.newPlayerName == "" then
+                ( model, Cmd.none )
+
+            else
+                ( { model
+                    | players = model.players ++ [ Player (String.trim model.newPlayerName) ]
+                    , newPlayerName = ""
+                  }
+                , Cmd.none
+                )
+
+        RemovePlayer index ->
+            ( { model
+                | players =
+                    model.players
+                        |> List.indexedMap Tuple.pair
+                        |> List.filter (\( i, _ ) -> i /= index)
+                        |> List.map Tuple.second
+              }
+            , Cmd.none
+            )
 
 
 
@@ -50,4 +87,129 @@ view model theme =
         , Element.padding 20
         , Font.color colors.text
         ]
-        (Element.text ("Players Content - " ++ model.pageName))
+        (Element.column
+            [ Element.width Element.fill
+            , Element.spacing 20
+            ]
+            [ viewAddPlayerSection model colors
+            , viewDivider colors
+            , viewCurrentPlayersSection model colors
+            ]
+        )
+
+
+viewAddPlayerSection : Model -> Theme.ColorPalette -> Element.Element Msg
+viewAddPlayerSection model colors =
+    Element.column
+        [ Element.width Element.fill
+        , Element.spacing 10
+        ]
+        [ Element.text "Add a player:"
+        , Element.row
+            [ Element.width Element.fill
+            , Element.spacing 10
+            ]
+            [ Input.text
+                [ Element.width (Element.fillPortion 3)
+                , Element.padding 8
+                , Background.color colors.surface
+                , Font.color colors.text
+                , onEnterPress AddPlayer
+                ]
+                { onChange = PlayerNameChanged
+                , text = model.newPlayerName
+                , placeholder = Just (Input.placeholder [] (Element.text "Enter player name"))
+                , label = Input.labelHidden "Player name"
+                }
+            , Input.button
+                [ Element.padding 8
+                , Element.width (Element.fillPortion 1)
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress = Just AddPlayer
+                , label = Element.text "Add"
+                }
+            ]
+        ]
+
+
+viewDivider : Theme.ColorPalette -> Element.Element Msg
+viewDivider colors =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height (Element.px 1)
+        , Background.color colors.border
+        ]
+        Element.none
+
+
+viewCurrentPlayersSection : Model -> Theme.ColorPalette -> Element.Element Msg
+viewCurrentPlayersSection model colors =
+    Element.column
+        [ Element.width Element.fill
+        , Element.spacing 10
+        ]
+        [ Element.text "Current Players:"
+        , if List.isEmpty model.players then
+            Element.el
+                [ Font.color colors.textSecondary
+                , Font.italic
+                ]
+                (Element.text "No players added yet.")
+
+          else
+            Element.column
+                [ Element.width Element.fill
+                , Element.spacing 8
+                ]
+                (List.indexedMap (\index player -> viewPlayerRow index player colors) model.players)
+        ]
+
+
+viewPlayerRow : Int -> Player -> Theme.ColorPalette -> Element.Element Msg
+viewPlayerRow index player colors =
+    let
+        playerName =
+            case player of
+                Player name ->
+                    name
+    in
+    Element.row
+        [ Element.width Element.fill
+        , Element.spacing 10
+        ]
+        [ Element.el
+            [ Element.width Element.fill
+            ]
+            (Element.text ("- " ++ playerName))
+        , Input.button
+            [ Element.padding 8
+            , Background.color colors.accent
+            , Font.color colors.text
+            ]
+            { onPress = Just (RemovePlayer index)
+            , label = Element.text "Remove"
+            }
+        ]
+
+
+
+-- Helper functions (general utilities)
+
+
+onEnterPress : Msg -> Element.Attribute Msg
+onEnterPress msg =
+    Element.htmlAttribute
+        (Html.Events.on "keydown"
+            (Decode.field "key" Decode.string
+                |> Decode.andThen
+                    (\key ->
+                        if key == "Enter" then
+                            Decode.succeed msg
+
+                        else
+                            Decode.fail "Not Enter key"
+                    )
+            )
+        )
