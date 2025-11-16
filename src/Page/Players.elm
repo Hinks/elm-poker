@@ -19,6 +19,7 @@ type alias Model =
     , players : List Player
     , newPlayerName : String
     , seatingArrangement : Maybe (List Table)
+    , playerListCollapsed : Bool
     }
 
 
@@ -36,6 +37,7 @@ init =
     , players = []
     , newPlayerName = ""
     , seatingArrangement = Nothing
+    , playerListCollapsed = False
     }
 
 
@@ -50,6 +52,7 @@ type Msg
     | RandomizeSeating
     | ClearSeating
     | GotRandomSeed Int
+    | TogglePlayerList
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -98,10 +101,23 @@ update msg model =
                 tables =
                     distributeIntoTables shuffledPlayers
             in
-            ( { model | seatingArrangement = Just tables }, Cmd.none )
+            ( { model
+                | seatingArrangement = Just tables
+                , playerListCollapsed = True
+              }
+            , Cmd.none
+            )
+
+        TogglePlayerList ->
+            ( { model | playerListCollapsed = not model.playerListCollapsed }, Cmd.none )
 
         ClearSeating ->
-            ( { model | seatingArrangement = Nothing }, Cmd.none )
+            ( { model
+                | seatingArrangement = Nothing
+                , playerListCollapsed = False
+              }
+            , Cmd.none
+            )
 
 
 shufflePlayers : Int -> List Player -> List Player
@@ -249,6 +265,7 @@ viewAddPlayerSection model colors =
                 , placeholder = Just (Element.Input.placeholder [] (Element.text "Enter player name"))
                 , label = Element.Input.labelHidden "Player name"
                 }
+            , viewCollapseExpandButton model colors
             , Element.Input.button
                 [ Element.padding 8
                 , Element.width (Element.fillPortion 1)
@@ -285,6 +302,13 @@ viewCurrentPlayersSection model colors =
                 , Element.Font.italic
                 ]
                 (Element.text "No players added yet.")
+
+          else if model.playerListCollapsed then
+            Element.el
+                [ Element.Font.color colors.textSecondary
+                , Element.Font.italic
+                ]
+                (Element.text (String.fromInt (List.length model.players) ++ " players"))
 
           else
             Element.column
@@ -414,6 +438,36 @@ viewSeatedPlayer player colors =
         , Element.Font.color colors.text
         ]
         (Element.text ("• " ++ playerName))
+
+
+viewCollapseExpandButton : Model -> Theme.ColorPalette -> Element.Element Msg
+viewCollapseExpandButton model colors =
+    if not (List.isEmpty model.players) then
+        Element.Input.button
+            [ Element.padding 4
+            , Element.width (Element.px 40)
+            , Element.height (Element.px 40)
+            , Element.Background.color colors.primary
+            , Element.Font.color colors.text
+            ]
+            { onPress = Just TogglePlayerList
+            , label =
+                Element.el
+                    [ Element.centerX
+                    , Element.centerY
+                    ]
+                    (Element.text
+                        (if model.playerListCollapsed then
+                            "↓"
+
+                         else
+                            "↑"
+                        )
+                    )
+            }
+
+    else
+        Element.none
 
 
 
