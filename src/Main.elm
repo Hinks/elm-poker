@@ -19,6 +19,13 @@ import Url.Parser exposing ((</>), Parser, s, top)
 -- MODEL
 
 
+type alias Model =
+    { page : Page
+    , theme : Theme
+    , navigationKey : Navigation.Key
+    }
+
+
 type Route
     = Home
     | Players
@@ -32,13 +39,6 @@ type Page
     | GamePage Page.Game.Model
     | ChampionPage Page.Champion.Model
     | NotFound
-
-
-type alias Model =
-    { page : Page
-    , theme : Theme
-    , navigationKey : Navigation.Key
-    }
 
 
 init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
@@ -78,7 +78,6 @@ initPage route =
 type Msg
     = ClickedLink Browser.UrlRequest
     | ChangedUrl Url
-    | NavigateTo Route
     | GotHomeMsg Page.Home.Msg
     | GotPlayersMsg Page.Players.Msg
     | GotGameMsg Page.Game.Msg
@@ -99,11 +98,6 @@ update msg model =
 
         ChangedUrl url ->
             updateUrl url model
-
-        NavigateTo route ->
-            ( model
-            , Navigation.pushUrl model.navigationKey (routeToPath route)
-            )
 
         GotHomeMsg homeMsg ->
             case model.page of
@@ -274,9 +268,9 @@ navButton colors route page =
                         []
                    )
     in
-    Input.button
+    Element.link
         attributes
-        { onPress = Just (NavigateTo route)
+        { url = routeToPath route
         , label = Element.text ("[ " ++ routeToString route ++ " ]")
         }
 
