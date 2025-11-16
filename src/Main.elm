@@ -43,32 +43,7 @@ type Page
 
 init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init _ url key =
-    let
-        route =
-            parseRoute url
-    in
-    ( { page = initPage route
-      , theme = Theme.defaultTheme
-      , navigationKey = key
-      }
-    , Cmd.none
-    )
-
-
-initPage : Route -> Page
-initPage route =
-    case route of
-        Home ->
-            HomePage Page.Home.init
-
-        Players ->
-            PlayersPage Page.Players.init
-
-        Game ->
-            GamePage Page.Game.init
-
-        Champion ->
-            ChampionPage Page.Champion.init
+    updateUrl url { page = NotFound, theme = Theme.defaultTheme, navigationKey = key }
 
 
 
@@ -175,13 +150,25 @@ toChampion model ( champion, cmd ) =
 
 updateUrl : Url -> Model -> ( Model, Cmd Msg )
 updateUrl url model =
-    let
-        route =
-            parseRoute url
-    in
-    ( { model | page = initPage route }
-    , Cmd.none
-    )
+    case Url.Parser.parse routeParser url of
+        Just Home ->
+            ( Page.Home.init, Cmd.none )
+                |> toHome model
+
+        Just Players ->
+            ( Page.Players.init, Cmd.none )
+                |> toPlayers model
+
+        Just Game ->
+            ( Page.Game.init, Cmd.none )
+                |> toGame model
+
+        Just Champion ->
+            ( Page.Champion.init, Cmd.none )
+                |> toChampion model
+
+        Nothing ->
+            ( { model | page = NotFound }, Cmd.none )
 
 
 
@@ -378,11 +365,6 @@ routeParser =
         , Url.Parser.map Game (s "game")
         , Url.Parser.map Champion (s "champion")
         ]
-
-
-parseRoute : Url -> Route
-parseRoute url =
-    Maybe.withDefault Home (Url.Parser.parse routeParser url)
 
 
 routeToPath : Route -> String
