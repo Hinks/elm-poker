@@ -41,11 +41,6 @@ type Page
     | NotFound
 
 
-init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init _ url key =
-    updateUrl url { page = NotFound, theme = Theme.defaultTheme, navigationKey = key }
-
-
 
 -- UPDATE
 
@@ -169,6 +164,11 @@ updateUrl url model =
 
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
+
+
+init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+init _ url key =
+    updateUrl url { page = NotFound, theme = Theme.defaultTheme, navigationKey = key }
 
 
 
