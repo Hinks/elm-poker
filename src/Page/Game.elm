@@ -14,19 +14,18 @@ import Time
 -- MODEL
 
 
-type alias Seconds =
-    Int
-
-
 type alias Model =
-    { pageName : String
-    , chips : List Chip
+    { chips : List Chip
     , blinds : List Blind
     , currentBlindIndex : Int
     , blindDuration : Seconds
     , remainingTime : Seconds
     , timerState : TimerState
     }
+
+
+type alias Seconds =
+    Int
 
 
 type alias Blind =
@@ -55,8 +54,7 @@ type Chip
 
 init : Model
 init =
-    { pageName = "Game"
-    , chips = [ Chip White 50, Chip Red 100, Chip Blue 200, Chip Green 250, Chip Black 500 ]
+    { chips = [ Chip White 50, Chip Red 100, Chip Blue 200, Chip Green 250, Chip Black 500 ]
     , blinds =
         [ { smallBlind = 100, bigBlind = 200 }
         , { smallBlind = 200, bigBlind = 400 }
@@ -220,17 +218,25 @@ view model theme =
     in
     Element.el
         [ Element.width Element.fill
+        , Element.height Element.fill
         , Element.padding 20
         , Font.color colors.text
         ]
         (Element.column
             [ Element.width Element.fill
+            , Element.height Element.fill
             , Element.spacing 20
             ]
-            [ Element.text ("Game Content - " ++ model.pageName)
+            [ Element.column
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.spacing 20
+                ]
+                [ Element.text "Game Content"
+                , viewBlindsSection model colors
+                , viewBlindControls model colors
+                ]
             , viewChips model.chips colors
-            , viewBlindsSection model colors
-            , viewBlindControls model colors
             ]
         )
 
@@ -403,12 +409,16 @@ viewBlindControls model colors =
 
 viewChips : List Chip -> Theme.ColorPalette -> Element.Element Msg
 viewChips chips colors =
-    Element.row
+    Element.el
         [ Element.width Element.fill
-        , Element.spacing 20
         , Element.centerX
         ]
-        (List.map (\chip -> viewChip chip colors) chips)
+        (Element.row
+            [ Element.spacing 20
+            , Element.centerX
+            ]
+            (List.map (\chip -> viewChip chip colors) chips)
+        )
 
 
 viewChip : Chip -> Theme.ColorPalette -> Element.Element Msg
