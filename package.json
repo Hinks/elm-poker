@@ -4,8 +4,9 @@
     "description": "",
     "main": "",
     "scripts": {
-        "watch": "rm -rf dist && mkdir -p dist && cp index.html dist/ && npx elm-watch hot",
-        "build": "rm -rf dist && mkdir -p dist && cp index.html dist/ && npx elm-watch make --optimize"
+        "prepare-dist": "rm -rf dist && mkdir -p dist && cp index.html dist/",
+        "watch": "npm run prepare-dist && npx elm-watch hot",
+        "build": "npm run prepare-dist && npx elm-watch make --optimize"
     },
     "author": "",
     "license": "ISC",
