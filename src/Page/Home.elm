@@ -1,6 +1,7 @@
 module Page.Home exposing (Model, Msg, init, update, view)
 
 import Element exposing (rgb255)
+import Element.Font as Font
 import Icons
 import Theme exposing (Theme)
 
@@ -41,8 +42,12 @@ update msg model =
 
 view : Model -> Theme -> Element.Element Msg
 view model theme =
+    let
+        colors =
+            Theme.getColors theme
+    in
     Element.column
-        []
+        [ Font.color colors.text ]
         [ Element.text ("Home Content - " ++ model.pageName)
         , Element.html (Icons.pokerChip { size = 256, color = rgb255 0 170 0, spinSpeed = 3 })
         ]
