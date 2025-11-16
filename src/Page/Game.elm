@@ -2,6 +2,7 @@ module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
 
 import Element
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
@@ -232,8 +233,7 @@ view model theme =
                 , Element.height Element.fill
                 , Element.spacing 20
                 ]
-                [ Element.text "Game Content"
-                , viewBlindsSection model colors
+                [ viewBlindsSection model colors
                 , viewBlindControls model colors
                 ]
             , viewChips model.chips colors
@@ -242,107 +242,109 @@ view model theme =
 
 
 viewBlindsSection : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBlindsSection model _ =
+viewBlindsSection model colors =
     let
         currentBlind =
             getCurrentBlind model
 
         upcomingBlinds =
             getUpcomingBlinds model
-    in
-    Element.column
-        [ Element.width Element.fill
-        , Element.spacing 15
-        ]
-        [ Element.el
-            [ Font.size 18
-            , Font.bold
-            ]
-            (Element.text "Current Blinds:")
-        , case currentBlind of
-            Just blind ->
-                Element.column
-                    [ Element.spacing 5
-                    ]
-                    [ Element.row
-                        [ Element.spacing 10 ]
-                        [ Element.text "Small Blind:"
-                        , Element.text (formatBlindValue blind.smallBlind)
-                        ]
-                    , Element.row
-                        [ Element.spacing 10 ]
-                        [ Element.text "Big Blind:"
-                        , Element.text (formatBlindValue blind.bigBlind)
-                        ]
-                    ]
-
-            Nothing ->
-                Element.text "No blind level"
-        , Element.el
-            [ Font.size 18
-            , Font.bold
-            , Element.paddingEach { top = 10, bottom = 0, left = 0, right = 0 }
-            ]
-            (Element.text "Next Blind Level in:")
-        , Element.el
-            [ Font.size 16 ]
-            (Element.text ("[ " ++ formatTime model.remainingTime ++ " remaining ]"))
-        , Element.el
-            [ Font.size 18
-            , Font.bold
-            , Element.paddingEach { top = 10, bottom = 0, left = 0, right = 0 }
-            ]
-            (Element.text "Upcoming Levels:")
-        , Element.column
-            [ Element.spacing 5 ]
-            (List.indexedMap
-                (\idx blind ->
-                    Element.text
-                        ("Level "
-                            ++ String.fromInt (model.currentBlindIndex + idx + 2)
-                            ++ ":  "
-                            ++ formatBlindValue blind.smallBlind
-                            ++ " / "
-                            ++ formatBlindValue blind.bigBlind
-                        )
-                )
-                upcomingBlinds
-            )
-        ]
-
-
-viewBlindControls : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBlindControls model colors =
-    let
-        startPauseText =
-            case model.timerState of
-                Running ->
-                    "Pause"
-
-                Paused ->
-                    "Start"
-
-                Stopped ->
-                    "Start"
 
         isInputDisabled =
             model.timerState /= Stopped
     in
     Element.column
         [ Element.width Element.fill
-        , Element.spacing 15
+        , Element.spacing 20
+        , Element.padding 20
+        , Background.color colors.surface
+        , Border.width 1
+        , Border.color colors.border
         ]
-        [ Element.row
-            [ Element.spacing 10
-            , Element.width Element.fill
+        [ -- CURRENT BLINDS header
+          Element.el
+            [ Element.width Element.fill
+            , Font.size 20
+            , Font.bold
+            , Element.centerX
+            ]
+            (Element.text "CURRENT BLINDS")
+        , -- Small and Big Blind boxes
+          case currentBlind of
+            Just blind ->
+                Element.row
+                    [ Element.width Element.fill
+                    , Element.spacing 20
+                    , Element.centerX
+                    ]
+                    [ viewBlindBox "SMALL" (formatBlindValue blind.smallBlind) colors
+                    , viewBlindBox "BIG" (formatBlindValue blind.bigBlind) colors
+                    ]
+
+            Nothing ->
+                Element.text "No blind level"
+        , -- Next Blind level and Upcoming Levels row
+          Element.row
+            [ Element.width Element.fill
+            , Element.spacing 40
+            ]
+            [ -- Left side: Next Blind level in
+              Element.column
+                [ Element.width (Element.fillPortion 1)
+                , Element.spacing 10
+                ]
+                [ Element.el
+                    [ Font.size 16
+                    , Font.bold
+                    ]
+                    (Element.text "Next Blind level in:")
+                , Element.el
+                    [ Font.size 16
+                    , Font.family [ Font.monospace ]
+                    ]
+                    (Element.text ("[ " ++ formatTime model.remainingTime ++ " remaining ]"))
+                ]
+            , -- Right side: Upcoming Levels
+              Element.column
+                [ Element.width (Element.fillPortion 1)
+                , Element.spacing 10
+                ]
+                [ Element.el
+                    [ Font.size 16
+                    , Font.bold
+                    ]
+                    (Element.text "Upcoming Levels:")
+                , Element.column
+                    [ Element.spacing 5 ]
+                    (List.indexedMap
+                        (\idx blind ->
+                            Element.text
+                                ("Level "
+                                    ++ String.fromInt (model.currentBlindIndex + idx + 2)
+                                    ++ ":  "
+                                    ++ formatBlindValue blind.smallBlind
+                                    ++ " / "
+                                    ++ formatBlindValue blind.bigBlind
+                                )
+                        )
+                        upcomingBlinds
+                    )
+                ]
+            ]
+        , -- Blind Duration input
+          Element.row
+            [ Element.width Element.fill
+            , Element.spacing 10
+            , Element.centerX
             ]
             [ Element.el
-                [ Element.width (Element.px 150) ]
+                [ Font.size 16
+                ]
                 (Element.text "Blind Duration:")
             , Input.text
-                [ Element.width (Element.px 100)
+                [ Element.width (Element.px 80)
                 , Element.padding 8
-                , Background.color colors.surface
+                , Background.color colors.background
                 , Font.color colors.text
                 , Element.htmlAttribute
                     (if isInputDisabled then
@@ -359,51 +361,94 @@ viewBlindControls model colors =
                 }
             , Element.text "(min)"
             ]
-        , Element.row
-            [ Element.spacing 10 ]
-            [ Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                ]
-                { onPress = Just StartPauseTimer
-                , label = Element.text startPauseText
-                }
-            , Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                ]
-                { onPress = Just ResetTimer
-                , label = Element.text "Reset"
-                }
-            , Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                ]
-                { onPress =
-                    if model.currentBlindIndex > 0 then
-                        Just BlindIndexDown
+        ]
 
-                    else
-                        Nothing
-                , label = Element.text "↓"
-                }
-            , Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                ]
-                { onPress =
-                    if model.currentBlindIndex < List.length model.blinds - 1 then
-                        Just BlindIndexUp
 
-                    else
-                        Nothing
-                , label = Element.text "↑"
-                }
+viewBlindBox : String -> String -> Theme.ColorPalette -> Element.Element Msg
+viewBlindBox label value colors =
+    Element.column
+        [ Element.padding 20
+        , Background.color colors.background
+        , Border.width 2
+        , Border.color colors.border
+        , Element.width (Element.fillPortion 1)
+        , Element.spacing 10
+        ]
+        [ Element.el
+            [ Font.size 14
+            , Font.bold
+            , Element.centerX
             ]
+            (Element.text (label ++ ":"))
+        , Element.el
+            [ Font.size 18
+            , Font.bold
+            , Element.centerX
+            ]
+            (Element.text value)
+        ]
+
+
+viewBlindControls : Model -> Theme.ColorPalette -> Element.Element Msg
+viewBlindControls model colors =
+    let
+        startPauseText =
+            case model.timerState of
+                Running ->
+                    "Pause"
+
+                Paused ->
+                    "Start"
+
+                Stopped ->
+                    "Start"
+    in
+    Element.row
+        [ Element.spacing 10
+        , Element.centerX
+        ]
+        [ Input.button
+            [ Element.padding 10
+            , Background.color colors.primary
+            , Font.color colors.text
+            ]
+            { onPress = Just StartPauseTimer
+            , label = Element.text startPauseText
+            }
+        , Input.button
+            [ Element.padding 10
+            , Background.color colors.primary
+            , Font.color colors.text
+            ]
+            { onPress = Just ResetTimer
+            , label = Element.text "Reset"
+            }
+        , Input.button
+            [ Element.padding 10
+            , Background.color colors.primary
+            , Font.color colors.text
+            ]
+            { onPress =
+                if model.currentBlindIndex > 0 then
+                    Just BlindIndexDown
+
+                else
+                    Nothing
+            , label = Element.text "↓"
+            }
+        , Input.button
+            [ Element.padding 10
+            , Background.color colors.primary
+            , Font.color colors.text
+            ]
+            { onPress =
+                if model.currentBlindIndex < List.length model.blinds - 1 then
+                    Just BlindIndexUp
+
+                else
+                    Nothing
+            , label = Element.text "↑"
+            }
         ]
 
 
