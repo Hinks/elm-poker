@@ -1,0 +1,182 @@
+---
+description: How to layer elements on top of SVG icons using Element.inFront in elm-ui
+globs: **/*.elm
+alwaysApply: true
+---
+
+# Layering Elements Over SVG Icons in elm-ui
+
+This rule documents how to stack elements on top of SVG icons (or any background element) using `Element.inFront` in `mdgriffith/elm-ui`.
+
+## Core Pattern
+
+Use `Element.inFront` to layer elements on top of a base element (like an SVG icon). The base element becomes the background, and elements added via `inFront` are rendered on top.
+
+## Basic Structure
+
+```elm
+Element.el
+    [ Element.width (Element.px width)
+    , Element.height (Element.px height)
+    , Element.inFront
+        (Element.el
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , Element.centerX
+            , Element.centerY
+            ]
+            (-- elements to layer on top
+            )
+        )
+    ]
+    baseElement  -- SVG icon or background element
+```
+
+## Key Principles
+
+1. **Base Element**: The SVG icon (or background) is the content of the outer `Element.el`
+2. **Container Sizing**: The outer `Element.el` should have explicit width and height matching the base element size
+3. **inFront Elements**: Elements passed to `Element.inFront` are layered on top
+4. **Positioning**: Use `Element.centerX` and `Element.centerY` to center layered elements over the base
+
+## Complete Example: Table with Chips
+
+```elm
+viewTableWithChips : List Chip -> Theme.ColorPalette -> Element.Element Msg
+viewTableWithChips chips colors =
+    let
+        tableSize =
+            800.0
+    in
+    Element.el
+        [ Element.width (Element.px (round tableSize))
+        , Element.height (Element.px (round tableSize))
+        , Element.centerX
+        , Element.inFront
+            (Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                ]
+                (Element.row
+                    [ Element.spacing 20
+                    , Element.centerX
+                    , Element.centerY
+                    ]
+                    (List.map (\chip -> viewChip chip colors) chips)
+                )
+            )
+        ]
+        viewPokerTable  -- SVG icon as base element
+```
+
+## SVG Icon Function
+
+The SVG icon function should return a simple `Element.Element`:
+
+```elm
+viewPokerTable : Element.Element Msg
+viewPokerTable =
+    let
+        tableColor =
+            Element.rgb255 10 143 60
+
+        tableSize =
+            800.0
+    in
+    Element.html
+        (Icons.pokerTable
+            { size = tableSize
+            , color = tableColor
+            }
+        )
+```
+
+## Multiple Layered Elements
+
+You can use multiple `inFront` attributes to layer multiple elements:
+
+```elm
+Element.el
+    [ Element.width (Element.px 800)
+    , Element.height (Element.px 500)
+    , Element.inFront (playerSeat "Alice" (50, 10))
+    , Element.inFront (playerSeat "Bob" (90, 50))
+    , Element.inFront (playerSeat "Cara" (50, 90))
+    ]
+    svgTable
+```
+
+## Positioning Options
+
+For layered elements, you can use:
+
+-   `Element.centerX` / `Element.centerY` - Center horizontally/vertically
+-   `Element.alignLeft` / `Element.alignRight` - Align to edges
+-   `Element.alignTop` / `Element.alignBottom` - Align to top/bottom
+-   `Element.moveRight` / `Element.moveDown` - Move by specific amounts (for percentage-like placement)
+
+## Common Patterns
+
+### Centered Content Over Icon
+
+```elm
+Element.el
+    [ Element.width (Element.px iconSize)
+    , Element.height (Element.px iconSize)
+    , Element.inFront
+        (Element.el
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , Element.centerX
+            , Element.centerY
+            ]
+            content
+        )
+    ]
+    iconElement
+```
+
+### Multiple Items in a Row Over Icon
+
+```elm
+Element.el
+    [ Element.width (Element.px iconSize)
+    , Element.height (Element.px iconSize)
+    , Element.inFront
+        (Element.el
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            ]
+            (Element.row
+                [ Element.spacing 20
+                , Element.centerX
+                , Element.centerY
+                ]
+                items
+            )
+        )
+    ]
+    iconElement
+```
+
+## Important Notes
+
+-   **Do NOT use `Element.behindContent`** - This places elements behind, not in front
+-   **Container must match base element size** - Set explicit width/height on the outer `Element.el`
+-   **inFront elements are absolutely positioned** - They don't affect the layout flow
+-   **Base element is the content** - Pass the SVG/icon as the content of the outer `Element.el`, not as an attribute
+
+## When to Use
+
+-   Placing UI elements (buttons, chips, text) over background images/icons
+-   Creating interactive overlays on SVG graphics
+-   Layering multiple elements at specific positions over a base graphic
+-   Building game boards or table layouts with positioned elements
+
+## Benefits
+
+-   Clean separation between background and foreground elements
+-   Precise control over element positioning
+-   No need for absolute positioning CSS
+-   Type-safe layering in Elm
+-   Works seamlessly with elm-ui's layout system
