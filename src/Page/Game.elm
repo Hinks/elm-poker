@@ -230,6 +230,7 @@ view model theme =
             ]
             [ viewBlindsSection model colors
             , viewChips model.chips colors
+            , viewPokerTable
             ]
         )
 
@@ -512,6 +513,29 @@ viewChip chip colors =
             ]
             (Element.text (String.fromInt value))
         ]
+
+
+viewPokerTable : Element.Element Msg
+viewPokerTable =
+    let
+        tableColor =
+            Element.rgb255 10 143 60
+
+        tableSize =
+            800.0
+    in
+    Element.el
+        [ Element.width Element.fill
+        , Element.centerX
+        , Element.padding 20
+        ]
+        (Element.html
+            (Icons.pokerTable
+                { size = tableSize
+                , color = tableColor
+                }
+            )
+        )
 
 
 
