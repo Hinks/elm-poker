@@ -409,6 +409,9 @@ viewCenterBlinds model colors =
 
         timerArmColor =
             colors.primary
+
+        timerDurationMinutes =
+            toFloat model.blindDuration / 60.0
     in
     case currentBlind of
         Just blind ->
@@ -436,6 +439,7 @@ viewCenterBlinds model colors =
                                 , backgroundColor = timerFaceColor
                                 , armColor = timerArmColor
                                 , progress = progress
+                                , duration = timerDurationMinutes
                                 }
                             )
                         , Element.el

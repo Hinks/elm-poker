@@ -4,7 +4,7 @@ import Element exposing (Color)
 import Html
 import Html.Attributes
 import Svg
-import Svg.Attributes exposing (cx, cy, d, fill, r, stroke, strokeLinecap, strokeWidth, viewBox, x1, x2, y1, y2)
+import Svg.Attributes exposing (cx, cy, d, dominantBaseline, fill, fontSize, r, stroke, strokeLinecap, strokeWidth, textAnchor, viewBox, x, x1, x2, y, y1, y2)
 
 
 type alias CircleOptions =
@@ -37,6 +37,7 @@ type alias TimerOptions =
     , backgroundColor : Color
     , armColor : Color
     , progress : Float
+    , duration : Float
     }
 
 
@@ -218,6 +219,9 @@ timer options =
         armLength =
             90.0
 
+        markerRadius =
+            100.0
+
         -- Calculate angle: progress 1.0 (full time) = top (12 o'clock), progress 0.0 (no time) = bottom (6 o'clock)
         -- Angle in radians: 2 * pi * (0.75 - progress) gives us clockwise rotation from top
         angle =
@@ -228,6 +232,44 @@ timer options =
 
         armY =
             centerY + armLength * sin angle
+
+        -- Calculate marker values based on duration
+        marker1 =
+            options.duration / 4
+
+        marker2 =
+            options.duration / 2
+
+        marker3 =
+            3 * options.duration / 4
+
+        marker4 =
+            options.duration
+
+        -- Marker positions: 3 o'clock (right), 6 o'clock (bottom), 9 o'clock (left), 12 o'clock (top)
+        marker3X =
+            centerX + markerRadius
+
+        marker3Y =
+            centerY
+
+        marker6X =
+            centerX
+
+        marker6Y =
+            centerY + markerRadius
+
+        marker9X =
+            centerX - markerRadius
+
+        marker9Y =
+            centerY
+
+        marker12X =
+            centerX
+
+        marker12Y =
+            centerY - markerRadius
     in
     Svg.svg
         [ Svg.Attributes.width sizeStr
@@ -242,6 +284,50 @@ timer options =
             , fill backgroundColorStr
             ]
             []
+
+        -- Marker at 3 o'clock (right)
+        , Svg.text_
+            [ x (String.fromFloat marker3X)
+            , y (String.fromFloat marker3Y)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize "24"
+            , fill armColorStr
+            ]
+            [ Svg.text (String.fromInt (round marker1)) ]
+
+        -- Marker at 6 o'clock (bottom)
+        , Svg.text_
+            [ x (String.fromFloat marker6X)
+            , y (String.fromFloat marker6Y)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize "24"
+            , fill armColorStr
+            ]
+            [ Svg.text (String.fromInt (round marker2)) ]
+
+        -- Marker at 9 o'clock (left)
+        , Svg.text_
+            [ x (String.fromFloat marker9X)
+            , y (String.fromFloat marker9Y)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize "24"
+            , fill armColorStr
+            ]
+            [ Svg.text (String.fromInt (round marker3)) ]
+
+        -- Marker at 12 o'clock (top)
+        , Svg.text_
+            [ x (String.fromFloat marker12X)
+            , y (String.fromFloat marker12Y)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize "24"
+            , fill armColorStr
+            ]
+            [ Svg.text (String.fromInt (round marker4)) ]
         , Svg.line
             [ x1 (String.fromFloat centerX)
             , y1 (String.fromFloat centerY)
