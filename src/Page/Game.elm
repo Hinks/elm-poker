@@ -493,15 +493,7 @@ viewBlindBox label value =
             , Font.bold
             , Element.centerX
             ]
-            (Element.text (label ++ ":"))
-        , Element.el
-            [ Font.size 18
-            , Font.bold
-            , Font.family [ Font.monospace ]
-            , Element.centerX
-            , Element.width (Element.px 120)
-            ]
-            (Element.text value)
+            (Element.text (label ++ ": " ++ value))
         ]
 
 
