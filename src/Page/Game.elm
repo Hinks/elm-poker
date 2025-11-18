@@ -215,6 +215,9 @@ view model theme =
     let
         colors =
             Theme.getColors theme
+
+        tableSize =
+            800.0
     in
     Element.el
         [ Element.width Element.fill
@@ -227,8 +230,19 @@ view model theme =
             , Element.height Element.fill
             , Element.spacing 20
             ]
-            [ viewBlindsSection model colors
-            , viewPokerTable
+            [ Element.el
+                [ Element.width (Element.px (round tableSize))
+                , Element.height (Element.px (round tableSize))
+                , Element.centerX
+                , Element.inFront
+                    (Element.el
+                        [ Element.width Element.fill
+                        , Element.alignTop
+                        ]
+                        (viewBlindsSection model colors)
+                    )
+                ]
+                viewPokerTable
             , viewChips model.chips colors
             ]
         )
@@ -556,22 +570,11 @@ viewPokerTable =
         tableSize =
             800.0
     in
-    Element.el
-        [ Element.width Element.fill
-        , Element.centerX
-        , Element.padding 20
-        ]
-        (Element.el
-            [ Element.width Element.shrink
-            , Element.centerX
-            ]
-            (Element.html
-                (Icons.pokerTable
-                    { size = tableSize
-                    , color = tableColor
-                    }
-                )
-            )
+    Element.html
+        (Icons.pokerTable
+            { size = tableSize
+            , color = tableColor
+            }
         )
 
 
