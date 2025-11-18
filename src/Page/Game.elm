@@ -418,17 +418,18 @@ viewBlindsSection model colors =
             , Element.height Element.fill
             ]
             (viewCenterBlinds model)
+        , Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            , Element.alignRight
+            ]
+            (viewManualBlindsAdvance model colors)
         , -- Right column: Upcoming levels
           Element.el
             [ Element.width (Element.fillPortion 1)
             , Element.height Element.fill
             ]
             (viewRightLevels model)
-        , Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            ]
-            (viewManualBlindsAdvance model colors)
         ]
 
 
@@ -436,11 +437,11 @@ viewManualBlindsAdvance : Model -> Theme.ColorPalette -> Element.Element Msg
 viewManualBlindsAdvance model colors =
     Element.column
         [ Element.spacing 10
-        , Element.centerX
+        , Element.alignRight
         ]
         [ Element.row
             [ Element.spacing 10
-            , Element.centerX
+            , Element.alignRight
             ]
             [ Input.button
                 [ Element.padding 10
