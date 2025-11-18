@@ -353,8 +353,8 @@ viewCenterBlinds model =
             Element.text "No blind level"
 
 
-viewRightLevels : Model -> Theme.ColorPalette -> Element.Element Msg
-viewRightLevels model colors =
+viewRightLevels : Model -> Element.Element Msg
+viewRightLevels model =
     let
         upcomingBlinds =
             getUpcomingBlinds model
@@ -389,46 +389,6 @@ viewRightLevels model colors =
                     upcomingBlinds
                 )
             ]
-        , Element.column
-            [ Element.spacing 10
-            , Element.centerX
-            ]
-            [ Element.el
-                [ Font.size 14
-                ]
-                (Element.text "Manual adjust:")
-            , Element.row
-                [ Element.spacing 10
-                , Element.centerX
-                ]
-                [ Input.button
-                    [ Element.padding 10
-                    , Background.color colors.primary
-                    , Font.color colors.text
-                    ]
-                    { onPress =
-                        if model.currentBlindIndex < List.length model.blinds - 1 then
-                            Just BlindIndexUp
-
-                        else
-                            Nothing
-                    , label = Element.text "↑"
-                    }
-                , Input.button
-                    [ Element.padding 10
-                    , Background.color colors.primary
-                    , Font.color colors.text
-                    ]
-                    { onPress =
-                        if model.currentBlindIndex > 0 then
-                            Just BlindIndexDown
-
-                        else
-                            Nothing
-                    , label = Element.text "↓"
-                    }
-                ]
-            ]
         ]
 
 
@@ -446,18 +406,69 @@ viewBlindsSection model colors =
             , Element.height Element.fill
             ]
             (viewLeftControls model colors)
+        , -- Spacer to center the middle column
+          Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            ]
+            Element.none
         , -- Center column: Current blinds and timer
           Element.el
             [ Element.width (Element.fillPortion 1)
             , Element.height Element.fill
             ]
             (viewCenterBlinds model)
-        , -- Right column: Upcoming levels and manual adjust
+        , -- Right column: Upcoming levels
           Element.el
             [ Element.width (Element.fillPortion 1)
             , Element.height Element.fill
             ]
-            (viewRightLevels model colors)
+            (viewRightLevels model)
+        , Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            ]
+            (viewManualBlindsAdvance model colors)
+        ]
+
+
+viewManualBlindsAdvance : Model -> Theme.ColorPalette -> Element.Element Msg
+viewManualBlindsAdvance model colors =
+    Element.column
+        [ Element.spacing 10
+        , Element.centerX
+        ]
+        [ Element.row
+            [ Element.spacing 10
+            , Element.centerX
+            ]
+            [ Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress =
+                    if model.currentBlindIndex < List.length model.blinds - 1 then
+                        Just BlindIndexUp
+
+                    else
+                        Nothing
+                , label = Element.text "↑"
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress =
+                    if model.currentBlindIndex > 0 then
+                        Just BlindIndexDown
+
+                    else
+                        Nothing
+                , label = Element.text "↓"
+                }
+            ]
         ]
 
 
