@@ -234,6 +234,47 @@ view model theme =
         )
 
 
+viewBlindsSection : Model -> Theme.ColorPalette -> Element.Element Msg
+viewBlindsSection model colors =
+    Element.row
+        [ Element.width Element.fill
+        , Element.spacing 20
+        , Element.padding 20
+        , Element.alignTop
+        ]
+        [ -- Left column: Controls
+          Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            ]
+            (viewLeftControls model colors)
+        , -- Spacer to center the middle column
+          Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            ]
+            Element.none
+        , -- Center column: Current blinds and timer
+          Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            ]
+            (viewCenterBlinds model)
+        , Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            , Element.alignRight
+            ]
+            (viewManualBlindsAdvance model colors)
+        , -- Right column: Upcoming levels
+          Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            ]
+            (viewRightLevels model)
+        ]
+
+
 viewLeftControls : Model -> Theme.ColorPalette -> Element.Element Msg
 viewLeftControls model colors =
     let
@@ -244,7 +285,40 @@ viewLeftControls model colors =
         [ Element.width Element.fill
         , Element.spacing 20
         ]
-        [ Element.column
+        [ Element.row
+            [ Element.spacing 10
+            , Element.centerX
+            , Element.alignLeft
+            ]
+            [ Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress = Just StartPauseTimer
+                , label =
+                    Element.text
+                        (case model.timerState of
+                            Running ->
+                                "Pause"
+
+                            Paused ->
+                                "Start"
+
+                            Stopped ->
+                                "Start"
+                        )
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress = Just ResetTimer
+                , label = Element.text "Reset"
+                }
+            ]
+        , Element.column
             [ Element.spacing 10
             , Element.width Element.fill
             ]
@@ -276,38 +350,6 @@ viewLeftControls model colors =
                     }
                 , Element.text "(min)"
                 ]
-            ]
-        , Element.row
-            [ Element.spacing 10
-            , Element.centerX
-            ]
-            [ Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                ]
-                { onPress = Just StartPauseTimer
-                , label =
-                    Element.text
-                        (case model.timerState of
-                            Running ->
-                                "Pause"
-
-                            Paused ->
-                                "Start"
-
-                            Stopped ->
-                                "Start"
-                        )
-                }
-            , Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                ]
-                { onPress = Just ResetTimer
-                , label = Element.text "Reset"
-                }
             ]
         ]
 
@@ -377,59 +419,25 @@ viewRightLevels model =
                 [ Element.spacing 5 ]
                 (List.indexedMap
                     (\idx upcomingBlind ->
-                        Element.text
-                            ("Level "
-                                ++ String.fromInt (model.currentBlindIndex + idx + 2)
-                                ++ ":  "
-                                ++ formatBlindValue upcomingBlind.smallBlind
-                                ++ " / "
-                                ++ formatBlindValue upcomingBlind.bigBlind
+                        Element.el
+                            [ Font.size 18
+                            , Font.bold
+                            , Font.family [ Font.monospace ]
+                            , Element.width (Element.px 300)
+                            ]
+                            (Element.text
+                                ("Level "
+                                    ++ String.fromInt (model.currentBlindIndex + idx + 2)
+                                    ++ ":  "
+                                    ++ formatBlindValue upcomingBlind.smallBlind
+                                    ++ " / "
+                                    ++ formatBlindValue upcomingBlind.bigBlind
+                                )
                             )
                     )
                     upcomingBlinds
                 )
             ]
-        ]
-
-
-viewBlindsSection : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBlindsSection model colors =
-    Element.row
-        [ Element.width Element.fill
-        , Element.spacing 20
-        , Element.padding 20
-        , Element.alignTop
-        ]
-        [ -- Left column: Controls
-          Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            ]
-            (viewLeftControls model colors)
-        , -- Spacer to center the middle column
-          Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            ]
-            Element.none
-        , -- Center column: Current blinds and timer
-          Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            ]
-            (viewCenterBlinds model)
-        , Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            , Element.alignRight
-            ]
-            (viewManualBlindsAdvance model colors)
-        , -- Right column: Upcoming levels
-          Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            ]
-            (viewRightLevels model)
         ]
 
 
@@ -489,7 +497,9 @@ viewBlindBox label value =
         , Element.el
             [ Font.size 18
             , Font.bold
+            , Font.family [ Font.monospace ]
             , Element.centerX
+            , Element.width (Element.px 120)
             ]
             (Element.text value)
         ]
