@@ -224,6 +224,13 @@ view model theme =
         , Element.height Element.fill
         , Element.padding 20
         , Font.color colors.text
+        , Element.inFront
+            (Element.el
+                [ Element.width Element.fill
+                , Element.alignTop
+                ]
+                (viewBlindsSection model colors)
+            )
         ]
         (Element.column
             [ Element.width Element.fill
@@ -234,13 +241,6 @@ view model theme =
                 [ Element.width (Element.px (round tableSize))
                 , Element.height (Element.px (round tableSize))
                 , Element.centerX
-                , Element.inFront
-                    (Element.el
-                        [ Element.width Element.fill
-                        , Element.alignTop
-                        ]
-                        (viewBlindsSection model colors)
-                    )
                 , Element.inFront
                     (Element.el
                         [ Element.width Element.fill
