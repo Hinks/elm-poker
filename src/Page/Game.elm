@@ -241,9 +241,15 @@ view model theme =
                         ]
                         (viewBlindsSection model colors)
                     )
+                , Element.inFront
+                    (Element.el
+                        [ Element.width Element.fill
+                        , Element.alignBottom
+                        ]
+                        (viewChips model.chips colors)
+                    )
                 ]
                 viewPokerTable
-            , viewChips model.chips colors
             ]
         )
 
