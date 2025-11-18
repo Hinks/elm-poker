@@ -266,32 +266,38 @@ viewBlindsSection model colors =
           Element.el
             [ Element.width (Element.fillPortion 1)
             , Element.height Element.fill
+            , Element.clip
             ]
             (viewLeftControls model colors)
-        , -- Spacer to center the middle column
-          Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            ]
-            Element.none
         , -- Center column: Current blinds and timer
           Element.el
             [ Element.width (Element.fillPortion 1)
             , Element.height Element.fill
+            , Element.clip
             ]
             (viewCenterBlinds model)
-        , Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            , Element.alignRight
-            ]
-            (viewManualBlindsAdvance model colors)
-        , -- Right column: Upcoming levels
+        , -- Right section: Manual blinds advance and upcoming levels
           Element.el
             [ Element.width (Element.fillPortion 1)
             , Element.height Element.fill
+            , Element.clip
             ]
-            (viewRightLevels model)
+            (Element.row
+                [ Element.width Element.fill
+                , Element.spacing 20
+                ]
+                [ Element.el
+                    [ Element.width (Element.fillPortion 1)
+                    , Element.height Element.fill
+                    ]
+                    (viewManualBlindsAdvance model colors)
+                , Element.el
+                    [ Element.width (Element.fillPortion 1)
+                    , Element.height Element.fill
+                    ]
+                    (viewRightLevels model)
+                ]
+            )
         ]
 
 
@@ -342,9 +348,8 @@ viewLeftControls model colors =
             [ Element.spacing 10
             , Element.width Element.fill
             ]
-            [ Element.row
-                [ Element.spacing 10
-                , Element.centerX
+            [ Element.column
+                [ Element.spacing 5
                 ]
                 [ Element.el
                     [ Font.size 16
@@ -368,7 +373,6 @@ viewLeftControls model colors =
                     , placeholder = Nothing
                     , label = Input.labelHidden "Blind duration in minutes"
                     }
-                , Element.text "(min)"
                 ]
             ]
         ]
@@ -443,7 +447,7 @@ viewRightLevels model =
                             [ Font.size 18
                             , Font.bold
                             , Font.family [ Font.monospace ]
-                            , Element.width (Element.px 300)
+                            , Element.width Element.fill
                             ]
                             (Element.text
                                 ("Level "
