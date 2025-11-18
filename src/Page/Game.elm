@@ -228,6 +228,7 @@ view model theme =
             (Element.el
                 [ Element.width Element.fill
                 , Element.alignTop
+                , Element.paddingEach { top = 50, right = 0, bottom = 0, left = 0 }
                 ]
                 (viewBlindsSection model colors)
             )
