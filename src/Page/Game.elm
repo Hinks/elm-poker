@@ -285,7 +285,7 @@ viewBlindsSection model colors =
             , Element.height Element.fill
             , Element.clip
             ]
-            (viewCenterBlinds model)
+            (viewCenterBlinds model colors)
         , -- Right section: Manual blinds advance and upcoming levels
           Element.el
             [ Element.width (Element.fillPortion 1)
@@ -388,11 +388,27 @@ viewLeftControls model colors =
         ]
 
 
-viewCenterBlinds : Model -> Element.Element Msg
-viewCenterBlinds model =
+viewCenterBlinds : Model -> Theme.ColorPalette -> Element.Element Msg
+viewCenterBlinds model colors =
     let
         currentBlind =
             getCurrentBlind model
+
+        progress =
+            if model.blindDuration > 0 then
+                toFloat model.remainingTime / toFloat model.blindDuration
+
+            else
+                0.0
+
+        timerSize =
+            200.0
+
+        timerFaceColor =
+            colors.surface
+
+        timerArmColor =
+            colors.primary
     in
     case currentBlind of
         Just blind ->
@@ -410,11 +426,24 @@ viewCenterBlinds model =
                         , Font.bold
                         ]
                         (Element.text "Next blind in:")
-                    , Element.el
-                        [ Font.size 16
-                        , Font.family [ Font.monospace ]
+                    , Element.row
+                        [ Element.spacing 15
+                        , Element.centerX
                         ]
-                        (Element.text ("[ " ++ formatTime model.remainingTime ++ " ]"))
+                        [ Element.html
+                            (Icons.timer
+                                { size = timerSize
+                                , backgroundColor = timerFaceColor
+                                , armColor = timerArmColor
+                                , progress = progress
+                                }
+                            )
+                        , Element.el
+                            [ Font.size 16
+                            , Font.family [ Font.monospace ]
+                            ]
+                            (Element.text ("[ " ++ formatTime model.remainingTime ++ " ]"))
+                        ]
                     ]
                 , Element.row
                     [ Element.width Element.fill
