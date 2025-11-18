@@ -608,8 +608,7 @@ viewPriceMoney amount colors =
             Element.rgb255 255 215 0
     in
     Element.row
-        [ Element.spacing 10
-        , Element.centerX
+        [ Element.centerX
         , Element.centerY
         ]
         [ Element.el
@@ -617,6 +616,7 @@ viewPriceMoney amount colors =
             , Font.bold
             , Font.color colors.text
             , Font.family [ Font.monospace ]
+            , Element.paddingEach { top = 0, right = 20, bottom = 0, left = 0 }
             ]
             (Element.text (String.fromInt amount))
         , Element.html
