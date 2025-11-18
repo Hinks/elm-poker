@@ -245,6 +245,15 @@ view model theme =
                 , Element.inFront
                     (Element.el
                         [ Element.width Element.fill
+                        , Element.height Element.fill
+                        , Element.centerX
+                        , Element.centerY
+                        ]
+                        (viewPriceMoney 1500 colors)
+                    )
+                , Element.inFront
+                    (Element.el
+                        [ Element.width Element.fill
                         , Element.alignBottom
                         ]
                         (viewChips model.chips colors)
@@ -587,6 +596,36 @@ viewPokerTable =
             , color = tableColor
             }
         )
+
+
+viewPriceMoney : Int -> Theme.ColorPalette -> Element.Element Msg
+viewPriceMoney amount colors =
+    let
+        dollarSize =
+            60.0
+
+        dollarColor =
+            Element.rgb255 255 215 0
+    in
+    Element.row
+        [ Element.spacing 10
+        , Element.centerX
+        , Element.centerY
+        ]
+        [ Element.el
+            [ Font.size 48
+            , Font.bold
+            , Font.color colors.text
+            , Font.family [ Font.monospace ]
+            ]
+            (Element.text (String.fromInt amount))
+        , Element.html
+            (Icons.dollar
+                { size = dollarSize
+                , color = dollarColor
+                }
+            )
+        ]
 
 
 
