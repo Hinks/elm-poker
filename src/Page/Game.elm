@@ -548,7 +548,7 @@ viewChip chip colors =
             chipColorToElementColor chipColor
 
         chipSize =
-            120.0
+            150.0
 
         spinSpeed =
             3.0
