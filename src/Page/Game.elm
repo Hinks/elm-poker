@@ -339,18 +339,19 @@ viewLeftControls model colors =
             toFloat model.blindDuration / 60.0
     in
     Element.column
-        [ Element.width Element.fill
+        [ Element.explain Debug.todo
+        , Element.width Element.fill
         , Element.spacing 20
         ]
         [ Element.row
             [ Element.spacing 10
-            , Element.centerX
-            , Element.alignLeft
+            , Element.width Element.fill
             ]
             [ Input.button
                 [ Element.padding 10
                 , Background.color colors.primary
                 , Font.color colors.text
+                , Element.alignTop
                 ]
                 { onPress = Just StartPauseTimer
                 , label =
@@ -370,23 +371,23 @@ viewLeftControls model colors =
                 [ Element.padding 10
                 , Background.color colors.primary
                 , Font.color colors.text
+                , Element.alignTop
                 ]
                 { onPress = Just ResetTimer
                 , label = Element.text "Reset"
                 }
-            ]
-        , Element.column
-            [ Element.spacing 10
-            , Element.centerX
-            ]
-            [ Element.html
-                (Icons.timer
-                    { size = timerSize
-                    , backgroundColor = timerFaceColor
-                    , armColor = timerArmColor
-                    , progress = progress
-                    , duration = timerDurationMinutes
-                    }
+            , Element.el
+                [ Element.alignRight
+                ]
+                (Element.html
+                    (Icons.timer
+                        { size = timerSize
+                        , backgroundColor = timerFaceColor
+                        , armColor = timerArmColor
+                        , progress = progress
+                        , duration = timerDurationMinutes
+                        }
+                    )
                 )
             ]
         , Element.column
