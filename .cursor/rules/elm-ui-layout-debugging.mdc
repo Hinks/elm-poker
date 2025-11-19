@@ -1,0 +1,152 @@
+---
+description: How to use Element.explain for visual layout debugging in elm-ui
+globs: **/*.elm
+alwaysApply: true
+---
+
+# Visual Layout Debugging with Element.explain in elm-ui
+
+This rule documents how to use `Element.explain` to visually debug layout issues in `mdgriffith/elm-ui` by highlighting element borders and their children.
+
+## Core Pattern
+
+Use `Element.explain Debug.todo` as an attribute on any `Element` to highlight its borders and the borders of its children. This provides a visual guide to help identify layout issues.
+
+## Basic Usage
+
+```elm
+import Debug
+import Element
+
+viewSection : Model -> Element.Element Msg
+viewSection model =
+    Element.row
+        [ Element.explain Debug.todo
+        , Element.width Element.fill
+        , Element.spacing 20
+        ]
+        [ -- child elements
+        ]
+```
+
+## Key Requirements
+
+1. **Import Debug**: You must import `Debug` module at the top of your file
+2. **Use Debug.todo**: `Element.explain` requires `Debug.todo` as an argument (this is a safety measure)
+3. **Add as Attribute**: Place `Element.explain Debug.todo` in the attributes list of your element
+
+## Complete Example
+
+```elm
+import Debug
+import Element
+import Element.Background as Background
+import Element.Font as Font
+
+viewBlindsSection : Model -> Theme.ColorPalette -> Element.Element Msg
+viewBlindsSection model colors =
+    Element.row
+        [ Element.explain Debug.todo
+        , Element.width Element.fill
+        , Element.spacing 20
+        , Element.padding 20
+        , Element.alignTop
+        ]
+        [ Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            ]
+            (viewLeftControls model colors)
+        , Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.height Element.fill
+            ]
+            (viewCenterBlinds model colors)
+        ]
+```
+
+## Why Debug.todo is Required
+
+The `Debug.todo` argument is a **safety measure** to prevent accidentally shipping code with `Element.explain` enabled:
+
+- **Development builds**: Works normally, showing visual borders
+- **Optimized builds**: Elm will **refuse to compile** with `--optimize` if `Debug.todo` is present
+- **Production safety**: This ensures you can't accidentally leave debugging code in production
+
+## Visual Output
+
+When `Element.explain` is enabled, you'll see:
+
+- **Orange borders** (6px solid) around the element with `Element.explain`
+- **Teal dashed borders** (4px) around child elements
+- Visual representation of element boundaries and spacing
+
+This helps identify:
+- Incorrect element sizing
+- Spacing issues
+- Alignment problems
+- Overflow or clipping issues
+- Nested element boundaries
+
+## When to Use
+
+Use `Element.explain` when:
+
+- Debugging complex layouts with multiple nested elements
+- Troubleshooting spacing or alignment issues
+- Understanding how `fillPortion` or other layout attributes affect sizing
+- Verifying that elements are positioned as expected
+- Learning how elm-ui's layout system works
+
+## Best Practices
+
+1. **Add to problematic sections**: Start by adding `Element.explain` to the specific section causing layout issues
+2. **Remove before committing**: Remember to remove `Element.explain Debug.todo` before committing code (or rely on the optimization build to catch it)
+3. **Use selectively**: You don't need to add it to every element - focus on the areas you're debugging
+4. **Combine with other debugging**: Use alongside browser DevTools for comprehensive debugging
+
+## Example: Debugging a Complex Layout
+
+```elm
+viewComplexLayout : Model -> Element.Element Msg
+viewComplexLayout model =
+    Element.column
+        [ Element.width Element.fill
+        , Element.explain Debug.todo  -- Debug the entire column
+        ]
+        [ Element.row
+            [ Element.width Element.fill
+            , Element.spacing 20
+            ]
+            [ Element.el
+                [ Element.width (Element.fillPortion 1)
+                , Element.explain Debug.todo  -- Debug individual sections
+                ]
+                (viewLeftPanel model)
+            , Element.el
+                [ Element.width (Element.fillPortion 2)
+                , Element.explain Debug.todo
+                ]
+                (viewRightPanel model)
+            ]
+        ]
+```
+
+## Important Notes
+
+- **Development only**: `Element.explain` is for development debugging only
+- **Performance**: The visual borders may slightly impact rendering performance, but this is negligible during development
+- **Not for production**: Always remove before deploying to production (or rely on `--optimize` to catch it)
+- **Works with all elements**: Can be used on `Element.el`, `Element.row`, `Element.column`, `Element.textColumn`, etc.
+
+## Reference
+
+- [elm-ui Element.explain documentation](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#explain)
+- Part of `mdgriffith/elm-ui` version 1.1.8+
+
+## Benefits
+
+- **Visual debugging**: See element boundaries without browser DevTools
+- **Quick identification**: Instantly spot layout issues
+- **Learning tool**: Understand how elm-ui's layout system works
+- **Safety**: Can't accidentally ship with debugging enabled (thanks to `Debug.todo` requirement)
