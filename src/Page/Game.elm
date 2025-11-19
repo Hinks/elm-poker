@@ -338,7 +338,7 @@ viewLeftControls model colors =
         timerDurationMinutes =
             toFloat model.blindDuration / 60.0
     in
-    Element.row
+    Element.wrappedRow
         [ Element.explain Debug.todo
         , Element.width Element.fill
         , Element.spacing 20
@@ -411,7 +411,8 @@ viewLeftControls model colors =
                 ]
             ]
         , Element.el
-            []
+            [ Element.width (Element.px (round timerSize))
+            ]
             (Element.html
                 (Icons.timer
                     { size = timerSize
