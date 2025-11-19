@@ -287,7 +287,7 @@ viewBlindsSection model colors =
             , Element.height Element.fill
             , Element.clip
             ]
-            (viewCenterBlinds model colors)
+            (viewCenterBlinds model)
         , -- Right section: Manual blinds advance and upcoming levels
           Element.el
             [ Element.width (Element.fillPortion 1)
@@ -318,6 +318,25 @@ viewLeftControls model colors =
     let
         isInputDisabled =
             model.timerState /= Stopped
+
+        progress =
+            if model.blindDuration > 0 then
+                toFloat model.remainingTime / toFloat model.blindDuration
+
+            else
+                0.0
+
+        timerSize =
+            250.0
+
+        timerFaceColor =
+            colors.surface
+
+        timerArmColor =
+            colors.primary
+
+        timerDurationMinutes =
+            toFloat model.blindDuration / 60.0
     in
     Element.column
         [ Element.width Element.fill
@@ -358,6 +377,20 @@ viewLeftControls model colors =
             ]
         , Element.column
             [ Element.spacing 10
+            , Element.centerX
+            ]
+            [ Element.html
+                (Icons.timer
+                    { size = timerSize
+                    , backgroundColor = timerFaceColor
+                    , armColor = timerArmColor
+                    , progress = progress
+                    , duration = timerDurationMinutes
+                    }
+                )
+            ]
+        , Element.column
+            [ Element.spacing 10
             , Element.width Element.fill
             ]
             [ Element.column
@@ -390,30 +423,11 @@ viewLeftControls model colors =
         ]
 
 
-viewCenterBlinds : Model -> Theme.ColorPalette -> Element.Element Msg
-viewCenterBlinds model colors =
+viewCenterBlinds : Model -> Element.Element Msg
+viewCenterBlinds model =
     let
         currentBlind =
             getCurrentBlind model
-
-        progress =
-            if model.blindDuration > 0 then
-                toFloat model.remainingTime / toFloat model.blindDuration
-
-            else
-                0.0
-
-        timerSize =
-            250.0
-
-        timerFaceColor =
-            colors.surface
-
-        timerArmColor =
-            colors.primary
-
-        timerDurationMinutes =
-            toFloat model.blindDuration / 60.0
     in
     case currentBlind of
         Just blind ->
@@ -422,21 +436,7 @@ viewCenterBlinds model colors =
                 , Element.width Element.fill
                 , Element.alignTop
                 ]
-                [ Element.column
-                    [ Element.spacing 10
-                    , Element.centerX
-                    ]
-                    [ Element.html
-                        (Icons.timer
-                            { size = timerSize
-                            , backgroundColor = timerFaceColor
-                            , armColor = timerArmColor
-                            , progress = progress
-                            , duration = timerDurationMinutes
-                            }
-                        )
-                    ]
-                , Element.row
+                [ Element.row
                     [ Element.width Element.fill
                     , Element.spacing 20
                     ]
