@@ -1,6 +1,5 @@
 module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
 
-import Debug
 import Element
 import Element.Background as Background
 import Element.Font as Font
@@ -281,8 +280,7 @@ view model theme =
 viewBlindsSection : Model -> Theme.ColorPalette -> Element.Element Msg
 viewBlindsSection model colors =
     Element.row
-        [ Element.explain Debug.todo
-        , Element.width Element.fill
+        [ Element.width Element.fill
         , Element.spacing 20
         , Element.padding 20
         , Element.alignTop
@@ -352,8 +350,7 @@ viewLeftControls model colors =
             toFloat model.blindDuration / 60.0
     in
     Element.wrappedRow
-        [ Element.explain Debug.todo
-        , Element.width Element.fill
+        [ Element.width Element.fill
         , Element.spacing 20
         ]
         [ Element.column
@@ -448,8 +445,7 @@ viewCenterBlinds model =
     case currentBlind of
         Just blind ->
             Element.column
-                [ Element.explain Debug.todo
-                , Element.width Element.fill
+                [ Element.width Element.fill
                 , Element.alignTop
                 ]
                 [ Element.row
