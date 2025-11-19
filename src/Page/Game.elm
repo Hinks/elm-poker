@@ -585,23 +585,15 @@ viewChip chip colors =
         spinSpeed =
             3.0
     in
-    Element.column
-        [ Element.spacing 10
-        , Element.centerX
-        ]
-        [ Element.html
-            (Icons.pokerChip
-                { size = chipSize
-                , color = chipElementColor
-                , spinSpeed = spinSpeed
-                }
-            )
-        , Element.el
-            [ Element.centerX
-            , Font.color colors.text
-            ]
-            (Element.text (String.fromInt value))
-        ]
+    Element.html
+        (Icons.pokerChip
+            { size = chipSize
+            , color = chipElementColor
+            , spinSpeed = spinSpeed
+            , value = Just value
+            , textColor = colors.text
+            }
+        )
 
 
 viewPokerTable : Element.Element Msg
