@@ -338,63 +338,47 @@ viewLeftControls model colors =
         timerDurationMinutes =
             toFloat model.blindDuration / 60.0
     in
-    Element.column
+    Element.row
         [ Element.explain Debug.todo
         , Element.width Element.fill
         , Element.spacing 20
         ]
-        [ Element.row
-            [ Element.spacing 10
-            , Element.width Element.fill
+        [ Element.column
+            [ Element.width (Element.fillPortion 1)
+            , Element.spacing 10
             ]
-            [ Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                , Element.alignTop
+            [ Element.row
+                [ Element.spacing 10
                 ]
-                { onPress = Just StartPauseTimer
-                , label =
-                    Element.text
-                        (case model.timerState of
-                            Running ->
-                                "Pause"
+                [ Input.button
+                    [ Element.padding 10
+                    , Background.color colors.primary
+                    , Font.color colors.text
+                    ]
+                    { onPress = Just StartPauseTimer
+                    , label =
+                        Element.text
+                            (case model.timerState of
+                                Running ->
+                                    "Pause"
 
-                            Paused ->
-                                "Start"
+                                Paused ->
+                                    "Start"
 
-                            Stopped ->
-                                "Start"
-                        )
-                }
-            , Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                , Element.alignTop
+                                Stopped ->
+                                    "Start"
+                            )
+                    }
+                , Input.button
+                    [ Element.padding 10
+                    , Background.color colors.primary
+                    , Font.color colors.text
+                    ]
+                    { onPress = Just ResetTimer
+                    , label = Element.text "Reset"
+                    }
                 ]
-                { onPress = Just ResetTimer
-                , label = Element.text "Reset"
-                }
-            , Element.el
-                [ Element.alignRight
-                ]
-                (Element.html
-                    (Icons.timer
-                        { size = timerSize
-                        , backgroundColor = timerFaceColor
-                        , armColor = timerArmColor
-                        , progress = progress
-                        , duration = timerDurationMinutes
-                        }
-                    )
-                )
-            ]
-        , Element.column
-            [ Element.spacing 10
-            , Element.width Element.fill
-            ]
-            [ Element.column
+            , Element.column
                 [ Element.spacing 5
                 ]
                 [ Element.el
@@ -421,6 +405,20 @@ viewLeftControls model colors =
                     }
                 ]
             ]
+        , Element.el
+            [ Element.width (Element.fillPortion 1)
+            , Element.alignRight
+            ]
+            (Element.html
+                (Icons.timer
+                    { size = timerSize
+                    , backgroundColor = timerFaceColor
+                    , armColor = timerArmColor
+                    , progress = progress
+                    , duration = timerDurationMinutes
+                    }
+                )
+            )
         ]
 
 
