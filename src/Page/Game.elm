@@ -1,5 +1,6 @@
 module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
 
+import Debug
 import Element
 import Element.Background as Background
 import Element.Font as Font
@@ -267,7 +268,8 @@ view model theme =
 viewBlindsSection : Model -> Theme.ColorPalette -> Element.Element Msg
 viewBlindsSection model colors =
     Element.row
-        [ Element.width Element.fill
+        [ Element.explain Debug.todo
+        , Element.width Element.fill
         , Element.spacing 20
         , Element.padding 20
         , Element.alignTop
@@ -402,7 +404,7 @@ viewCenterBlinds model colors =
                 0.0
 
         timerSize =
-            200.0
+            250.0
 
         timerFaceColor =
             colors.surface
@@ -416,38 +418,23 @@ viewCenterBlinds model colors =
     case currentBlind of
         Just blind ->
             Element.column
-                [ Element.width Element.fill
-                , Element.spacing 20
+                [ Element.explain Debug.todo
+                , Element.width Element.fill
                 , Element.alignTop
                 ]
                 [ Element.column
                     [ Element.spacing 10
                     , Element.centerX
                     ]
-                    [ Element.el
-                        [ Font.size 16
-                        , Font.bold
-                        ]
-                        (Element.text "Next blind in:")
-                    , Element.row
-                        [ Element.spacing 15
-                        , Element.centerX
-                        ]
-                        [ Element.html
-                            (Icons.timer
-                                { size = timerSize
-                                , backgroundColor = timerFaceColor
-                                , armColor = timerArmColor
-                                , progress = progress
-                                , duration = timerDurationMinutes
-                                }
-                            )
-                        , Element.el
-                            [ Font.size 16
-                            , Font.family [ Font.monospace ]
-                            ]
-                            (Element.text ("[ " ++ formatTime model.remainingTime ++ " ]"))
-                        ]
+                    [ Element.html
+                        (Icons.timer
+                            { size = timerSize
+                            , backgroundColor = timerFaceColor
+                            , armColor = timerArmColor
+                            , progress = progress
+                            , duration = timerDurationMinutes
+                            }
+                        )
                     ]
                 , Element.row
                     [ Element.width Element.fill
