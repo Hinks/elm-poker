@@ -346,9 +346,11 @@ viewLeftControls model colors =
         [ Element.column
             [ Element.width (Element.fillPortion 1)
             , Element.spacing 10
+            , Element.alignTop
             ]
             [ Element.row
                 [ Element.spacing 10
+                , Element.alignTop
                 ]
                 [ Input.button
                     [ Element.padding 10
