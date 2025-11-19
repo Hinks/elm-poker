@@ -51,4 +51,4 @@ getColors theme =
 
 defaultTheme : Theme
 defaultTheme =
-    Light
+    Dark
