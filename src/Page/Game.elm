@@ -299,8 +299,8 @@ viewBlindsSection model colors =
                 , Element.spacing 20
                 ]
                 [ Element.el
-                    [ Element.width (Element.fillPortion 1)
-                    , Element.height Element.fill
+                    [ Element.height Element.fill
+                    , Element.alignLeft
                     ]
                     (viewManualBlindsAdvance model colors)
                 , Element.el
@@ -351,6 +351,7 @@ viewLeftControls model colors =
             [ Element.row
                 [ Element.spacing 10
                 , Element.alignTop
+                , Element.alignRight
                 ]
                 [ Input.button
                     [ Element.padding 10
@@ -382,6 +383,7 @@ viewLeftControls model colors =
                 ]
             , Element.column
                 [ Element.spacing 5
+                , Element.alignRight
                 ]
                 [ Element.el
                     [ Font.size 16
@@ -389,6 +391,7 @@ viewLeftControls model colors =
                     (Element.text "Blind Duration:")
                 , Input.text
                     [ Element.width (Element.px 80)
+                    , Element.alignRight
                     , Element.padding 8
                     , Background.color colors.background
                     , Font.color colors.text
@@ -408,9 +411,7 @@ viewLeftControls model colors =
                 ]
             ]
         , Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.alignRight
-            ]
+            []
             (Element.html
                 (Icons.timer
                     { size = timerSize
@@ -448,6 +449,46 @@ viewCenterBlinds model =
 
         Nothing ->
             Element.text "No blind level"
+
+
+viewManualBlindsAdvance : Model -> Theme.ColorPalette -> Element.Element Msg
+viewManualBlindsAdvance model colors =
+    Element.column
+        [ Element.spacing 10
+        , Element.alignRight
+        ]
+        [ Element.row
+            [ Element.spacing 10
+            , Element.alignRight
+            ]
+            [ Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress =
+                    if model.currentBlindIndex < List.length model.blinds - 1 then
+                        Just BlindIndexUp
+
+                    else
+                        Nothing
+                , label = Element.text "↑"
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress =
+                    if model.currentBlindIndex > 0 then
+                        Just BlindIndexDown
+
+                    else
+                        Nothing
+                , label = Element.text "↓"
+                }
+            ]
+        ]
 
 
 viewRightLevels : Model -> Element.Element Msg
@@ -492,46 +533,6 @@ viewRightLevels model =
                     )
                     upcomingBlinds
                 )
-            ]
-        ]
-
-
-viewManualBlindsAdvance : Model -> Theme.ColorPalette -> Element.Element Msg
-viewManualBlindsAdvance model colors =
-    Element.column
-        [ Element.spacing 10
-        , Element.alignRight
-        ]
-        [ Element.row
-            [ Element.spacing 10
-            , Element.alignRight
-            ]
-            [ Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                ]
-                { onPress =
-                    if model.currentBlindIndex < List.length model.blinds - 1 then
-                        Just BlindIndexUp
-
-                    else
-                        Nothing
-                , label = Element.text "↑"
-                }
-            , Input.button
-                [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.text
-                ]
-                { onPress =
-                    if model.currentBlindIndex > 0 then
-                        Just BlindIndexDown
-
-                    else
-                        Nothing
-                , label = Element.text "↓"
-                }
             ]
         ]
 
