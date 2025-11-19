@@ -92,6 +92,19 @@ chipColorToElementColor chipColor =
             Element.rgb255 0 0 0
 
 
+getChipTextColor : ChipColor -> Theme.ColorPalette -> Element.Color
+getChipTextColor chipColor colors =
+    case chipColor of
+        White ->
+            colors.chipTextOnLight
+
+        Black ->
+            colors.chipTextOnDark
+
+        _ ->
+            colors.text
+
+
 
 -- UPDATE
 
@@ -584,6 +597,9 @@ viewChip chip colors =
 
         spinSpeed =
             3.0
+
+        textColor =
+            getChipTextColor chipColor colors
     in
     Element.html
         (Icons.pokerChip
@@ -591,7 +607,7 @@ viewChip chip colors =
             , color = chipElementColor
             , spinSpeed = spinSpeed
             , value = Just value
-            , textColor = colors.text
+            , textColor = textColor
             }
         )
 

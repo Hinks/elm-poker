@@ -16,6 +16,8 @@ type alias ColorPalette =
     , primary : Color
     , accent : Color
     , border : Color
+    , chipTextOnLight : Color
+    , chipTextOnDark : Color
     }
 
 
@@ -30,6 +32,8 @@ getColors theme =
             , primary = rgb255 25 118 210
             , accent = rgb255 48 63 159
             , border = rgb255 224 224 224
+            , chipTextOnLight = rgb255 33 33 33
+            , chipTextOnDark = rgb255 255 255 255
             }
 
         Dark ->
@@ -40,6 +44,8 @@ getColors theme =
             , primary = rgb255 66 165 245
             , accent = rgb255 100 181 246
             , border = rgb255 66 66 66
+            , chipTextOnLight = rgb255 33 33 33
+            , chipTextOnDark = rgb255 255 255 255
             }
 
 
