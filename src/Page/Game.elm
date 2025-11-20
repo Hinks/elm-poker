@@ -1,6 +1,5 @@
 module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
 
-import Debug
 import Element
 import Element.Background as Background
 import Element.Font as Font
@@ -316,49 +315,42 @@ view model theme =
 viewBlindsSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
 viewBlindsSection model theme colors =
     Element.row
-        [ Element.explain Debug.todo
-        , Element.width Element.fill
+        [ Element.width Element.fill
         , Element.spacing 20
         , Element.padding 20
         , Element.alignTop
         ]
         [ -- Left column: Controls
           Element.el
-            [ Element.explain Debug.todo
-            , Element.width (Element.fillPortion 3)
+            [ Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
             ]
             (viewLeftControls model theme colors)
         , -- Center column: Current blinds and timer
           Element.el
-            [ Element.explain Debug.todo
-            , Element.width (Element.fillPortion 3)
+            [ Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
             ]
             (viewCenterBlinds model theme colors)
         , -- Right section: Manual blinds advance and upcoming levels
           Element.el
-            [ Element.explain Debug.todo
-            , Element.width (Element.fillPortion 3)
+            [ Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
             ]
             (Element.row
-                [ Element.explain Debug.todo
-                , Element.width Element.fill
+                [ Element.width Element.fill
                 , Element.spacing 20
                 ]
                 [ Element.el
-                    [ Element.explain Debug.todo
-                    , Element.height Element.fill
+                    [ Element.height Element.fill
                     , Element.alignLeft
                     ]
                     (viewManualBlindsAdvance model colors)
                 , Element.el
-                    [ Element.explain Debug.todo
-                    , Element.width (Element.fillPortion 1)
+                    [ Element.width (Element.fillPortion 1)
                     , Element.height Element.fill
                     ]
                     (viewRightLevels model)
