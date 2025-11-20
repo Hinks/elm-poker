@@ -1,4 +1,4 @@
-module Icons exposing (CircleOptions, DollarOptions, PokerChipOptions, PokerTableOptions, TimerOptions, dollar, pokerChip, pokerTable, timer)
+module Icons exposing (BlindOptions, CircleOptions, DollarOptions, PokerChipOptions, PokerTableOptions, TimerOptions, bigBlind, dollar, pokerChip, pokerTable, smallBlind, timer)
 
 import Element exposing (Color)
 import Html
@@ -40,6 +40,15 @@ type alias TimerOptions =
     , armColor : Color
     , progress : Float
     , duration : Float
+    }
+
+
+type alias BlindOptions =
+    { size : Float
+    , backgroundColor : Color
+    , labelTextColor : Color
+    , valueTextColor : Color
+    , value : Int
     }
 
 
@@ -392,4 +401,168 @@ timer options =
             , strokeLinecap "round"
             ]
             []
+        ]
+
+
+bigBlind : BlindOptions -> Html.Html msg
+bigBlind options =
+    let
+        sizeStr =
+            String.fromFloat options.size
+
+        backgroundColorStr =
+            colorToRgbString options.backgroundColor
+
+        labelTextColorStr =
+            colorToRgbString options.labelTextColor
+
+        valueTextColorStr =
+            colorToRgbString options.valueTextColor
+
+        centerX =
+            100.0
+
+        centerY =
+            100.0
+
+        radius =
+            90.0
+
+        bigLabelY =
+            32.0
+
+        blindLabelY =
+            48.0
+
+        valueY =
+            centerY
+
+        labelFontSize =
+            String.fromFloat (options.size * 0.12)
+
+        valueFontSize =
+            String.fromFloat (options.size * 0.25)
+    in
+    Svg.svg
+        [ Svg.Attributes.width sizeStr
+        , Svg.Attributes.height sizeStr
+        , viewBox "0 0 200 200"
+        , Html.Attributes.style "display" "block"
+        ]
+        [ Svg.circle
+            [ cx (String.fromFloat centerX)
+            , cy (String.fromFloat centerY)
+            , r (String.fromFloat radius)
+            , fill backgroundColorStr
+            ]
+            []
+        , Svg.text_
+            [ x (String.fromFloat centerX)
+            , y (String.fromFloat bigLabelY)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize labelFontSize
+            , fill labelTextColorStr
+            ]
+            [ Svg.text "BIG" ]
+        , Svg.text_
+            [ x (String.fromFloat centerX)
+            , y (String.fromFloat blindLabelY)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize labelFontSize
+            , fill labelTextColorStr
+            ]
+            [ Svg.text "BLIND" ]
+        , Svg.text_
+            [ x (String.fromFloat centerX)
+            , y (String.fromFloat valueY)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize valueFontSize
+            , fill valueTextColorStr
+            ]
+            [ Svg.text (String.fromInt options.value) ]
+        ]
+
+
+smallBlind : BlindOptions -> Html.Html msg
+smallBlind options =
+    let
+        sizeStr =
+            String.fromFloat options.size
+
+        backgroundColorStr =
+            colorToRgbString options.backgroundColor
+
+        labelTextColorStr =
+            colorToRgbString options.labelTextColor
+
+        valueTextColorStr =
+            colorToRgbString options.valueTextColor
+
+        centerX =
+            100.0
+
+        centerY =
+            100.0
+
+        radius =
+            90.0
+
+        smallLabelY =
+            32.0
+
+        blindLabelY =
+            48.0
+
+        valueY =
+            centerY
+
+        labelFontSize =
+            String.fromFloat (options.size * 0.12)
+
+        valueFontSize =
+            String.fromFloat (options.size * 0.25)
+    in
+    Svg.svg
+        [ Svg.Attributes.width sizeStr
+        , Svg.Attributes.height sizeStr
+        , viewBox "0 0 200 200"
+        , Html.Attributes.style "display" "block"
+        ]
+        [ Svg.circle
+            [ cx (String.fromFloat centerX)
+            , cy (String.fromFloat centerY)
+            , r (String.fromFloat radius)
+            , fill backgroundColorStr
+            ]
+            []
+        , Svg.text_
+            [ x (String.fromFloat centerX)
+            , y (String.fromFloat smallLabelY)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize labelFontSize
+            , fill labelTextColorStr
+            ]
+            [ Svg.text "SMALL" ]
+        , Svg.text_
+            [ x (String.fromFloat centerX)
+            , y (String.fromFloat blindLabelY)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize labelFontSize
+            , fill labelTextColorStr
+            ]
+            [ Svg.text "BLIND" ]
+        , Svg.text_
+            [ x (String.fromFloat centerX)
+            , y (String.fromFloat valueY)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize valueFontSize
+            , fill valueTextColorStr
+            ]
+            [ Svg.text (String.fromInt options.value) ]
         ]
