@@ -316,42 +316,49 @@ view model theme =
 viewBlindsSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
 viewBlindsSection model theme colors =
     Element.row
-        [ Element.width Element.fill
+        [ Element.explain Debug.todo
+        , Element.width Element.fill
         , Element.spacing 20
         , Element.padding 20
         , Element.alignTop
         ]
         [ -- Left column: Controls
           Element.el
-            [ Element.width (Element.fillPortion 1)
+            [ Element.explain Debug.todo
+            , Element.width (Element.fillPortion 2)
             , Element.height Element.fill
             , Element.clip
             ]
             (viewLeftControls model theme colors)
         , -- Center column: Current blinds and timer
           Element.el
-            [ Element.width (Element.fillPortion 1)
+            [ Element.explain Debug.todo
+            , Element.width (Element.fillPortion 1)
             , Element.height Element.fill
             , Element.clip
             ]
             (viewCenterBlinds model theme colors)
         , -- Right section: Manual blinds advance and upcoming levels
           Element.el
-            [ Element.width (Element.fillPortion 1)
+            [ Element.explain Debug.todo
+            , Element.width (Element.fillPortion 2)
             , Element.height Element.fill
             , Element.clip
             ]
             (Element.row
-                [ Element.width Element.fill
+                [ Element.explain Debug.todo
+                , Element.width Element.fill
                 , Element.spacing 20
                 ]
                 [ Element.el
-                    [ Element.height Element.fill
+                    [ Element.explain Debug.todo
+                    , Element.height Element.fill
                     , Element.alignLeft
                     ]
                     (viewManualBlindsAdvance model colors)
                 , Element.el
-                    [ Element.width (Element.fillPortion 1)
+                    [ Element.explain Debug.todo
+                    , Element.width (Element.fillPortion 1)
                     , Element.height Element.fill
                     ]
                     (viewRightLevels model)
