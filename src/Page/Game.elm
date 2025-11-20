@@ -303,7 +303,7 @@ viewBlindsSection model colors =
             , Element.height Element.fill
             , Element.clip
             ]
-            (viewCenterBlinds model)
+            (viewCenterBlinds model colors)
         , -- Right section: Manual blinds advance and upcoming levels
           Element.el
             [ Element.width (Element.fillPortion 1)
@@ -441,11 +441,14 @@ viewLeftControls model colors =
         ]
 
 
-viewCenterBlinds : Model -> Element.Element Msg
-viewCenterBlinds model =
+viewCenterBlinds : Model -> Theme.ColorPalette -> Element.Element Msg
+viewCenterBlinds model colors =
     let
         currentBlind =
             getCurrentBlind model
+
+        iconSize =
+            140.0
     in
     case currentBlind of
         Just blind ->
@@ -457,8 +460,24 @@ viewCenterBlinds model =
                     [ Element.width Element.fill
                     , Element.spacing 20
                     ]
-                    [ viewBlindBox "SMALL" (formatBlindValue blind.smallBlind)
-                    , viewBlindBox "BIG" (formatBlindValue blind.bigBlind)
+                    [ Element.html
+                        (Icons.smallBlind
+                            { size = iconSize
+                            , backgroundColor = colors.surface
+                            , labelTextColor = colors.textSecondary
+                            , valueTextColor = colors.text
+                            , value = blind.smallBlind
+                            }
+                        )
+                    , Element.html
+                        (Icons.bigBlind
+                            { size = iconSize
+                            , backgroundColor = colors.surface
+                            , labelTextColor = colors.textSecondary
+                            , valueTextColor = colors.text
+                            , value = blind.bigBlind
+                            }
+                        )
                     ]
                 ]
 
@@ -549,22 +568,6 @@ viewRightLevels model =
                     upcomingBlinds
                 )
             ]
-        ]
-
-
-viewBlindBox : String -> String -> Element.Element Msg
-viewBlindBox label value =
-    Element.column
-        [ Element.padding 20
-        , Element.width (Element.fillPortion 1)
-        , Element.spacing 10
-        ]
-        [ Element.el
-            [ Font.size 14
-            , Font.bold
-            , Element.centerX
-            ]
-            (Element.text (label ++ ": " ++ value))
         ]
 
 
