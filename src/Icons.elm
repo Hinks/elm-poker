@@ -4,7 +4,7 @@ import Element exposing (Color)
 import Html
 import Html.Attributes
 import Svg
-import Svg.Attributes exposing (cx, cy, d, dominantBaseline, fill, fontSize, r, stroke, strokeLinecap, strokeWidth, textAnchor, viewBox, x, x1, x2, y, y1, y2)
+import Svg.Attributes exposing (cx, cy, d, dominantBaseline, fill, fontSize, fontWeight, r, stroke, strokeLinecap, strokeWidth, textAnchor, viewBox, x, x1, x2, y, y1, y2)
 
 
 type alias CircleOptions =
@@ -480,6 +480,7 @@ bigBlind options =
             , textAnchor "middle"
             , dominantBaseline "middle"
             , fontSize valueFontSize
+            , fontWeight "bold"
             , fill valueTextColorStr
             ]
             [ Svg.text (String.fromInt options.value) ]
@@ -562,6 +563,7 @@ smallBlind options =
             , textAnchor "middle"
             , dominantBaseline "middle"
             , fontSize valueFontSize
+            , fontWeight "bold"
             , fill valueTextColorStr
             ]
             [ Svg.text (String.fromInt options.value) ]
