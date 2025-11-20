@@ -1,5 +1,6 @@
 module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
 
+import Debug
 import Element
 import Element.Background as Background
 import Element.Font as Font
@@ -457,25 +458,25 @@ viewCenterBlinds model colors =
                 , Element.alignTop
                 ]
                 [ Element.row
-                    [ Element.width Element.fill
-                    , Element.spacing 20
+                    [ Element.spacing 20
+                    , Element.centerX
                     ]
                     [ Element.html
-                        (Icons.smallBlind
-                            { size = iconSize
-                            , backgroundColor = colors.surface
-                            , labelTextColor = colors.textSecondary
-                            , valueTextColor = colors.text
-                            , value = blind.smallBlind
-                            }
-                        )
-                    , Element.html
                         (Icons.bigBlind
                             { size = iconSize
                             , backgroundColor = colors.surface
-                            , labelTextColor = colors.textSecondary
-                            , valueTextColor = colors.text
+                            , labelTextColor = Element.rgb255 255 215 0
+                            , valueTextColor = Element.rgb255 255 215 0
                             , value = blind.bigBlind
+                            }
+                        )
+                    , Element.html
+                        (Icons.smallBlind
+                            { size = iconSize
+                            , backgroundColor = colors.surface
+                            , labelTextColor = Element.rgb255 30 144 255
+                            , valueTextColor = Element.rgb255 30 144 255
+                            , value = blind.smallBlind
                             }
                         )
                     ]
