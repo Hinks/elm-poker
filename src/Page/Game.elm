@@ -110,6 +110,36 @@ getChipTextColor chipColor colors =
             colors.text
 
 
+getTimerBackgroundColor : Theme -> Theme.ColorPalette -> Element.Color
+getTimerBackgroundColor theme colors =
+    case theme of
+        Theme.Light ->
+            Element.rgb255 180 230 210
+
+        Theme.Dark ->
+            colors.surface
+
+
+getBigBlindBackgroundColor : Theme -> Theme.ColorPalette -> Element.Color
+getBigBlindBackgroundColor theme colors =
+    case theme of
+        Theme.Light ->
+            Element.rgb255 220 170 80
+
+        Theme.Dark ->
+            colors.surface
+
+
+getSmallBlindBackgroundColor : Theme -> Theme.ColorPalette -> Element.Color
+getSmallBlindBackgroundColor theme colors =
+    case theme of
+        Theme.Light ->
+            Element.rgb255 160 210 255
+
+        Theme.Dark ->
+            colors.surface
+
+
 
 -- UPDATE
 
@@ -249,7 +279,7 @@ view model theme =
                 , Element.alignTop
                 , Element.paddingEach { top = 50, right = 0, bottom = 0, left = 0 }
                 ]
-                (viewBlindsSection model colors)
+                (viewBlindsSection model theme colors)
             )
         ]
         (Element.column
@@ -283,8 +313,8 @@ view model theme =
         )
 
 
-viewBlindsSection : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBlindsSection model colors =
+viewBlindsSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewBlindsSection model theme colors =
     Element.row
         [ Element.width Element.fill
         , Element.spacing 20
@@ -297,14 +327,14 @@ viewBlindsSection model colors =
             , Element.height Element.fill
             , Element.clip
             ]
-            (viewLeftControls model colors)
+            (viewLeftControls model theme colors)
         , -- Center column: Current blinds and timer
           Element.el
             [ Element.width (Element.fillPortion 1)
             , Element.height Element.fill
             , Element.clip
             ]
-            (viewCenterBlinds model colors)
+            (viewCenterBlinds model theme colors)
         , -- Right section: Manual blinds advance and upcoming levels
           Element.el
             [ Element.width (Element.fillPortion 1)
@@ -330,8 +360,8 @@ viewBlindsSection model colors =
         ]
 
 
-viewLeftControls : Model -> Theme.ColorPalette -> Element.Element Msg
-viewLeftControls model colors =
+viewLeftControls : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewLeftControls model theme colors =
     let
         isInputDisabled =
             model.timerState /= Stopped
@@ -347,7 +377,7 @@ viewLeftControls model colors =
             250.0
 
         timerFaceColor =
-            colors.surface
+            getTimerBackgroundColor theme colors
 
         timerArmColor =
             colors.primary
@@ -442,8 +472,8 @@ viewLeftControls model colors =
         ]
 
 
-viewCenterBlinds : Model -> Theme.ColorPalette -> Element.Element Msg
-viewCenterBlinds model colors =
+viewCenterBlinds : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewCenterBlinds model theme colors =
     let
         currentBlind =
             getCurrentBlind model
@@ -464,7 +494,7 @@ viewCenterBlinds model colors =
                     [ Element.html
                         (Icons.bigBlind
                             { size = iconSize
-                            , backgroundColor = colors.surface
+                            , backgroundColor = getBigBlindBackgroundColor theme colors
                             , labelTextColor = Element.rgb255 255 215 0
                             , valueTextColor = Element.rgb255 255 215 0
                             , value = blind.bigBlind
@@ -473,7 +503,7 @@ viewCenterBlinds model colors =
                     , Element.html
                         (Icons.smallBlind
                             { size = iconSize
-                            , backgroundColor = colors.surface
+                            , backgroundColor = getSmallBlindBackgroundColor theme colors
                             , labelTextColor = Element.rgb255 30 144 255
                             , valueTextColor = Element.rgb255 30 144 255
                             , value = blind.smallBlind
