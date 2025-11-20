@@ -25,13 +25,13 @@ getColors : Theme -> ColorPalette
 getColors theme =
     case theme of
         Light ->
-            { background = rgb255 255 255 255
-            , surface = rgb255 250 250 250
-            , text = rgb255 33 33 33
-            , textSecondary = rgb255 117 117 117
-            , primary = rgb255 25 118 210
-            , accent = rgb255 48 63 159
-            , border = rgb255 224 224 224
+            { background = rgb255 245 247 250
+            , surface = rgb255 235 238 242
+            , text = rgb255 30 35 45
+            , textSecondary = rgb255 100 110 125
+            , primary = rgb255 30 120 200
+            , accent = rgb255 50 130 210
+            , border = rgb255 200 210 220
             , chipTextOnLight = rgb255 33 33 33
             , chipTextOnDark = rgb255 255 255 255
             }
