@@ -52,24 +52,29 @@ type Chip
     = Chip ChipColor Int
 
 
-init : Model
-init =
-    { chips = [ Chip White 50, Chip Red 100, Chip Blue 200, Chip Green 250, Chip Black 500 ]
-    , blinds =
-        [ { smallBlind = 100, bigBlind = 200 }
-        , { smallBlind = 200, bigBlind = 400 }
-        , { smallBlind = 300, bigBlind = 600 }
-        , { smallBlind = 400, bigBlind = 800 }
-        , { smallBlind = 500, bigBlind = 1000 }
-        , { smallBlind = 800, bigBlind = 1600 }
-        , { smallBlind = 1000, bigBlind = 2000 }
-        , { smallBlind = 2000, bigBlind = 4000 }
-        ]
-    , currentBlindIndex = 0
-    , blindDuration = 12 * 60
-    , remainingTime = 12 * 60
-    , timerState = Stopped
-    }
+init : Maybe Model -> Model
+init maybeExistingModel =
+    case maybeExistingModel of
+        Just existingModel ->
+            existingModel
+
+        Nothing ->
+            { chips = [ Chip White 50, Chip Red 100, Chip Blue 200, Chip Green 250, Chip Black 500 ]
+            , blinds =
+                [ { smallBlind = 100, bigBlind = 200 }
+                , { smallBlind = 200, bigBlind = 400 }
+                , { smallBlind = 300, bigBlind = 600 }
+                , { smallBlind = 400, bigBlind = 800 }
+                , { smallBlind = 500, bigBlind = 1000 }
+                , { smallBlind = 800, bigBlind = 1600 }
+                , { smallBlind = 1000, bigBlind = 2000 }
+                , { smallBlind = 2000, bigBlind = 4000 }
+                ]
+            , currentBlindIndex = 0
+            , blindDuration = 12 * 60
+            , remainingTime = 12 * 60
+            , timerState = Stopped
+            }
 
 
 chipColorToElementColor : ChipColor -> Element.Color
