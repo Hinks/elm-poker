@@ -1,7 +1,6 @@
 ---
 description: Standard structure and ordering for Elm files following The Elm Architecture
-globs: **/*.elm
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Elm File Structure
