@@ -325,7 +325,7 @@ viewBlindsSection model theme colors =
         [ -- Left column: Controls
           Element.el
             [ Element.explain Debug.todo
-            , Element.width (Element.fillPortion 2)
+            , Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
             ]
@@ -333,7 +333,7 @@ viewBlindsSection model theme colors =
         , -- Center column: Current blinds and timer
           Element.el
             [ Element.explain Debug.todo
-            , Element.width (Element.fillPortion 1)
+            , Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
             ]
@@ -341,7 +341,7 @@ viewBlindsSection model theme colors =
         , -- Right section: Manual blinds advance and upcoming levels
           Element.el
             [ Element.explain Debug.todo
-            , Element.width (Element.fillPortion 2)
+            , Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
             ]
@@ -490,33 +490,27 @@ viewCenterBlinds model theme colors =
     in
     case currentBlind of
         Just blind ->
-            Element.column
-                [ Element.width Element.fill
-                , Element.alignTop
+            Element.row
+                [ Element.centerX
                 ]
-                [ Element.row
-                    [ Element.spacing 20
-                    , Element.centerX
-                    ]
-                    [ Element.html
-                        (Icons.bigBlind
-                            { size = iconSize
-                            , backgroundColor = getBigBlindBackgroundColor theme colors
-                            , labelTextColor = Element.rgb255 255 215 0
-                            , valueTextColor = Element.rgb255 255 215 0
-                            , value = blind.bigBlind
-                            }
-                        )
-                    , Element.html
-                        (Icons.smallBlind
-                            { size = iconSize
-                            , backgroundColor = getSmallBlindBackgroundColor theme colors
-                            , labelTextColor = Element.rgb255 30 144 255
-                            , valueTextColor = Element.rgb255 30 144 255
-                            , value = blind.smallBlind
-                            }
-                        )
-                    ]
+                [ Element.html
+                    (Icons.bigBlind
+                        { size = iconSize
+                        , backgroundColor = getBigBlindBackgroundColor theme colors
+                        , labelTextColor = Element.rgb255 255 215 0
+                        , valueTextColor = Element.rgb255 255 215 0
+                        , value = blind.bigBlind
+                        }
+                    )
+                , Element.html
+                    (Icons.smallBlind
+                        { size = iconSize
+                        , backgroundColor = getSmallBlindBackgroundColor theme colors
+                        , labelTextColor = Element.rgb255 30 144 255
+                        , valueTextColor = Element.rgb255 30 144 255
+                        , value = blind.smallBlind
+                        }
+                    )
                 ]
 
         Nothing ->
