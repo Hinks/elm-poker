@@ -20,6 +20,7 @@ type alias Model =
     , blinds : List Blind
     , currentBlindIndex : Int
     , blindDuration : Seconds
+    , blindDurationInput : String
     , remainingTime : Seconds
     , timerState : TimerState
     , players : List Player
@@ -78,6 +79,7 @@ init maybeExistingModel players buyIn =
                 ]
             , currentBlindIndex = 0
             , blindDuration = 12 * 60
+            , blindDurationInput = "12"
             , remainingTime = 12 * 60
             , timerState = Stopped
             , players = players
@@ -177,17 +179,18 @@ update msg model =
                                     minutes * 60
                             in
                             ( { model
-                                | blindDuration = durationInSeconds
+                                | blindDurationInput = str
+                                , blindDuration = durationInSeconds
                                 , remainingTime = durationInSeconds
                               }
                             , Cmd.none
                             )
 
                         else
-                            ( model, Cmd.none )
+                            ( { model | blindDurationInput = str }, Cmd.none )
 
                     Nothing ->
-                        ( model, Cmd.none )
+                        ( { model | blindDurationInput = str }, Cmd.none )
 
             else
                 ( model, Cmd.none )
@@ -221,6 +224,7 @@ update msg model =
                 | currentBlindIndex = 0
                 , remainingTime = model.blindDuration
                 , timerState = Stopped
+                , blindDurationInput = String.fromInt (model.blindDuration // 60)
               }
             , Cmd.none
             )
@@ -457,7 +461,7 @@ viewLeftControls model theme colors =
                         )
                     ]
                     { onChange = BlindDurationChanged
-                    , text = String.fromInt (model.blindDuration // 60)
+                    , text = model.blindDurationInput
                     , placeholder = Nothing
                     , label = Input.labelHidden "Blind duration in minutes"
                     }
