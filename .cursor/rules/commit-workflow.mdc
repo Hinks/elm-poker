@@ -1,0 +1,50 @@
+---
+description: Commit workflow - show preview and ask for confirmation before committing
+globs:
+alwaysApply: true
+---
+
+# Commit Workflow
+
+When the user indicates they are ready to commit changes (by saying phrases like "I am happy with changes", "commit changes", "ready to commit", or similar), follow this workflow:
+
+## 1. Show Commit Preview
+
+-   Run `git status --short` to see what files have changed
+-   Run `git diff --cached` to show staged changes (if any)
+-   Run `git diff` to show unstaged changes
+-   Display a summary of:
+    -   Files that will be committed (staged files)
+    -   Files that are modified but not staged
+    -   Files that are untracked
+-   Show a preview of the actual changes (diffs)
+
+## 2. Ask for Confirmation
+
+-   Present the commit preview clearly
+-   Ask the user to confirm:
+    -   Whether they want to commit the changes as shown
+    -   What commit message they'd like to use
+    -   Whether they want to stage any unstaged files first
+-   Wait for explicit confirmation before executing `git commit`
+
+## 3. Never Commit Automatically
+
+-   Do not commit without explicit user confirmation
+-   Do not assume a commit message
+-   Always show what will be committed before asking for confirmation
+
+## Example Workflow
+
+```
+User: "I am happy with changes"
+
+AI: [Shows git status and diff preview]
+    "I see the following changes ready to commit:
+     - Modified: src/Main.elm
+     - Modified: src/Page/Game.elm
+
+     [Shows diff preview]
+
+     Would you like to commit these changes? If so, what commit message would you like to use?"
+```
