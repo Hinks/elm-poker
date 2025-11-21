@@ -1,4 +1,4 @@
-module Page.Players exposing (Model, Msg, init, update, view)
+module Page.Players exposing (Model, Msg, Player, init, update, view)
 
 import Element
 import Element.Background
@@ -18,6 +18,7 @@ type alias Model =
     { pageName : String
     , players : List Player
     , newPlayerName : String
+    , initialBuyIn : Int
     , seatingArrangement : Maybe (List Table)
     , playerListCollapsed : Bool
     }
@@ -41,6 +42,7 @@ init maybeExistingModel =
             { pageName = "Players"
             , players = []
             , newPlayerName = ""
+            , initialBuyIn = 0
             , seatingArrangement = Nothing
             , playerListCollapsed = False
             }
@@ -52,6 +54,7 @@ init maybeExistingModel =
 
 type Msg
     = PlayerNameChanged String
+    | InitialBuyInChanged String
     | AddPlayer
     | RemovePlayer Int
     | RandomizeSeating
@@ -65,6 +68,19 @@ update msg model =
     case msg of
         PlayerNameChanged name ->
             ( { model | newPlayerName = name }, Cmd.none )
+
+        InitialBuyInChanged buyInStr ->
+            ( { model
+                | initialBuyIn =
+                    case String.toInt buyInStr of
+                        Just buyIn ->
+                            buyIn
+
+                        Nothing ->
+                            0
+              }
+            , Cmd.none
+            )
 
         AddPlayer ->
             if String.trim model.newPlayerName == "" then
@@ -233,7 +249,9 @@ view model theme =
             [ Element.width Element.fill
             , Element.spacing 20
             ]
-            [ viewAddPlayerSection model colors
+            [ viewInitialBuyInSection model colors
+            , viewDivider colors
+            , viewAddPlayerSection model colors
             , viewDivider colors
             , viewCurrentPlayersSection model colors
             , viewSeatingControls model colors
@@ -245,6 +263,36 @@ view model theme =
                     Element.none
             ]
         )
+
+
+viewInitialBuyInSection : Model -> Theme.ColorPalette -> Element.Element Msg
+viewInitialBuyInSection model colors =
+    Element.column
+        [ Element.width Element.fill
+        , Element.spacing 10
+        ]
+        [ Element.text "Initial buy-in:"
+        , Element.row
+            [ Element.width Element.fill
+            , Element.spacing 10
+            ]
+            [ Element.Input.text
+                [ Element.width (Element.fillPortion 3)
+                , Element.padding 8
+                , Element.Background.color colors.surface
+                , Element.Font.color colors.text
+                ]
+                { onChange = InitialBuyInChanged
+                , text = String.fromInt model.initialBuyIn
+                , placeholder = Just (Element.Input.placeholder [] (Element.text "Enter initial buy-in amount"))
+                , label = Element.Input.labelHidden "Initial buy-in amount"
+                }
+            , Element.el
+                [ Element.width (Element.fillPortion 1)
+                ]
+                Element.none
+            ]
+        ]
 
 
 viewAddPlayerSection : Model -> Theme.ColorPalette -> Element.Element Msg

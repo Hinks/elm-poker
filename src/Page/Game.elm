@@ -6,6 +6,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
 import Icons
+import Page.Players exposing (Player)
 import Theme exposing (Theme)
 import Time
 
@@ -21,6 +22,8 @@ type alias Model =
     , blindDuration : Seconds
     , remainingTime : Seconds
     , timerState : TimerState
+    , players : List Player
+    , initialBuyIn : Int
     }
 
 
@@ -52,11 +55,14 @@ type Chip
     = Chip ChipColor Int
 
 
-init : Maybe Model -> Model
-init maybeExistingModel =
+init : Maybe Model -> List Player -> Int -> Model
+init maybeExistingModel players buyIn =
     case maybeExistingModel of
         Just existingModel ->
-            existingModel
+            { existingModel
+                | players = players
+                , initialBuyIn = buyIn
+            }
 
         Nothing ->
             { chips = [ Chip White 50, Chip Red 100, Chip Blue 200, Chip Green 250, Chip Black 500 ]
@@ -74,6 +80,8 @@ init maybeExistingModel =
             , blindDuration = 12 * 60
             , remainingTime = 12 * 60
             , timerState = Stopped
+            , players = players
+            , initialBuyIn = buyIn
             }
 
 
@@ -297,7 +305,7 @@ view model theme =
                         , Element.centerX
                         , Element.centerY
                         ]
-                        (viewPriceMoney 1500 colors)
+                        (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn) colors)
                     )
                 , Element.inFront
                     (Element.el
@@ -689,6 +697,11 @@ viewPriceMoney amount colors =
 
 
 -- Helper functions
+
+
+calculateTotalPot : List Player -> Int -> Int
+calculateTotalPot players buyIn =
+    List.length players * buyIn
 
 
 formatTime : Int -> String

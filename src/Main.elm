@@ -99,7 +99,7 @@ update msg model =
         GotGameMsg gameMsg ->
             case model.page of
                 GamePage game ->
-                    toGame model (Page.Game.update gameMsg game)
+                    toGame model model.playersPageState (Page.Game.update gameMsg game)
 
                 _ ->
                     ( model, Cmd.none )
@@ -143,11 +143,31 @@ toPlayers model ( players, cmd ) =
     )
 
 
-toGame : Model -> ( Page.Game.Model, Cmd Page.Game.Msg ) -> ( Model, Cmd Msg )
-toGame model ( game, cmd ) =
+toGame : Model -> Maybe Page.Players.Model -> ( Page.Game.Model, Cmd Page.Game.Msg ) -> ( Model, Cmd Msg )
+toGame model maybePlayersModel ( game, cmd ) =
+    let
+        extractedPlayers =
+            case maybePlayersModel of
+                Just playersModel ->
+                    playersModel.players
+
+                Nothing ->
+                    []
+
+        extractedBuyIn =
+            case maybePlayersModel of
+                Just playersModel ->
+                    playersModel.initialBuyIn
+
+                Nothing ->
+                    0
+
+        updatedGame =
+            Page.Game.init (Just game) extractedPlayers extractedBuyIn
+    in
     ( { model
-        | page = GamePage game
-        , gamePageState = Just game
+        | page = GamePage updatedGame
+        , gamePageState = Just updatedGame
       }
     , Cmd.map GotGameMsg cmd
     )
@@ -172,8 +192,8 @@ updateUrl url model =
                 |> toPlayers model
 
         Just Game ->
-            ( Page.Game.init model.gamePageState, Cmd.none )
-                |> toGame model
+            ( Page.Game.init model.gamePageState [] 0, Cmd.none )
+                |> toGame model model.playersPageState
 
         Just Champion ->
             ( Page.Champion.init, Cmd.none )
