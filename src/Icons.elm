@@ -333,6 +333,10 @@ timer options =
 
         marker12Y =
             centerY - markerRadius
+
+        -- Check if duration is divisible by 4
+        isDivisibleBy4 =
+            modBy 4 (round options.duration) == 0
     in
     Svg.svg
         [ Svg.Attributes.width sizeStr
@@ -340,7 +344,7 @@ timer options =
         , viewBox "0 0 400 400"
         , Html.Attributes.style "display" "block"
         ]
-        [ Svg.circle
+        ([ Svg.circle
             [ cx (String.fromFloat centerX)
             , cy (String.fromFloat centerY)
             , r (String.fromFloat radius)
@@ -348,40 +352,7 @@ timer options =
             ]
             []
 
-        -- Marker at 3 o'clock (right)
-        , Svg.text_
-            [ x (String.fromFloat marker3X)
-            , y (String.fromFloat marker3Y)
-            , textAnchor "middle"
-            , dominantBaseline "middle"
-            , fontSize "24"
-            , fill armColorStr
-            ]
-            [ Svg.text (String.fromInt (round marker1)) ]
-
-        -- Marker at 6 o'clock (bottom)
-        , Svg.text_
-            [ x (String.fromFloat marker6X)
-            , y (String.fromFloat marker6Y)
-            , textAnchor "middle"
-            , dominantBaseline "middle"
-            , fontSize "24"
-            , fill armColorStr
-            ]
-            [ Svg.text (String.fromInt (round marker2)) ]
-
-        -- Marker at 9 o'clock (left)
-        , Svg.text_
-            [ x (String.fromFloat marker9X)
-            , y (String.fromFloat marker9Y)
-            , textAnchor "middle"
-            , dominantBaseline "middle"
-            , fontSize "24"
-            , fill armColorStr
-            ]
-            [ Svg.text (String.fromInt (round marker3)) ]
-
-        -- Marker at 12 o'clock (top)
+        -- Marker at 12 o'clock (top) - always visible
         , Svg.text_
             [ x (String.fromFloat marker12X)
             , y (String.fromFloat marker12Y)
@@ -391,17 +362,59 @@ timer options =
             , fill armColorStr
             ]
             [ Svg.text (String.fromInt (round marker4)) ]
-        , Svg.line
-            [ x1 (String.fromFloat centerX)
-            , y1 (String.fromFloat centerY)
-            , x2 (String.fromFloat armX)
-            , y2 (String.fromFloat armY)
-            , stroke armColorStr
-            , strokeWidth "6"
-            , strokeLinecap "round"
-            ]
-            []
         ]
+            ++ (if isDivisibleBy4 then
+                    -- Show all 4 markers when divisible by 4
+                    [ -- Marker at 3 o'clock (right)
+                      Svg.text_
+                        [ x (String.fromFloat marker3X)
+                        , y (String.fromFloat marker3Y)
+                        , textAnchor "middle"
+                        , dominantBaseline "middle"
+                        , fontSize "24"
+                        , fill armColorStr
+                        ]
+                        [ Svg.text (String.fromInt (round marker1)) ]
+
+                    -- Marker at 6 o'clock (bottom)
+                    , Svg.text_
+                        [ x (String.fromFloat marker6X)
+                        , y (String.fromFloat marker6Y)
+                        , textAnchor "middle"
+                        , dominantBaseline "middle"
+                        , fontSize "24"
+                        , fill armColorStr
+                        ]
+                        [ Svg.text (String.fromInt (round marker2)) ]
+
+                    -- Marker at 9 o'clock (left)
+                    , Svg.text_
+                        [ x (String.fromFloat marker9X)
+                        , y (String.fromFloat marker9Y)
+                        , textAnchor "middle"
+                        , dominantBaseline "middle"
+                        , fontSize "24"
+                        , fill armColorStr
+                        ]
+                        [ Svg.text (String.fromInt (round marker3)) ]
+                    ]
+
+                else
+                    -- Only show top marker when not divisible by 4
+                    []
+               )
+            ++ [ Svg.line
+                    [ x1 (String.fromFloat centerX)
+                    , y1 (String.fromFloat centerY)
+                    , x2 (String.fromFloat armX)
+                    , y2 (String.fromFloat armY)
+                    , stroke armColorStr
+                    , strokeWidth "6"
+                    , strokeLinecap "round"
+                    ]
+                    []
+               ]
+        )
 
 
 bigBlind : BlindOptions -> Html.Html msg
