@@ -1,5 +1,6 @@
 module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
 
+import Debug
 import Element
 import Element.Background as Background
 import Element.Font as Font
@@ -7,6 +8,7 @@ import Element.Input as Input
 import Html.Attributes
 import Icons
 import Page.Players exposing (Player)
+import PokerHandRanking
 import Theme exposing (Theme)
 import Time
 
@@ -278,6 +280,9 @@ view model theme =
 
         tableSize =
             800.0
+
+        cardSize =
+            60.0
     in
     Element.el
         [ Element.width Element.fill
@@ -289,6 +294,7 @@ view model theme =
                 [ Element.width Element.fill
                 , Element.alignTop
                 , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
+                , Element.explain Debug.todo
                 ]
                 (viewBlindsSection model theme colors)
             )
@@ -299,27 +305,42 @@ view model theme =
             , Element.spacing 20
             ]
             [ Element.el
-                [ Element.width (Element.px (round tableSize))
-                , Element.height (Element.px (round tableSize))
+                [ Element.width Element.fill
+                , Element.height Element.fill
                 , Element.centerX
-                , Element.inFront
-                    (Element.el
-                        [ Element.width Element.fill
-                        , Element.height Element.fill
-                        , Element.centerX
-                        , Element.centerY
-                        ]
-                        (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn) colors)
-                    )
-                , Element.inFront
-                    (Element.el
-                        [ Element.width Element.fill
-                        , Element.alignBottom
-                        ]
-                        (viewChips model.chips colors)
-                    )
+                , Element.centerY
                 ]
-                viewPokerTable
+                (Element.el
+                    [ Element.width (Element.px (round tableSize))
+                    , Element.height (Element.px (round tableSize))
+                    , Element.centerX
+                    , Element.explain Debug.todo
+                    , Element.inFront
+                        (Element.el
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            , Element.centerX
+                            , Element.centerY
+                            ]
+                            (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn) colors)
+                        )
+                    , Element.inFront
+                        (Element.el
+                            [ Element.width Element.fill
+                            , Element.alignBottom
+                            , Element.explain Debug.todo
+                            ]
+                            (viewChips model.chips colors)
+                        )
+                    ]
+                    viewPokerTable
+                )
+            , Element.el
+                [ Element.width Element.fill
+                , Element.alignBottom
+                , Element.explain Debug.todo
+                ]
+                (PokerHandRanking.view cardSize colors)
             ]
         )
 
