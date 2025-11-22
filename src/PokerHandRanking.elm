@@ -3,7 +3,6 @@ module PokerHandRanking exposing (view)
 import Element
 import Element.Background
 import Element.Font as Font
-import Html
 import Icons exposing (Suit(..))
 import Theme exposing (ColorPalette)
 
@@ -131,14 +130,14 @@ getSuitColor suit =
             Element.rgb255 0 0 0
 
 
-viewCard : Card -> Element.Element msg
-viewCard card =
+viewCard : Float -> Card -> Element.Element msg
+viewCard cardSize card =
     Element.el
         [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
         ]
         (Element.html
             (Icons.pokerCard
-                { size = 120
+                { size = cardSize
                 , rank = card.rank
                 , suit = card.suit
                 , backgroundColor = Element.rgb255 230 238 244
@@ -149,8 +148,8 @@ viewCard card =
         )
 
 
-viewHandRanking : ColorPalette -> HandRanking -> Element.Element msg
-viewHandRanking colors ranking =
+viewHandRanking : Float -> ColorPalette -> HandRanking -> Element.Element msg
+viewHandRanking cardSize colors ranking =
     Element.row
         [ Element.spacing 20
         , Element.width Element.fill
@@ -168,14 +167,14 @@ viewHandRanking colors ranking =
             [ Element.spacing 20
             , Element.padding 10
             ]
-            (List.map viewCard ranking.cards)
+            (List.map (viewCard cardSize) ranking.cards)
         ]
 
 
-view : ColorPalette -> Element.Element msg
-view colors =
+view : Float -> ColorPalette -> Element.Element msg
+view cardSize colors =
     Element.column
         [ Element.spacing 20
         , Element.width Element.fill
         ]
-        (List.map (viewHandRanking colors) handRankings)
+        (List.map (viewHandRanking cardSize colors) handRankings)

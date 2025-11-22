@@ -38,7 +38,11 @@ view theme =
                 ]
                 [ Element.text "Development playground for testing components and icons."
                 ]
-            , PokerHandRanking.view colors
+            , Element.el
+                [ Element.width (Element.px 900)
+                , Element.centerX
+                ]
+                (PokerHandRanking.view 80 colors)
             , Element.el
                 [ Element.width Element.fill
                 , Element.spacing 20
