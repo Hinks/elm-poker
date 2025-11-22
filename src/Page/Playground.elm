@@ -45,7 +45,18 @@ view theme =
                     [ Element.spacing 20
                     , Element.width Element.fill
                     ]
-                    [ viewIconSection "Poker Chip"
+                    [ viewIconSection "Poker Card"
+                        colors
+                        (Icons.pokerCard
+                            { size = 120
+                            , rank = "K"
+                            , suit = Icons.Diamond
+                            , backgroundColor = Element.rgb255 230 238 244
+                            , rankColor = Element.rgb255 215 30 0
+                            , suitColor = Element.rgb255 215 30 0
+                            }
+                        )
+                    , viewIconSection "Poker Chip"
                         colors
                         (Icons.pokerChip
                             { size = 100

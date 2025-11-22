@@ -1,10 +1,10 @@
-module Icons exposing (BlindOptions, CircleOptions, DollarOptions, PokerChipOptions, PokerTableOptions, TimerOptions, bigBlind, dollar, pokerChip, pokerTable, smallBlind, timer)
+module Icons exposing (BlindOptions, CardOptions, CircleOptions, DollarOptions, PokerChipOptions, PokerTableOptions, Suit(..), TimerOptions, bigBlind, dollar, pokerCard, pokerChip, pokerTable, smallBlind, timer)
 
 import Element exposing (Color)
 import Html
 import Html.Attributes
 import Svg
-import Svg.Attributes exposing (cx, cy, d, dominantBaseline, fill, fontSize, fontWeight, r, stroke, strokeLinecap, strokeWidth, textAnchor, viewBox, x, x1, x2, y, y1, y2)
+import Svg.Attributes exposing (cx, cy, d, dominantBaseline, fill, fontSize, fontWeight, height, points, r, rx, ry, stroke, strokeLinecap, strokeWidth, textAnchor, viewBox, width, x, x1, x2, y, y1, y2)
 
 
 type alias CircleOptions =
@@ -49,6 +49,23 @@ type alias BlindOptions =
     , labelTextColor : Color
     , valueTextColor : Color
     , value : Int
+    }
+
+
+type Suit
+    = Diamond
+    | Heart
+    | Spade
+    | Club
+
+
+type alias CardOptions =
+    { size : Float
+    , rank : String
+    , suit : Suit
+    , backgroundColor : Color
+    , rankColor : Color
+    , suitColor : Color
     }
 
 
@@ -581,3 +598,130 @@ smallBlind options =
             ]
             [ Svg.text (String.fromInt options.value) ]
         ]
+
+
+pokerCard : CardOptions -> Html.Html msg
+pokerCard options =
+    let
+        sizeStr =
+            String.fromFloat options.size
+
+        heightStr =
+            String.fromFloat (options.size * 1.4)
+
+        backgroundColorStr =
+            colorToRgbString options.backgroundColor
+
+        rankColorStr =
+            colorToRgbString options.rankColor
+
+        suitColorStr =
+            colorToRgbString options.suitColor
+
+        -- Card dimensions in viewBox coordinates
+        cardWidth =
+            250.0
+
+        cardHeight =
+            350.0
+
+        -- Position for rank (upper half, centered)
+        rankX =
+            cardWidth / 2
+
+        rankY =
+            cardHeight * 0.25
+
+        -- Position for suit (lower half, centered)
+        suitX =
+            cardWidth / 2
+
+        suitY =
+            cardHeight * 0.75
+
+        -- Font size for rank (proportional to card size)
+        rankFontSize =
+            String.fromFloat (options.size * 0.25)
+
+        -- Diamond size in viewBox coordinates (proportional to card width)
+        diamondSize =
+            cardWidth * 0.2
+
+        -- Diamond points (centered at suitX, suitY)
+        diamondHalfWidth =
+            diamondSize / 2
+
+        diamondHalfHeight =
+            diamondSize / 2
+
+        diamondPoints =
+            String.fromFloat suitX
+                ++ ","
+                ++ String.fromFloat (suitY - diamondHalfHeight)
+                ++ " "
+                ++ String.fromFloat (suitX + diamondHalfWidth)
+                ++ ","
+                ++ String.fromFloat suitY
+                ++ " "
+                ++ String.fromFloat suitX
+                ++ ","
+                ++ String.fromFloat (suitY + diamondHalfHeight)
+                ++ " "
+                ++ String.fromFloat (suitX - diamondHalfWidth)
+                ++ ","
+                ++ String.fromFloat suitY
+
+        -- Rounded corner radius
+        cornerRadius =
+            15.0
+    in
+    Svg.svg
+        [ width sizeStr
+        , height heightStr
+        , viewBox "0 0 250 350"
+        , Html.Attributes.style "display" "block"
+        ]
+        ([ -- Card background with rounded corners
+           Svg.rect
+            [ x "0"
+            , y "0"
+            , width (String.fromFloat cardWidth)
+            , height (String.fromFloat cardHeight)
+            , rx (String.fromFloat cornerRadius)
+            , ry (String.fromFloat cornerRadius)
+            , fill backgroundColorStr
+            ]
+            []
+
+         -- Rank text in upper half
+         , Svg.text_
+            [ x (String.fromFloat rankX)
+            , y (String.fromFloat rankY)
+            , textAnchor "middle"
+            , dominantBaseline "middle"
+            , fontSize rankFontSize
+            , fontWeight "bold"
+            , fill rankColorStr
+            ]
+            [ Svg.text options.rank ]
+         ]
+            ++ (case options.suit of
+                    Diamond ->
+                        [ -- Diamond suit symbol in lower half
+                          Svg.polygon
+                            [ points diamondPoints
+                            , fill suitColorStr
+                            ]
+                            []
+                        ]
+
+                    Heart ->
+                        []
+
+                    Spade ->
+                        []
+
+                    Club ->
+                        []
+               )
+        )
