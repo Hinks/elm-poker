@@ -55,7 +55,7 @@ heightRatio =
 
 rankYRatio : Float
 rankYRatio =
-    0.18
+    0.28
 
 
 suitYRatio : Float
@@ -65,7 +65,7 @@ suitYRatio =
 
 rankFontSizeRatio : Float
 rankFontSizeRatio =
-    0.75
+    1.0
 
 
 
