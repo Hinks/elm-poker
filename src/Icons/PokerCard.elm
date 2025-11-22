@@ -5,7 +5,7 @@ import Html
 import Html.Attributes
 import Icons.Internal
 import Svg
-import Svg.Attributes exposing (d, dominantBaseline, fill, fontSize, fontWeight, height, points, rx, ry, textAnchor, viewBox, width, x, y)
+import Svg.Attributes exposing (d, dominantBaseline, fill, fontSize, fontWeight, height, rx, ry, textAnchor, viewBox, width, x, y)
 
 
 type Suit
@@ -69,21 +69,7 @@ rankFontSizeRatio =
 
 
 
--- Diamond suit constants
-
-
-diamondSizeRatio : Float
-diamondSizeRatio =
-    0.5
-
-
-diamondHeightRatio : Float
-diamondHeightRatio =
-    0.7
-
-
-
--- Path-based suit constants (Heart, Spade, Club)
+-- Path-based suit constants (Diamond, Heart, Spade, Club)
 
 
 pathSuitScale : Float
@@ -117,6 +103,11 @@ cornerRadius =
 
 
 -- Suit path data (from 512x512 viewBox, centered at 256,256)
+
+
+diamondPath : String
+diamondPath =
+    "M256,160 L340,256 L256,352 L172,256 Z"
 
 
 heartPath : String
@@ -154,7 +145,7 @@ pathSuitTransform centerX centerY =
 
 
 
--- Helper: Render path-based suit (Heart, Spade, Club)
+-- Helper: Render path-based suit (Diamond, Heart, Spade, Club)
 
 
 viewPathSuit : Float -> Float -> String -> String -> Svg.Svg msg
@@ -168,37 +159,6 @@ viewPathSuit suitX suitY pathData colorStr =
             ]
             []
         ]
-
-
-
--- Helper: Render diamond suit
-
-
-viewDiamondSuit : Float -> Float -> String -> Svg.Svg msg
-viewDiamondSuit suitX suitY colorStr =
-    let
-        diamondSize =
-            cardWidth * diamondSizeRatio
-
-        diamondHalfWidth =
-            diamondSize / 2
-
-        diamondHalfHeight =
-            diamondSize * diamondHeightRatio
-
-        diamondPointsStr =
-            String.join " "
-                [ String.fromFloat suitX ++ "," ++ String.fromFloat (suitY - diamondHalfHeight)
-                , String.fromFloat (suitX + diamondHalfWidth) ++ "," ++ String.fromFloat suitY
-                , String.fromFloat suitX ++ "," ++ String.fromFloat (suitY + diamondHalfHeight)
-                , String.fromFloat (suitX - diamondHalfWidth) ++ "," ++ String.fromFloat suitY
-                ]
-    in
-    Svg.polygon
-        [ points diamondPointsStr
-        , fill colorStr
-        ]
-        []
 
 
 
@@ -245,7 +205,7 @@ viewSuit : Suit -> Float -> Float -> String -> Svg.Svg msg
 viewSuit suit suitX suitY suitColorStr =
     case suit of
         Diamond ->
-            viewDiamondSuit suitX suitY suitColorStr
+            viewPathSuit suitX suitY diamondPath suitColorStr
 
         Heart ->
             viewPathSuit suitX suitY heartPath suitColorStr
