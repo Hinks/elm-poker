@@ -720,7 +720,25 @@ pokerCard options =
                         []
 
                     Spade ->
-                        []
+                        [ -- Spade suit symbol in lower half
+                          -- Scale and position the spade path from 512x512 viewBox to card coordinates
+                          -- Original path is centered around (256, 256) in 512x512, we center at suitX, suitY
+                          Svg.g
+                            [ Svg.Attributes.transform
+                                ("translate("
+                                    ++ String.fromFloat suitX
+                                    ++ ","
+                                    ++ String.fromFloat suitY
+                                    ++ ") scale(0.4) translate(-256,-256)"
+                                )
+                            ]
+                            [ Svg.path
+                                [ d "M282.483,361.931L282.483,361.931c0,0,44.323,44.323,79.448-8.828c18.282-27.666,5.888-54.616-13.603-73.242l-83.906-82.635c-4.723-4.025-11.979-4.025-16.711,0l-85.124,82.635c-16.746,17.523-31.011,45.506-12.518,73.242c35.31,52.966,79.448,8.828,79.448,8.828c0,22.625-6.444,51.703-8.324,59.683c-0.256,1.112,0.6,2.11,1.739,2.11h66.145c1.139,0,1.986-0.997,1.73-2.101C288.936,413.617,282.483,384.415,282.483,361.931"
+                                , fill suitColorStr
+                                ]
+                                []
+                            ]
+                        ]
 
                     Club ->
                         []
