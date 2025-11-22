@@ -298,6 +298,16 @@ view model theme =
                 ]
                 (viewBlindsSection model theme colors)
             )
+        , Element.inFront
+            (Element.el
+                [ Element.width Element.shrink
+                , Element.alignTop
+                , Element.alignRight
+                , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
+                , Element.explain Debug.todo
+                ]
+                (PokerHandRanking.view cardSize colors)
+            )
         ]
         (Element.column
             [ Element.width Element.fill
@@ -345,11 +355,6 @@ view model theme =
                     ]
                     viewPokerTable
                 )
-            , Element.el
-                [ Element.explain Debug.todo
-                , Element.alignRight
-                ]
-                (PokerHandRanking.view cardSize colors)
             ]
         )
 
