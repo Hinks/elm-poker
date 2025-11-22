@@ -1,7 +1,6 @@
 module PokerHandRanking exposing (view)
 
 import Element
-import Element.Background
 import Element.Font as Font
 import Icons exposing (Suit(..))
 import Theme exposing (ColorPalette)
@@ -154,7 +153,6 @@ viewHandRanking cardSize colors ranking =
         [ Element.spacing 20
         , Element.width Element.fill
         , Element.padding 20
-        , Element.Background.color colors.surface
         ]
         [ Element.el
             [ Font.size 18
