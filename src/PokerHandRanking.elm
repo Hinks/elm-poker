@@ -1,0 +1,181 @@
+module PokerHandRanking exposing (view)
+
+import Element
+import Element.Background
+import Element.Font as Font
+import Html
+import Icons exposing (Suit(..))
+import Theme exposing (ColorPalette)
+
+
+type alias Card =
+    { rank : String
+    , suit : Suit
+    }
+
+
+type alias HandRanking =
+    { number : Int
+    , name : String
+    , cards : List Card
+    }
+
+
+handRankings : List HandRanking
+handRankings =
+    [ { number = 1
+      , name = "Royal Flush"
+      , cards =
+            [ { rank = "A", suit = Diamond }
+            , { rank = "K", suit = Diamond }
+            , { rank = "Q", suit = Diamond }
+            , { rank = "J", suit = Diamond }
+            , { rank = "10", suit = Diamond }
+            ]
+      }
+    , { number = 2
+      , name = "Straight Flush"
+      , cards =
+            [ { rank = "10", suit = Club }
+            , { rank = "9", suit = Club }
+            , { rank = "8", suit = Club }
+            , { rank = "7", suit = Club }
+            , { rank = "6", suit = Club }
+            ]
+      }
+    , { number = 3
+      , name = "Four of a Kind"
+      , cards =
+            [ { rank = "9", suit = Heart }
+            , { rank = "9", suit = Spade }
+            , { rank = "9", suit = Club }
+            , { rank = "9", suit = Diamond }
+            ]
+      }
+    , { number = 4
+      , name = "Full House"
+      , cards =
+            [ { rank = "A", suit = Spade }
+            , { rank = "A", suit = Club }
+            , { rank = "A", suit = Heart }
+            , { rank = "3", suit = Club }
+            , { rank = "3", suit = Diamond }
+            ]
+      }
+    , { number = 5
+      , name = "Flush"
+      , cards =
+            [ { rank = "K", suit = Club }
+            , { rank = "10", suit = Club }
+            , { rank = "8", suit = Club }
+            , { rank = "7", suit = Club }
+            , { rank = "5", suit = Club }
+            ]
+      }
+    , { number = 6
+      , name = "Straight"
+      , cards =
+            [ { rank = "10", suit = Diamond }
+            , { rank = "9", suit = Spade }
+            , { rank = "8", suit = Club }
+            , { rank = "7", suit = Heart }
+            , { rank = "6", suit = Diamond }
+            ]
+      }
+    , { number = 7
+      , name = "Three of a Kind"
+      , cards =
+            [ { rank = "7", suit = Diamond }
+            , { rank = "7", suit = Club }
+            , { rank = "7", suit = Spade }
+            ]
+      }
+    , { number = 8
+      , name = "Two Pair"
+      , cards =
+            [ { rank = "5", suit = Diamond }
+            , { rank = "5", suit = Spade }
+            , { rank = "7", suit = Diamond }
+            , { rank = "7", suit = Club }
+            ]
+      }
+    , { number = 9
+      , name = "Pair"
+      , cards =
+            [ { rank = "A", suit = Heart }
+            , { rank = "A", suit = Spade }
+            ]
+      }
+    , { number = 10
+      , name = "High Card"
+      , cards =
+            [ { rank = "K", suit = Diamond }
+            ]
+      }
+    ]
+
+
+getSuitColor : Suit -> Element.Color
+getSuitColor suit =
+    case suit of
+        Diamond ->
+            Element.rgb255 215 30 0
+
+        Heart ->
+            Element.rgb255 215 30 0
+
+        Spade ->
+            Element.rgb255 0 0 0
+
+        Club ->
+            Element.rgb255 0 0 0
+
+
+viewCard : Card -> Element.Element msg
+viewCard card =
+    Element.el
+        [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
+        ]
+        (Element.html
+            (Icons.pokerCard
+                { size = 120
+                , rank = card.rank
+                , suit = card.suit
+                , backgroundColor = Element.rgb255 230 238 244
+                , rankColor = getSuitColor card.suit
+                , suitColor = getSuitColor card.suit
+                }
+            )
+        )
+
+
+viewHandRanking : ColorPalette -> HandRanking -> Element.Element msg
+viewHandRanking colors ranking =
+    Element.row
+        [ Element.spacing 20
+        , Element.width Element.fill
+        , Element.padding 20
+        , Element.Background.color colors.surface
+        ]
+        [ Element.el
+            [ Font.size 18
+            , Font.bold
+            , Font.color colors.text
+            , Element.width (Element.px 200)
+            ]
+            (Element.text (String.fromInt ranking.number ++ ". " ++ ranking.name))
+        , Element.row
+            [ Element.spacing 20
+            , Element.padding 10
+            ]
+            (List.map viewCard ranking.cards)
+        ]
+
+
+view : ColorPalette -> Element.Element msg
+view colors =
+    Element.column
+        [ Element.spacing 20
+        , Element.width Element.fill
+        ]
+        (List.map (viewHandRanking colors) handRankings)

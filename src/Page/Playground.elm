@@ -5,6 +5,7 @@ import Element.Background as Background
 import Element.Font as Font
 import Html
 import Icons
+import PokerHandRanking
 import Theme exposing (Theme)
 
 
@@ -37,6 +38,7 @@ view theme =
                 ]
                 [ Element.text "Development playground for testing components and icons."
                 ]
+            , PokerHandRanking.view colors
             , Element.el
                 [ Element.width Element.fill
                 , Element.spacing 20
