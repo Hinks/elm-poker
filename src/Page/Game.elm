@@ -337,9 +337,8 @@ view model theme =
                     viewPokerTable
                 )
             , Element.el
-                [ Element.width Element.fill
-                , Element.height Element.fill
-                , Element.explain Debug.todo
+                [ Element.explain Debug.todo
+                , Element.alignRight
                 ]
                 (PokerHandRanking.view cardSize colors)
             ]
@@ -354,42 +353,20 @@ viewBlindsSection model theme colors =
         , Element.padding 20
         , Element.alignTop
         ]
-        [ -- Left column: Controls
+        [ -- Left column: Controls, timer, manual advance, and upcoming levels
           Element.el
             [ Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
             ]
             (viewLeftControls model theme colors)
-        , -- Center column: Current blinds and timer
+        , -- Center column: Current blinds
           Element.el
             [ Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
             ]
             (viewCenterBlinds model theme colors)
-        , -- Right section: Manual blinds advance and upcoming levels
-          Element.el
-            [ Element.width (Element.fillPortion 3)
-            , Element.height Element.fill
-            , Element.clip
-            ]
-            (Element.row
-                [ Element.width Element.fill
-                , Element.spacing 20
-                ]
-                [ Element.el
-                    [ Element.height Element.fill
-                    , Element.alignLeft
-                    ]
-                    (viewManualBlindsAdvance model colors)
-                , Element.el
-                    [ Element.width (Element.fillPortion 1)
-                    , Element.height Element.fill
-                    ]
-                    (viewRightLevels model)
-                ]
-            )
         ]
 
 
@@ -418,95 +395,107 @@ viewLeftControls model theme colors =
         timerDurationMinutes =
             toFloat model.blindDuration / 60.0
     in
-    Element.wrappedRow
+    Element.column
         [ Element.width Element.fill
+        , Element.height Element.fill
         , Element.spacing 20
         , Element.explain Debug.todo
         ]
-        [ Element.column
-            [ Element.width (Element.fillPortion 1)
-            , Element.spacing 10
-            , Element.alignTop
+        [ -- Timer controls and timer icon
+          Element.wrappedRow
+            [ Element.width Element.fill
+            , Element.spacing 20
             , Element.explain Debug.todo
             ]
-            [ Element.row
-                [ Element.spacing 10
+            [ Element.column
+                [ Element.width Element.shrink
+                , Element.spacing 10
                 , Element.alignTop
-                , Element.alignRight
                 , Element.explain Debug.todo
                 ]
-                [ Input.button
-                    [ Element.padding 10
-                    , Background.color colors.primary
-                    , Font.color colors.text
+                [ Element.row
+                    [ Element.spacing 10
+                    , Element.alignTop
+                    , Element.alignLeft
+                    , Element.explain Debug.todo
                     ]
-                    { onPress = Just StartPauseTimer
-                    , label =
-                        Element.text
-                            (case model.timerState of
-                                Running ->
-                                    "Pause"
+                    [ Input.button
+                        [ Element.padding 10
+                        , Background.color colors.primary
+                        , Font.color colors.text
+                        ]
+                        { onPress = Just StartPauseTimer
+                        , label =
+                            Element.text
+                                (case model.timerState of
+                                    Running ->
+                                        "Pause"
 
-                                Paused ->
-                                    "Start"
+                                    Paused ->
+                                        "Start"
 
-                                Stopped ->
-                                    "Start"
+                                    Stopped ->
+                                        "Start"
+                                )
+                        }
+                    , Input.button
+                        [ Element.padding 10
+                        , Background.color colors.primary
+                        , Font.color colors.text
+                        ]
+                        { onPress = Just ResetTimer
+                        , label = Element.text "Reset"
+                        }
+                    ]
+                , Element.column
+                    [ Element.spacing 5
+                    , Element.alignLeft
+                    , Element.explain Debug.todo
+                    ]
+                    [ Element.el
+                        [ Font.size 16
+                        ]
+                        (Element.text "Blind Duration:")
+                    , Input.text
+                        [ Element.width (Element.px 80)
+                        , Element.alignLeft
+                        , Element.padding 8
+                        , Background.color colors.background
+                        , Font.color colors.text
+                        , Element.htmlAttribute
+                            (if isInputDisabled then
+                                Html.Attributes.disabled True
+
+                             else
+                                Html.Attributes.disabled False
                             )
-                    }
-                , Input.button
-                    [ Element.padding 10
-                    , Background.color colors.primary
-                    , Font.color colors.text
+                        ]
+                        { onChange = BlindDurationChanged
+                        , text = model.blindDurationInput
+                        , placeholder = Nothing
+                        , label = Input.labelHidden "Blind duration in minutes"
+                        }
                     ]
-                    { onPress = Just ResetTimer
-                    , label = Element.text "Reset"
-                    }
                 ]
-            , Element.column
-                [ Element.spacing 5
-                , Element.alignRight
+            , Element.el
+                [ Element.width (Element.px (round timerSize))
                 , Element.explain Debug.todo
                 ]
-                [ Element.el
-                    [ Font.size 16
-                    ]
-                    (Element.text "Blind Duration:")
-                , Input.text
-                    [ Element.width (Element.px 80)
-                    , Element.alignRight
-                    , Element.padding 8
-                    , Background.color colors.background
-                    , Font.color colors.text
-                    , Element.htmlAttribute
-                        (if isInputDisabled then
-                            Html.Attributes.disabled True
-
-                         else
-                            Html.Attributes.disabled False
-                        )
-                    ]
-                    { onChange = BlindDurationChanged
-                    , text = model.blindDurationInput
-                    , placeholder = Nothing
-                    , label = Input.labelHidden "Blind duration in minutes"
-                    }
-                ]
-            ]
-        , Element.el
-            [ Element.width (Element.px (round timerSize))
-            , Element.explain Debug.todo
-            ]
-            (Element.html
-                (Icons.timer
-                    { size = timerSize
-                    , backgroundColor = timerFaceColor
-                    , armColor = timerArmColor
-                    , progress = progress
-                    , duration = timerDurationMinutes
-                    }
+                (Element.html
+                    (Icons.timer
+                        { size = timerSize
+                        , backgroundColor = timerFaceColor
+                        , armColor = timerArmColor
+                        , progress = progress
+                        , duration = timerDurationMinutes
+                        }
+                    )
                 )
-            )
+            ]
+        , -- Manual blind advance buttons
+          viewManualBlindsAdvance model colors
+        , -- Upcoming levels
+          viewRightLevels model
         ]
 
 
@@ -552,11 +541,11 @@ viewManualBlindsAdvance : Model -> Theme.ColorPalette -> Element.Element Msg
 viewManualBlindsAdvance model colors =
     Element.column
         [ Element.spacing 10
-        , Element.alignRight
+        , Element.alignLeft
         ]
         [ Element.row
             [ Element.spacing 10
-            , Element.alignRight
+            , Element.alignLeft
             ]
             [ Input.button
                 [ Element.padding 10
