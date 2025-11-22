@@ -723,13 +723,15 @@ pokerCard options =
                         [ -- Spade suit symbol in lower half
                           -- Scale and position the spade path from 512x512 viewBox to card coordinates
                           -- Original path is centered around (256, 256) in 512x512, we center at suitX, suitY
+                          -- Scale factor 0.72 makes spade slightly smaller than diamond (diamondSize = cardWidth * 0.5 = 125)
+                          -- Positioned slightly higher than suitY for better visual balance
                           Svg.g
                             [ Svg.Attributes.transform
                                 ("translate("
                                     ++ String.fromFloat suitX
                                     ++ ","
-                                    ++ String.fromFloat suitY
-                                    ++ ") scale(0.4) translate(-256,-256)"
+                                    ++ String.fromFloat (suitY - 18)
+                                    ++ ") scale(0.72) translate(-256,-256)"
                                 )
                             ]
                             [ Svg.path
