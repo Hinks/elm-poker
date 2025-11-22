@@ -369,8 +369,8 @@ timer options =
             ]
             []
 
-        -- Marker at 12 o'clock (top) - always visible
-        , Svg.text_
+         -- Marker at 12 o'clock (top) - always visible
+         , Svg.text_
             [ x (String.fromFloat marker12X)
             , y (String.fromFloat marker12Y)
             , textAnchor "middle"
@@ -379,7 +379,7 @@ timer options =
             , fill armColorStr
             ]
             [ Svg.text (String.fromInt (round marker4)) ]
-        ]
+         ]
             ++ (if isDivisibleBy4 then
                     -- Show all 4 markers when divisible by 4
                     [ -- Marker at 3 o'clock (right)
@@ -630,29 +630,30 @@ pokerCard options =
             cardWidth / 2
 
         rankY =
-            cardHeight * 0.25
+            cardHeight * 0.18
 
         -- Position for suit (lower half, centered)
         suitX =
             cardWidth / 2
 
         suitY =
-            cardHeight * 0.75
+            cardHeight * 0.68
 
         -- Font size for rank (proportional to card size)
         rankFontSize =
-            String.fromFloat (options.size * 0.25)
+            String.fromFloat (options.size * 0.65)
 
         -- Diamond size in viewBox coordinates (proportional to card width)
         diamondSize =
-            cardWidth * 0.2
+            cardWidth * 0.5
 
         -- Diamond points (centered at suitX, suitY)
+        -- Make diamond taller for more vertical presence
         diamondHalfWidth =
             diamondSize / 2
 
         diamondHalfHeight =
-            diamondSize / 2
+            diamondSize * 0.7
 
         diamondPoints =
             String.fromFloat suitX
