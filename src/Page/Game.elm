@@ -328,6 +328,15 @@ view model theme =
                     , Element.inFront
                         (Element.el
                             [ Element.width Element.fill
+                            , Element.height Element.fill
+                            , Element.centerX
+                            , Element.centerY
+                            ]
+                            (viewCenterBlinds model theme colors)
+                        )
+                    , Element.inFront
+                        (Element.el
+                            [ Element.width Element.fill
                             , Element.alignBottom
                             , Element.explain Debug.todo
                             ]
@@ -347,28 +356,12 @@ view model theme =
 
 viewBlindsSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
 viewBlindsSection model theme colors =
-    Element.row
+    Element.el
         [ Element.width Element.fill
-        , Element.spacing 20
         , Element.padding 20
         , Element.alignTop
         ]
-        [ -- Left column: Controls, timer, manual advance, and upcoming levels
-          Element.el
-            [ Element.width (Element.fillPortion 1)
-            , Element.height Element.fill
-            , Element.clip
-            ]
-            (viewLeftControls model theme colors)
-        , -- Center column: Current blinds
-          Element.el
-            [ Element.width (Element.fillPortion 3)
-            , Element.height Element.fill
-            , Element.clip
-            , Element.explain Debug.todo
-            ]
-            (viewCenterBlinds model theme colors)
-        ]
+        (viewLeftControls model theme colors)
 
 
 viewLeftControls : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
