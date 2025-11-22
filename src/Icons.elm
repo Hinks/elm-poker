@@ -641,7 +641,7 @@ pokerCard options =
 
         -- Font size for rank (proportional to card size)
         rankFontSize =
-            String.fromFloat (options.size * 0.65)
+            String.fromFloat (options.size * 0.75)
 
         -- Diamond size in viewBox coordinates (proportional to card width)
         diamondSize =
