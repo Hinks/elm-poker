@@ -58,6 +58,7 @@ view theme =
                         )
                     , viewCardsRow colors
                     , viewSpadeCardsRow colors
+                    , viewClubCardsRow colors
                     , viewIconSection "Poker Chip"
                         colors
                         (Icons.pokerChip
@@ -215,6 +216,48 @@ viewSpadeCardsRow colors =
             , Font.color colors.text
             ]
             (Element.text "Spade Cards Row")
+        , Element.row
+            [ Element.spacing 20
+            , Element.padding 10
+            ]
+            (List.map card ranks)
+        ]
+
+
+viewClubCardsRow : Theme.ColorPalette -> Element.Element msg
+viewClubCardsRow colors =
+    let
+        ranks =
+            [ "A", "K", "Q", "J", "10" ]
+
+        card rank =
+            Element.el
+                [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
+                ]
+                (Element.html
+                    (Icons.pokerCard
+                        { size = 120
+                        , rank = rank
+                        , suit = Icons.Club
+                        , backgroundColor = Element.rgb255 230 238 244
+                        , rankColor = Element.rgb255 0 0 0
+                        , suitColor = Element.rgb255 0 0 0
+                        }
+                    )
+                )
+    in
+    Element.column
+        [ Element.spacing 10
+        , Element.width Element.fill
+        , Element.padding 20
+        , Background.color colors.surface
+        ]
+        [ Element.el
+            [ Font.size 20
+            , Font.bold
+            , Font.color colors.text
+            ]
+            (Element.text "Club Cards Row")
         , Element.row
             [ Element.spacing 20
             , Element.padding 10

@@ -743,6 +743,26 @@ pokerCard options =
                         ]
 
                     Club ->
-                        []
+                        [ -- Club suit symbol in lower half
+                          -- Scale and position the club path from 512x512 viewBox to card coordinates
+                          -- Original path is centered around (256, 256) in 512x512, we center at suitX, suitY
+                          -- Scale factor 0.72 makes club slightly smaller than diamond (diamondSize = cardWidth * 0.5 = 125)
+                          -- Positioned slightly higher than suitY for better visual balance
+                          Svg.g
+                            [ Svg.Attributes.transform
+                                ("translate("
+                                    ++ String.fromFloat suitX
+                                    ++ ","
+                                    ++ String.fromFloat (suitY - 18)
+                                    ++ ") scale(0.72) translate(-256,-256)"
+                                )
+                            ]
+                            [ Svg.path
+                                [ d "M282.482,370.759c0,21.91,6.047,43.82,8.13,50.732c0.344,1.139-0.521,2.233-1.704,2.233h-65.827c-1.183,0-2.039-1.095-1.704-2.225c2.074-6.947,8.139-29.096,8.139-50.741c-8.722,6.321-18.803,9.578-29.917,9.578c-32.274,0-60.275-27.101-58.253-59.78c1.13-18.379,12.835-34.145,28.425-43.926c15.651-9.825,30.164-10.611,43.14-7.459c-8.298-9.825-13.312-22.502-13.312-36.361c0-34.834,31.576-62.296,67.663-55.314c22.59,4.361,40.545,22.925,44.332,45.612c2.948,17.602-2.304,33.986-12.5,46.062c13.065-3.169,27.692-2.348,43.467,7.662c15.519,9.852,27.18,25.582,28.248,43.926c1.889,32.591-26.2,59.577-58.403,59.577C301.444,380.337,291.045,376.947,282.482,370.759"
+                                , fill suitColorStr
+                                ]
+                                []
+                            ]
+                        ]
                )
         )
