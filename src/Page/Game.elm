@@ -421,16 +421,19 @@ viewLeftControls model theme colors =
     Element.wrappedRow
         [ Element.width Element.fill
         , Element.spacing 20
+        , Element.explain Debug.todo
         ]
         [ Element.column
             [ Element.width (Element.fillPortion 1)
             , Element.spacing 10
             , Element.alignTop
+            , Element.explain Debug.todo
             ]
             [ Element.row
                 [ Element.spacing 10
                 , Element.alignTop
                 , Element.alignRight
+                , Element.explain Debug.todo
                 ]
                 [ Input.button
                     [ Element.padding 10
@@ -463,6 +466,7 @@ viewLeftControls model theme colors =
             , Element.column
                 [ Element.spacing 5
                 , Element.alignRight
+                , Element.explain Debug.todo
                 ]
                 [ Element.el
                     [ Font.size 16
@@ -491,6 +495,7 @@ viewLeftControls model theme colors =
             ]
         , Element.el
             [ Element.width (Element.px (round timerSize))
+            , Element.explain Debug.todo
             ]
             (Element.html
                 (Icons.timer
