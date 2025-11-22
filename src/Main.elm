@@ -10,6 +10,7 @@ import Page.Champion
 import Page.Game
 import Page.Home
 import Page.Players
+import Page.Playground
 import Theme exposing (Theme(..))
 import Url exposing (Url)
 import Url.Parser exposing ((</>), Parser, s, top)
@@ -33,6 +34,7 @@ type Route
     | Players
     | Game
     | Champion
+    | Playground
 
 
 type Page
@@ -40,6 +42,7 @@ type Page
     | PlayersPage Page.Players.Model
     | GamePage Page.Game.Model
     | ChampionPage Page.Champion.Model
+    | PlaygroundPage
     | NotFound
 
 
@@ -199,6 +202,9 @@ updateUrl url model =
             ( Page.Champion.init, Cmd.none )
                 |> toChampion model
 
+        Just Playground ->
+            ( { model | page = PlaygroundPage }, Cmd.none )
+
         Nothing ->
             ( { model | page = NotFound }, Cmd.none )
 
@@ -323,6 +329,9 @@ viewPageContent model =
             Page.Champion.view champion model.theme
                 |> Element.map GotChampionMsg
 
+        PlaygroundPage ->
+            Page.Playground.view model.theme
+
         NotFound ->
             Element.el
                 [ Element.width Element.fill
@@ -392,6 +401,12 @@ isActive { link, page } =
         ( Champion, _ ) ->
             False
 
+        ( Playground, PlaygroundPage ) ->
+            True
+
+        ( Playground, _ ) ->
+            False
+
 
 routeParser : Parser (Route -> a) a
 routeParser =
@@ -400,6 +415,7 @@ routeParser =
         , Url.Parser.map Players (s "players")
         , Url.Parser.map Game (s "game")
         , Url.Parser.map Champion (s "champion")
+        , Url.Parser.map Playground (s "playground")
         ]
 
 
@@ -418,6 +434,9 @@ routeToPath route =
         Champion ->
             "/champion"
 
+        Playground ->
+            "/playground"
+
 
 routeToString : Route -> String
 routeToString route =
@@ -433,6 +452,9 @@ routeToString route =
 
         Champion ->
             "Champion"
+
+        Playground ->
+            "Playground"
 
 
 onUrlRequest : Browser.UrlRequest -> Msg
