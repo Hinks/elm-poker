@@ -56,6 +56,7 @@ view theme =
                             , suitColor = Element.rgb255 215 30 0
                             }
                         )
+                    , viewAllSuitsRow colors
                     , viewCardsRow colors
                     , viewSpadeCardsRow colors
                     , viewClubCardsRow colors
@@ -264,6 +265,52 @@ viewClubCardsRow colors =
             , Element.padding 10
             ]
             (List.map card ranks)
+        ]
+
+
+viewAllSuitsRow : Theme.ColorPalette -> Element.Element msg
+viewAllSuitsRow colors =
+    let
+        suits =
+            [ ( Icons.Diamond, Element.rgb255 215 30 0 )
+            , ( Icons.Spade, Element.rgb255 0 0 0 )
+            , ( Icons.Club, Element.rgb255 0 0 0 )
+            , ( Icons.Heart, Element.rgb255 215 30 0 )
+            ]
+
+        card ( suit, suitColor ) =
+            Element.el
+                [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
+                ]
+                (Element.html
+                    (Icons.pokerCard
+                        { size = 120
+                        , rank = "A"
+                        , suit = suit
+                        , backgroundColor = Element.rgb255 230 238 244
+                        , rankColor = suitColor
+                        , suitColor = suitColor
+                        }
+                    )
+                )
+    in
+    Element.column
+        [ Element.spacing 10
+        , Element.width Element.fill
+        , Element.padding 20
+        , Background.color colors.surface
+        ]
+        [ Element.el
+            [ Font.size 20
+            , Font.bold
+            , Font.color colors.text
+            ]
+            (Element.text "All Suits Row")
+        , Element.row
+            [ Element.spacing 20
+            , Element.padding 10
+            ]
+            (List.map card suits)
         ]
 
 

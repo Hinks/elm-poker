@@ -70,16 +70,18 @@ rankFontSizeRatio =
 
 
 -- Path-based suit constants (Diamond, Heart, Spade, Club)
+-- All suits are normalized to match diamond's size and position
+-- Scale factor adjusted to match diamond's ~168x192 unit bounding box
 
 
 pathSuitScale : Float
 pathSuitScale =
-    0.72
+    0.5
 
 
 pathSuitVerticalOffset : Float
 pathSuitVerticalOffset =
-    -18.0
+    0.0
 
 
 pathSuitOriginX : Float
