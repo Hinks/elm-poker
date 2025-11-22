@@ -717,7 +717,27 @@ pokerCard options =
                         ]
 
                     Heart ->
-                        []
+                        [ -- Heart suit symbol in lower half
+                          -- Scale and position the heart path from 512x512 viewBox to card coordinates
+                          -- Original path is centered around (256, 256) in 512x512, we center at suitX, suitY
+                          -- Scale factor 0.72 makes heart slightly smaller than diamond (diamondSize = cardWidth * 0.5 = 125)
+                          -- Positioned slightly higher than suitY for better visual balance
+                          Svg.g
+                            [ Svg.Attributes.transform
+                                ("translate("
+                                    ++ String.fromFloat suitX
+                                    ++ ","
+                                    ++ String.fromFloat (suitY - 18)
+                                    ++ ") scale(0.72) translate(-256,-256)"
+                                )
+                            ]
+                            [ Svg.path
+                                [ d "M256,238.345c9.507-24.214,29.625-44.138,54.881-44.138c21.257,0,40.201,9.993,52.966,26.483c16.013,20.692,27.33,66.754-7.715,101.8C338.353,340.268,256,423.724,256,423.724s-82.353-83.456-100.131-101.235c-35.046-35.046-23.729-81.108-7.715-101.8c12.765-16.49,31.709-26.483,52.966-26.483C226.375,194.207,246.493,214.131,256,238.345"
+                                , fill suitColorStr
+                                ]
+                                []
+                            ]
+                        ]
 
                     Spade ->
                         [ -- Spade suit symbol in lower half
