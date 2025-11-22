@@ -65,7 +65,7 @@ suitYRatio =
 
 rankFontSizeRatio : Float
 rankFontSizeRatio =
-    1.0
+    2.0
 
 
 

@@ -282,7 +282,7 @@ view model theme =
             800.0
 
         cardSize =
-            60.0
+            50.0
     in
     Element.el
         [ Element.width Element.fill
