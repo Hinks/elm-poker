@@ -149,8 +149,8 @@ viewCard cardSize card =
 
 viewHandRanking : Float -> ColorPalette -> HandRanking -> Element.Element msg
 viewHandRanking cardSize colors ranking =
-    Element.row
-        [ Element.spacing 20
+    Element.column
+        [ Element.spacing 10
         , Element.width Element.fill
         , Element.padding 20
         ]
@@ -158,7 +158,6 @@ viewHandRanking cardSize colors ranking =
             [ Font.size 18
             , Font.bold
             , Font.color colors.text
-            , Element.width (Element.px 200)
             ]
             (Element.text (String.fromInt ranking.number ++ ". " ++ ranking.name))
         , Element.row
