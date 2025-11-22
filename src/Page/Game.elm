@@ -355,7 +355,7 @@ viewBlindsSection model theme colors =
         ]
         [ -- Left column: Controls, timer, manual advance, and upcoming levels
           Element.el
-            [ Element.width (Element.fillPortion 3)
+            [ Element.width (Element.fillPortion 1)
             , Element.height Element.fill
             , Element.clip
             ]
@@ -365,6 +365,7 @@ viewBlindsSection model theme colors =
             [ Element.width (Element.fillPortion 3)
             , Element.height Element.fill
             , Element.clip
+            , Element.explain Debug.todo
             ]
             (viewCenterBlinds model theme colors)
         ]
@@ -512,6 +513,7 @@ viewCenterBlinds model theme colors =
         Just blind ->
             Element.row
                 [ Element.centerX
+                , Element.explain Debug.todo
                 ]
                 [ Element.html
                     (Icons.bigBlind
