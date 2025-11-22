@@ -109,7 +109,7 @@ cornerRadius =
 
 diamondPath : String
 diamondPath =
-    "M256,160 L340,256 L256,352 L172,256 Z"
+    "M256,176.552 L361.931,308.966 L256,441.379 L150.069,308.966 Z"
 
 
 heartPath : String
