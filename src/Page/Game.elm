@@ -303,6 +303,7 @@ view model theme =
             [ Element.width Element.fill
             , Element.height Element.fill
             , Element.spacing 20
+            , Element.centerX
             ]
             [ Element.el
                 [ Element.width Element.fill
@@ -337,7 +338,7 @@ view model theme =
                 )
             , Element.el
                 [ Element.width Element.fill
-                , Element.alignBottom
+                , Element.height Element.fill
                 , Element.explain Debug.todo
                 ]
                 (PokerHandRanking.view cardSize colors)
