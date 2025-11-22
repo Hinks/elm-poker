@@ -291,7 +291,7 @@ view model theme =
         , Font.color colors.text
         , Element.inFront
             (Element.el
-                [ Element.width Element.fill
+                [ Element.width Element.shrink
                 , Element.alignTop
                 , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
                 , Element.explain Debug.todo
@@ -357,7 +357,7 @@ view model theme =
 viewBlindsSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
 viewBlindsSection model theme colors =
     Element.el
-        [ Element.width Element.fill
+        [ Element.width Element.shrink
         , Element.padding 20
         , Element.alignTop
         ]
