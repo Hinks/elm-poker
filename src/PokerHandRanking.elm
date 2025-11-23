@@ -2,6 +2,8 @@ module PokerHandRanking exposing (view)
 
 import Element
 import Element.Font as Font
+import Html
+import Html.Attributes
 import Icons exposing (Suit(..))
 import Theme exposing (ColorPalette)
 
@@ -129,22 +131,91 @@ getSuitColor suit =
             Element.rgb255 0 0 0
 
 
-viewCard : Float -> Card -> Element.Element msg
-viewCard cardSize card =
+viewCard : Float -> Float -> Card -> Element.Element msg
+viewCard cardSize opacity card =
     Element.el
         [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
         ]
         (Element.html
-            (Icons.pokerCard
-                { size = cardSize
-                , rank = card.rank
-                , suit = card.suit
-                , backgroundColor = Element.rgb255 230 238 244
-                , rankColor = getSuitColor card.suit
-                , suitColor = getSuitColor card.suit
-                }
+            (Html.div
+                [ Html.Attributes.style "opacity" (String.fromFloat opacity)
+                ]
+                [ Icons.pokerCard
+                    { size = cardSize
+                    , rank = card.rank
+                    , suit = card.suit
+                    , backgroundColor = Element.rgb255 230 238 244
+                    , rankColor = getSuitColor card.suit
+                    , suitColor = getSuitColor card.suit
+                    }
+                ]
             )
         )
+
+
+getPlaceholderCards : Int -> List Card
+getPlaceholderCards rankingNumber =
+    case rankingNumber of
+        3 ->
+            -- Four of a Kind: 1 placeholder
+            [ { rank = "K", suit = Heart } ]
+
+        7 ->
+            -- Three of a Kind: 2 placeholders
+            [ { rank = "Q", suit = Spade }
+            , { rank = "3", suit = Heart }
+            ]
+
+        8 ->
+            -- Two Pair: 1 placeholder
+            [ { rank = "7", suit = Heart } ]
+
+        9 ->
+            -- Pair: 3 placeholders
+            [ { rank = "K", suit = Diamond }
+            , { rank = "J", suit = Spade }
+            , { rank = "7", suit = Heart }
+            ]
+
+        10 ->
+            -- High Card: 4 placeholders
+            [ { rank = "8", suit = Club }
+            , { rank = "Q", suit = Diamond }
+            , { rank = "2", suit = Spade }
+            , { rank = "7", suit = Heart }
+            ]
+
+        _ ->
+            -- Default: King of Hearts for any other case
+            [ { rank = "K", suit = Heart } ]
+
+
+padCardsToFive : Int -> List Card -> List ( Card, Float )
+padCardsToFive rankingNumber cards =
+    let
+        placeholderOpacity : Float
+        placeholderOpacity =
+            0.5
+
+        numPlaceholders : Int
+        numPlaceholders =
+            5 - List.length cards
+
+        placeholderCards : List Card
+        placeholderCards =
+            getPlaceholderCards rankingNumber
+
+        placeholders : List ( Card, Float )
+        placeholders =
+            placeholderCards
+                |> List.take numPlaceholders
+                |> List.map (\card -> ( card, placeholderOpacity ))
+
+        actualCards : List ( Card, Float )
+        actualCards =
+            List.map (\card -> ( card, 1.0 )) cards
+    in
+    actualCards ++ placeholders
 
 
 viewHandRanking : Float -> ColorPalette -> HandRanking -> Element.Element msg
@@ -164,7 +235,10 @@ viewHandRanking cardSize colors ranking =
             [ Element.spacing 0
             , Element.padding 0
             ]
-            (List.map (viewCard cardSize) ranking.cards)
+            (ranking.cards
+                |> padCardsToFive ranking.number
+                |> List.map (\( card, opacity ) -> viewCard cardSize opacity card)
+            )
         ]
 
 
