@@ -45,19 +45,19 @@ handRankings =
       , name = "Four of a Kind"
       , cards =
             [ { rank = "9", suit = Heart }
-            , { rank = "9", suit = Spade }
             , { rank = "9", suit = Club }
             , { rank = "9", suit = Diamond }
+            , { rank = "9", suit = Spade }
             ]
       }
     , { number = 4
       , name = "Full House"
       , cards =
-            [ { rank = "A", suit = Spade }
+            [ { rank = "A", suit = Heart }
             , { rank = "A", suit = Club }
-            , { rank = "A", suit = Heart }
-            , { rank = "3", suit = Club }
-            , { rank = "3", suit = Diamond }
+            , { rank = "A", suit = Diamond }
+            , { rank = "3", suit = Spade }
+            , { rank = "3", suit = Heart }
             ]
       }
     , { number = 5
@@ -73,41 +73,41 @@ handRankings =
     , { number = 6
       , name = "Straight"
       , cards =
-            [ { rank = "10", suit = Diamond }
-            , { rank = "9", suit = Spade }
-            , { rank = "8", suit = Club }
-            , { rank = "7", suit = Heart }
-            , { rank = "6", suit = Diamond }
+            [ { rank = "10", suit = Heart }
+            , { rank = "9", suit = Club }
+            , { rank = "8", suit = Diamond }
+            , { rank = "7", suit = Spade }
+            , { rank = "6", suit = Heart }
             ]
       }
     , { number = 7
       , name = "Three of a Kind"
       , cards =
-            [ { rank = "7", suit = Diamond }
+            [ { rank = "7", suit = Heart }
+            , { rank = "7", suit = Diamond }
             , { rank = "7", suit = Club }
-            , { rank = "7", suit = Spade }
             ]
       }
     , { number = 8
       , name = "Two Pair"
       , cards =
-            [ { rank = "5", suit = Diamond }
-            , { rank = "5", suit = Spade }
+            [ { rank = "J", suit = Heart }
+            , { rank = "J", suit = Club }
             , { rank = "7", suit = Diamond }
-            , { rank = "7", suit = Club }
+            , { rank = "7", suit = Spade }
             ]
       }
     , { number = 9
       , name = "Pair"
       , cards =
             [ { rank = "A", suit = Heart }
-            , { rank = "A", suit = Spade }
+            , { rank = "A", suit = Club }
             ]
       }
     , { number = 10
       , name = "High Card"
       , cards =
-            [ { rank = "K", suit = Diamond }
+            [ { rank = "K", suit = Heart }
             ]
       }
     ]
