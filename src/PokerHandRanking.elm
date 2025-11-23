@@ -34,11 +34,11 @@ handRankings =
     , { number = 2
       , name = "Straight Flush"
       , cards =
-            [ { rank = "10", suit = Club }
-            , { rank = "9", suit = Club }
-            , { rank = "8", suit = Club }
-            , { rank = "7", suit = Club }
-            , { rank = "6", suit = Club }
+            [ { rank = "J", suit = Spade }
+            , { rank = "10", suit = Spade }
+            , { rank = "9", suit = Spade }
+            , { rank = "8", suit = Spade }
+            , { rank = "7", suit = Spade }
             ]
       }
     , { number = 3
