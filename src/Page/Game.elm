@@ -1,6 +1,5 @@
 module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
 
-import Debug
 import Element
 import Element.Background as Background
 import Element.Font as Font
@@ -305,7 +304,6 @@ view model theme =
                 [ Element.width Element.shrink
                 , Element.alignTop
                 , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
-                , Element.explain Debug.todo
                 ]
                 (viewBlindsSection model theme colors)
             )
@@ -315,7 +313,6 @@ view model theme =
                 , Element.alignTop
                 , Element.alignRight
                 , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
-                , Element.explain Debug.todo
                 ]
                 (PokerHandRanking.view cardSize colors model.activeRankingIndex)
             )
@@ -336,7 +333,6 @@ view model theme =
                     [ Element.width (Element.px (round tableSize))
                     , Element.height (Element.px (round tableSize))
                     , Element.centerX
-                    , Element.explain Debug.todo
                     , Element.inFront
                         (Element.el
                             [ Element.width Element.fill
@@ -359,7 +355,6 @@ view model theme =
                         (Element.el
                             [ Element.width Element.fill
                             , Element.alignBottom
-                            , Element.explain Debug.todo
                             ]
                             (viewChips model.chips colors)
                         )
@@ -409,25 +404,21 @@ viewLeftControls model theme colors =
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.spacing 20
-        , Element.explain Debug.todo
         ]
         [ -- Timer controls and timer icon
           Element.wrappedRow
             [ Element.width Element.fill
             , Element.spacing 20
-            , Element.explain Debug.todo
             ]
             [ Element.column
                 [ Element.width Element.shrink
                 , Element.spacing 10
                 , Element.alignTop
-                , Element.explain Debug.todo
                 ]
                 [ Element.row
                     [ Element.spacing 10
                     , Element.alignTop
                     , Element.alignLeft
-                    , Element.explain Debug.todo
                     ]
                     [ Input.button
                         [ Element.padding 10
@@ -460,7 +451,6 @@ viewLeftControls model theme colors =
                 , Element.column
                     [ Element.spacing 5
                     , Element.alignLeft
-                    , Element.explain Debug.todo
                     ]
                     [ Element.el
                         [ Font.size 16
@@ -489,7 +479,6 @@ viewLeftControls model theme colors =
                 ]
             , Element.el
                 [ Element.width (Element.px (round timerSize))
-                , Element.explain Debug.todo
                 ]
                 (Element.html
                     (Icons.timer
@@ -522,7 +511,6 @@ viewCenterBlinds model theme colors =
         Just blind ->
             Element.row
                 [ Element.centerX
-                , Element.explain Debug.todo
                 ]
                 [ Element.html
                     (Icons.bigBlind
