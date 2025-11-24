@@ -9,6 +9,7 @@ import Html.Attributes
 import Icons
 import Page.Players exposing (Player)
 import PokerHandRanking
+import Random
 import Theme exposing (Theme)
 import Time
 
@@ -27,6 +28,7 @@ type alias Model =
     , timerState : TimerState
     , players : List Player
     , initialBuyIn : Int
+    , activeRankingIndex : Maybe Int
     }
 
 
@@ -86,6 +88,7 @@ init maybeExistingModel players buyIn =
             , timerState = Stopped
             , players = players
             , initialBuyIn = buyIn
+            , activeRankingIndex = Just 0
             }
 
 
@@ -163,6 +166,8 @@ type Msg
     | ResetTimer
     | BlindIndexUp
     | BlindIndexDown
+    | RankingTimerTick Time.Posix
+    | GenerateRandomRanking Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -255,6 +260,12 @@ update msg model =
             else
                 ( model, Cmd.none )
 
+        RankingTimerTick _ ->
+            ( model, Random.generate GenerateRandomRanking (Random.int 0 9) )
+
+        GenerateRandomRanking index ->
+            ( { model | activeRankingIndex = Just index }, Cmd.none )
+
 
 advanceToNextBlind : Model -> Model
 advanceToNextBlind model =
@@ -306,7 +317,7 @@ view model theme =
                 , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
                 , Element.explain Debug.todo
                 ]
-                (PokerHandRanking.view cardSize colors)
+                (PokerHandRanking.view cardSize colors model.activeRankingIndex)
             )
         ]
         (Element.column
@@ -793,12 +804,15 @@ getUpcomingBlinds model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.timerState of
-        Running ->
-            Time.every 1000 TimerTick
+    Sub.batch
+        [ case model.timerState of
+            Running ->
+                Time.every 1000 TimerTick
 
-        Paused ->
-            Sub.none
+            Paused ->
+                Sub.none
 
-        Stopped ->
-            Sub.none
+            Stopped ->
+                Sub.none
+        , Time.every (15 * 1000) RankingTimerTick
+        ]

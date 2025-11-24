@@ -5,6 +5,7 @@ import Element.Font as Font
 import Html
 import Html.Attributes
 import Icons exposing (Suit(..))
+import TextAnimation
 import Theme exposing (ColorPalette)
 
 
@@ -131,10 +132,20 @@ getSuitColor suit =
             Element.rgb255 0 0 0
 
 
-viewCard : Float -> Float -> Card -> Element.Element msg
-viewCard cardSize opacity card =
+viewCard : Float -> Float -> Bool -> Card -> Element.Element msg
+viewCard cardSize opacity isLastCard card =
     Element.el
-        [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
+        [ Element.paddingEach
+            { top = 0
+            , right =
+                if isLastCard then
+                    0
+
+                else
+                    10
+            , bottom = 0
+            , left = 0
+            }
         ]
         (Element.html
             (Html.div
@@ -218,34 +229,104 @@ padCardsToFive rankingNumber cards =
     actualCards ++ placeholders
 
 
-viewHandRanking : Float -> ColorPalette -> HandRanking -> Element.Element msg
-viewHandRanking cardSize colors ranking =
-    Element.column
-        [ Element.spacing 5
-        , Element.width Element.fill
-        , Element.padding 0
-        ]
-        [ Element.el
-            [ Font.size 18
-            , Font.bold
-            , Font.color colors.text
-            ]
-            (Element.text (String.fromInt ranking.number ++ ". " ++ ranking.name))
-        , Element.row
-            [ Element.spacing 0
-            , Element.padding 0
-            ]
-            (ranking.cards
-                |> padCardsToFive ranking.number
-                |> List.map (\( card, opacity ) -> viewCard cardSize opacity card)
+viewHandRanking : Float -> ColorPalette -> Bool -> HandRanking -> Element.Element msg
+viewHandRanking cardSize colors shouldAnimate ranking =
+    let
+        -- Calculate container dimensions
+        -- With 5 cards: 4 cards have right padding (10px each) + 5 * cardSize
+        containerWidth : Int
+        containerWidth =
+            round (5 * cardSize + 40)
+
+        containerHeight : Int
+        containerHeight =
+            round cardSize
+
+        cardRow : Element.Element msg
+        cardRow =
+            let
+                paddedCards : List ( Card, Float )
+                paddedCards =
+                    ranking.cards
+                        |> padCardsToFive ranking.number
+            in
+            Element.row
+                [ Element.spacing 0
+                , Element.padding 0
+                ]
+                (paddedCards
+                    |> List.indexedMap
+                        (\index ( card, opacity ) ->
+                            let
+                                isLastCard : Bool
+                                isLastCard =
+                                    index == List.length paddedCards - 1
+                            in
+                            viewCard cardSize opacity isLastCard card
+                        )
+                )
+
+        textDisplay : Element.Element msg
+        textDisplay =
+            if shouldAnimate then
+                let
+                    animatedTextConfig : TextAnimation.Config
+                    animatedTextConfig =
+                        { speed = 10.0
+                        , repeat = 1
+                        , textColor = colors.text
+                        , fontSizeMin = 0.3
+                        , fontSizePreferred = "4vh"
+                        , fontSizeMax = 1.0
+                        }
+                in
+                Element.html
+                    (Html.div
+                        [ Html.Attributes.style "width" "100%"
+                        , Html.Attributes.style "height" (String.fromInt containerHeight ++ "px")
+                        ]
+                        [ TextAnimation.view animatedTextConfig ranking.name
+                        ]
+                    )
+
+            else
+                Element.none
+    in
+    Element.el
+        [ Element.width (Element.px containerWidth)
+        , Element.height (Element.px containerHeight)
+        , Element.inFront
+            (Element.el
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.centerX
+                , Element.alignBottom
+                , Element.moveDown (cardSize * 0.5)
+                ]
+                textDisplay
             )
         ]
+        cardRow
 
 
-view : Float -> ColorPalette -> Element.Element msg
-view cardSize colors =
+view : Float -> ColorPalette -> Maybe Int -> Element.Element msg
+view cardSize colors maybeActiveIndex =
     Element.column
-        [ Element.spacing 20
+        [ Element.spacing 40
         , Element.width Element.fill
         ]
-        (List.map (viewHandRanking cardSize colors) handRankings)
+        (handRankings
+            |> List.indexedMap
+                (\index ranking ->
+                    let
+                        shouldAnimate =
+                            case maybeActiveIndex of
+                                Just activeIndex ->
+                                    index == activeIndex
+
+                                Nothing ->
+                                    False
+                    in
+                    viewHandRanking cardSize colors shouldAnimate ranking
+                )
+        )

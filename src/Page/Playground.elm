@@ -4,8 +4,10 @@ import Element
 import Element.Background as Background
 import Element.Font as Font
 import Html
+import Html.Attributes as Attr
 import Icons
 import PokerHandRanking
+import TextAnimation
 import Theme exposing (Theme)
 
 
@@ -41,8 +43,17 @@ view theme =
             , Element.el
                 [ Element.width (Element.px 900)
                 , Element.centerX
+                , Element.paddingXY 0 40
                 ]
-                (PokerHandRanking.view 80 colors)
+                (PokerHandRanking.view 60 colors Nothing)
+            , viewIconSection "Text Animation"
+                colors
+                (Html.div
+                    [ Attr.style "width" "100%"
+                    , Attr.style "height" "400px"
+                    ]
+                    [ TextAnimation.view TextAnimation.defaultConfig "ELM POKER" ]
+                )
             , Element.el
                 [ Element.width Element.fill
                 , Element.spacing 20
@@ -54,7 +65,7 @@ view theme =
                     [ viewIconSection "Poker Card"
                         colors
                         (Icons.pokerCard
-                            { size = 120
+                            { size = 80
                             , rank = "K"
                             , suit = Icons.Diamond
                             , backgroundColor = Element.rgb255 230 238 244
