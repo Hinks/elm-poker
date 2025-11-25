@@ -1,4 +1,4 @@
-module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
+port module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
 
 import Element
 import Element.Background as Background
@@ -12,6 +12,13 @@ import PokerHandRanking
 import Random
 import Theme exposing (Theme)
 import Time
+
+
+
+-- PORT
+
+
+port blindTimerAlert : () -> Cmd msg
 
 
 
@@ -212,7 +219,7 @@ update msg model =
                     )
 
                 else
-                    ( { model | timerState = Expired }, Cmd.none )
+                    ( { model | timerState = Expired }, blindTimerAlert () )
 
             else
                 ( model, Cmd.none )
