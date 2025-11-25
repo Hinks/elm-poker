@@ -13,6 +13,38 @@
             var app = Elm.Main.init({
                 node: document.getElementById("app"),
             });
+
+            function blindTimerAlert() {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+                function tone(freq, startTime, duration) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(freq, startTime);
+
+                    // Envelope
+                    gain.gain.setValueAtTime(0.0001, startTime);
+                    gain.gain.exponentialRampToValueAtTime(1.0, startTime + 0.02);  // quick attack
+                    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + duration);
+                }
+
+                const now = ctx.currentTime;
+
+                tone(1200, now, 0.25);        // High "ding"
+                tone(900,  now + 0.20, 0.35); // Lower "dong"
+            }
+
+            app.ports.blindTimerAlert.subscribe(function() {
+                blindTimerAlert();
+            });
         </script>
     </body>
 </html>

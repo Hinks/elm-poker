@@ -6672,6 +6672,12 @@ var $author$project$Page$Game$advanceToNextBlind = function (model) {
 		model,
 		{v: 0});
 };
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Page$Game$blindTimerAlert = _Platform_outgoingPort(
+	'blindTimerAlert',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
 var $elm$random$Random$Generate = $elm$core$Basics$identity;
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
@@ -6841,7 +6847,7 @@ var $author$project$Page$Game$update = F2(
 					_Utils_update(
 						model,
 						{m: 3}),
-					$elm$core$Platform$Cmd$none)) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					$author$project$Page$Game$blindTimerAlert(0))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 3:
 				var _v2 = model.m;
 				switch (_v2) {
