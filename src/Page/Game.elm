@@ -4,6 +4,7 @@ import Element
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
+import Html
 import Html.Attributes
 import Icons
 import Page.Players exposing (Player)
@@ -45,6 +46,7 @@ type TimerState
     = Running
     | Paused
     | Stopped
+    | Expired
 
 
 type ChipColor
@@ -167,6 +169,7 @@ type Msg
     | BlindIndexDown
     | RankingTimerTick Time.Posix
     | GenerateRandomRanking Int
+    | StartNextBlind
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -209,7 +212,7 @@ update msg model =
                     )
 
                 else
-                    ( advanceToNextBlind model, Cmd.none )
+                    ( { model | timerState = Expired }, Cmd.none )
 
             else
                 ( model, Cmd.none )
@@ -224,6 +227,9 @@ update msg model =
 
                 Running ->
                     ( { model | timerState = Paused }, Cmd.none )
+
+                Expired ->
+                    ( model, Cmd.none )
 
         ResetTimer ->
             ( { model
@@ -264,6 +270,19 @@ update msg model =
 
         GenerateRandomRanking index ->
             ( { model | activeRankingIndex = Just index }, Cmd.none )
+
+        StartNextBlind ->
+            if model.currentBlindIndex < List.length model.blinds - 1 then
+                let
+                    advancedModel =
+                        advanceToNextBlind model
+                in
+                ( { advancedModel | timerState = Running }
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
 
 
 advanceToNextBlind : Model -> Model
@@ -312,7 +331,7 @@ view model theme =
                 [ Element.width Element.shrink
                 , Element.alignTop
                 , Element.alignRight
-                , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
+                , Element.paddingEach { top = 30, right = 20, bottom = 0, left = 0 }
                 ]
                 (PokerHandRanking.view cardSize colors model.activeRankingIndex)
             )
@@ -399,6 +418,49 @@ viewLeftControls model theme colors =
 
         timerDurationMinutes =
             toFloat model.blindDuration / 60.0
+
+        controlButtons =
+            case model.timerState of
+                Expired ->
+                    viewBlinkingStartNextBlindButton model colors
+
+                _ ->
+                    Element.row
+                        [ Element.spacing 10
+                        , Element.alignTop
+                        , Element.alignLeft
+                        ]
+                        [ Input.button
+                            [ Element.padding 10
+                            , Background.color colors.primary
+                            , Font.color colors.text
+                            ]
+                            { onPress = Just StartPauseTimer
+                            , label =
+                                Element.text
+                                    (case model.timerState of
+                                        Running ->
+                                            "Pause"
+
+                                        Paused ->
+                                            "Start"
+
+                                        Stopped ->
+                                            "Start"
+
+                                        Expired ->
+                                            "Start"
+                                    )
+                            }
+                        , Input.button
+                            [ Element.padding 10
+                            , Background.color colors.primary
+                            , Font.color colors.text
+                            ]
+                            { onPress = Just ResetTimer
+                            , label = Element.text "Reset"
+                            }
+                        ]
     in
     Element.column
         [ Element.width Element.fill
@@ -415,39 +477,7 @@ viewLeftControls model theme colors =
                 , Element.spacing 10
                 , Element.alignTop
                 ]
-                [ Element.row
-                    [ Element.spacing 10
-                    , Element.alignTop
-                    , Element.alignLeft
-                    ]
-                    [ Input.button
-                        [ Element.padding 10
-                        , Background.color colors.primary
-                        , Font.color colors.text
-                        ]
-                        { onPress = Just StartPauseTimer
-                        , label =
-                            Element.text
-                                (case model.timerState of
-                                    Running ->
-                                        "Pause"
-
-                                    Paused ->
-                                        "Start"
-
-                                    Stopped ->
-                                        "Start"
-                                )
-                        }
-                    , Input.button
-                        [ Element.padding 10
-                        , Background.color colors.primary
-                        , Font.color colors.text
-                        ]
-                        { onPress = Just ResetTimer
-                        , label = Element.text "Reset"
-                        }
-                    ]
+                [ controlButtons
                 , Element.column
                     [ Element.spacing 5
                     , Element.alignLeft
@@ -573,6 +603,47 @@ viewManualBlindsAdvance model colors =
                 , label = Element.text "↓"
                 }
             ]
+        ]
+
+
+viewBlinkingStartNextBlindButton : Model -> Theme.ColorPalette -> Element.Element Msg
+viewBlinkingStartNextBlindButton model colors =
+    let
+        canAdvance =
+            model.currentBlindIndex < List.length model.blinds - 1
+
+        blinkAnimationStyle =
+            Html.Attributes.style "animation" "blink 1s infinite"
+
+        blinkKeyframes =
+            Html.node "style"
+                []
+                [ Html.text
+                    ("@keyframes blink {\n"
+                        ++ "  0% { opacity: 1; }\n"
+                        ++ "  50% { opacity: 0.3; }\n"
+                        ++ "  100% { opacity: 1; }\n"
+                        ++ "}"
+                    )
+                ]
+    in
+    Element.column
+        [ Element.spacing 0 ]
+        [ Element.html blinkKeyframes
+        , Input.button
+            [ Element.padding 10
+            , Background.color colors.primary
+            , Font.color colors.text
+            , Element.htmlAttribute blinkAnimationStyle
+            ]
+            { onPress =
+                if canAdvance then
+                    Just StartNextBlind
+
+                else
+                    Nothing
+            , label = Element.text "Start Next Blind"
+            }
         ]
 
 
@@ -801,6 +872,9 @@ subscriptions model =
                 Sub.none
 
             Stopped ->
+                Sub.none
+
+            Expired ->
                 Sub.none
         , Time.every (15 * 1000) RankingTimerTick
         ]
