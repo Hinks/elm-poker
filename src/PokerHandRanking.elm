@@ -301,7 +301,7 @@ viewHandRanking cardSize colors shouldAnimate ranking =
                 , Element.height Element.fill
                 , Element.centerX
                 , Element.alignBottom
-                , Element.moveDown (cardSize * 0.5)
+                , Element.moveDown (cardSize * 0.6)
                 ]
                 textDisplay
             )
