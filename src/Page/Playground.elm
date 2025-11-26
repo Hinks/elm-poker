@@ -102,6 +102,13 @@ view theme =
                             , color = colors.accent
                             }
                         )
+                    , viewIconSection "Strawberry"
+                        colors
+                        (Icons.strawberry
+                            { size = 200
+                            , color = Element.rgb255 232 67 63
+                            }
+                        )
                     , viewIconSection "Timer"
                         colors
                         (Icons.timer

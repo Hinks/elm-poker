@@ -1,4 +1,4 @@
-module Icons exposing (BlindOptions, CardOptions, CircleOptions, DollarOptions, PokerChipOptions, PokerTableOptions, Suit(..), TimerOptions, bigBlind, dollar, pokerCard, pokerChip, pokerTable, smallBlind, timer)
+module Icons exposing (BlindOptions, CardOptions, CircleOptions, DollarOptions, PokerChipOptions, PokerTableOptions, StrawberryOptions, Suit(..), TimerOptions, bigBlind, dollar, pokerCard, pokerChip, pokerTable, smallBlind, strawberry, timer)
 
 import Element exposing (Color)
 import Html
@@ -9,6 +9,7 @@ import Icons.PokerCard
 import Icons.PokerChip
 import Icons.PokerTable
 import Icons.SmallBlind
+import Icons.Strawberry
 import Icons.Timer
 
 
@@ -57,6 +58,12 @@ type alias PokerChipOptions =
 
 
 type alias PokerTableOptions =
+    { size : Float
+    , color : Color
+    }
+
+
+type alias StrawberryOptions =
     { size : Float
     , color : Color
     }
@@ -164,6 +171,14 @@ smallBlind options =
         , labelTextColor = options.labelTextColor
         , valueTextColor = options.valueTextColor
         , value = options.value
+        }
+
+
+strawberry : StrawberryOptions -> Html.Html msg
+strawberry options =
+    Icons.Strawberry.strawberry
+        { size = options.size
+        , color = options.color
         }
 
 
