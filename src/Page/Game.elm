@@ -1264,19 +1264,17 @@ viewBuyInCollapseExpandButton model colors =
 viewFooterMarquee : Theme.ColorPalette -> Element.Element Msg
 viewFooterMarquee _ =
     Marquee.view
-        [ "Don't talk about your hand while cards are still being dealt"
-        , "Never reveal your folded cards"
-        , "Don't discuss ongoing hands"
-        , "Don't slow roll — show your winning hand quickly"
-        , "Don't soft-play friends — always play competitively"
-        , "Act only when it's your turn"
-        , "Announce your action clearly: call, raise, or fold"
-        , "A raise must be one smooth motion"
-        , "Chips placed in silently count as a call"
-        , "Minimum raise must match the previous full raise"
-        , "Only chips on the table count"
-        , "Show both hole cards to win the pot at showdown"
-        , "Blinds rotate clockwise each hand"
+        [ "Blinds move clockwise"
+        , "You must at least match the big blind to play"
+        , "A raise must be at least as big as the last raise"
+        , "Only use the chips in front of you for betting"
+        , "Place chips clearly in the pot"
+        , "Don’t say what you folded"
+        , "Don’t show your cards before showdown"
+        , "Don’t act before your turn"
+        , "Don’t talk about someone else’s hand"
+        , "Don’t touch other players’ chips or cards"
+        , "Keep your cards on the table while playing"
         ]
 
 
