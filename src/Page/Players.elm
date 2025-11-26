@@ -6,6 +6,7 @@ import Element.Font
 import Element.Input
 import Html.Attributes
 import Html.Events
+import Icons
 import Json.Decode as Decode
 import Random
 import Theme exposing (Theme)
@@ -420,9 +421,10 @@ viewInitialBuyInSection model colors =
         , Element.row
             [ Element.width Element.fill
             , Element.spacing 10
+            , Element.alignLeft
             ]
             [ Element.Input.text
-                [ Element.width (Element.fillPortion 3)
+                [ Element.width (Element.px 200)
                 , Element.padding 8
                 , Element.Background.color colors.surface
                 , Element.Font.color colors.text
@@ -432,10 +434,12 @@ viewInitialBuyInSection model colors =
                 , placeholder = Just (Element.Input.placeholder [] (Element.text "Enter initial buy-in amount"))
                 , label = Element.Input.labelHidden "Initial buy-in amount"
                 }
-            , Element.el
-                [ Element.width (Element.fillPortion 1)
-                ]
-                Element.none
+            , Element.html
+                (Icons.strawberry
+                    { size = 32.0
+                    , color = Element.rgb255 232 67 63
+                    }
+                )
             ]
         ]
 
