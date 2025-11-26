@@ -4,6 +4,7 @@ import Element
 import Element.Background
 import Element.Font
 import Element.Input
+import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
 import Random
@@ -83,24 +84,60 @@ update msg model =
             )
 
         AddPlayer ->
-            if String.trim model.newPlayerName == "" then
+            if not (canAddPlayer model) then
                 ( model, Cmd.none )
 
             else
+                let
+                    newPlayer =
+                        Player (String.trim model.newPlayerName)
+
+                    updatedPlayers =
+                        model.players ++ [ newPlayer ]
+
+                    updatedSeatingArrangement =
+                        Maybe.map (addPlayerToSeatingArrangement newPlayer) model.seatingArrangement
+                in
                 ( { model
-                    | players = model.players ++ [ Player (String.trim model.newPlayerName) ]
+                    | players = updatedPlayers
                     , newPlayerName = ""
+                    , seatingArrangement = updatedSeatingArrangement
                   }
                 , Cmd.none
                 )
 
         RemovePlayer index ->
-            ( { model
-                | players =
+            let
+                playerToRemove =
+                    model.players
+                        |> List.drop index
+                        |> List.head
+
+                updatedPlayers =
                     model.players
                         |> List.indexedMap Tuple.pair
                         |> List.filter (\( i, _ ) -> i /= index)
                         |> List.map Tuple.second
+
+                updatedSeatingArrangement =
+                    case ( playerToRemove, model.seatingArrangement ) of
+                        ( Just player, Just tables ) ->
+                            let
+                                updatedTables =
+                                    removePlayerFromSeatingArrangement player tables
+                            in
+                            if List.isEmpty updatedTables then
+                                Nothing
+
+                            else
+                                Just updatedTables
+
+                        _ ->
+                            model.seatingArrangement
+            in
+            ( { model
+                | players = updatedPlayers
+                , seatingArrangement = updatedSeatingArrangement
               }
             , Cmd.none
             )
@@ -139,6 +176,33 @@ update msg model =
               }
             , Cmd.none
             )
+
+
+isPlayerNameUnique : String -> List Player -> Bool
+isPlayerNameUnique name players =
+    let
+        trimmedName =
+            String.trim name
+
+        extractPlayerName : Player -> String
+        extractPlayerName player =
+            case player of
+                Player playerName ->
+                    playerName
+
+        existingNames =
+            List.map extractPlayerName players
+    in
+    not (List.member trimmedName existingNames)
+
+
+canAddPlayer : Model -> Bool
+canAddPlayer model =
+    let
+        trimmedName =
+            String.trim model.newPlayerName
+    in
+    trimmedName /= "" && isPlayerNameUnique trimmedName model.players
 
 
 shufflePlayers : Int -> List Player -> List Player
@@ -230,6 +294,87 @@ distributeIntoTables players =
     distribute players 0 tablesNeeded []
 
 
+getTablePlayerCount : Table -> Int
+getTablePlayerCount table =
+    case table of
+        Table players ->
+            List.length players
+
+
+addPlayerToTable : Player -> Table -> Table
+addPlayerToTable player table =
+    case table of
+        Table players ->
+            Table (players ++ [ player ])
+
+
+removePlayerFromTable : Player -> Table -> Table
+removePlayerFromTable playerToRemove table =
+    case table of
+        Table players ->
+            Table (List.filter (\player -> player /= playerToRemove) players)
+
+
+findTableWithLeastPlayersIndex : List Table -> Int
+findTableWithLeastPlayersIndex tables =
+    let
+        indexedTables =
+            List.indexedMap Tuple.pair tables
+
+        findMinIndex : List ( Int, Table ) -> Int -> Int -> Int
+        findMinIndex remaining currentIndex minCount =
+            case remaining of
+                [] ->
+                    currentIndex
+
+                ( index, table ) :: rest ->
+                    let
+                        count =
+                            getTablePlayerCount table
+                    in
+                    if count < minCount then
+                        findMinIndex rest index count
+
+                    else
+                        findMinIndex rest currentIndex minCount
+    in
+    case indexedTables of
+        [] ->
+            0
+
+        ( firstIndex, firstTable ) :: rest ->
+            findMinIndex rest firstIndex (getTablePlayerCount firstTable)
+
+
+addPlayerToSeatingArrangement : Player -> List Table -> List Table
+addPlayerToSeatingArrangement player tables =
+    let
+        targetIndex =
+            findTableWithLeastPlayersIndex tables
+
+        updateTableAtIndex : Int -> List Table -> List Table
+        updateTableAtIndex targetIdx remaining =
+            case remaining of
+                [] ->
+                    []
+
+                table :: rest ->
+                    if targetIdx == 0 then
+                        addPlayerToTable player table :: rest
+
+                    else
+                        table :: updateTableAtIndex (targetIdx - 1) rest
+    in
+    updateTableAtIndex targetIndex tables
+
+
+removePlayerFromSeatingArrangement : Player -> List Table -> List Table
+removePlayerFromSeatingArrangement playerToRemove tables =
+    tables
+        |> List.map (removePlayerFromTable playerToRemove)
+        |> List.filter (\table -> getTablePlayerCount table > 0)
+
+
 
 -- VIEW
 
@@ -297,6 +442,10 @@ viewInitialBuyInSection model colors =
 
 viewAddPlayerSection : Model -> Theme.ColorPalette -> Element.Element Msg
 viewAddPlayerSection model colors =
+    let
+        canAdd =
+            canAddPlayer model
+    in
     Element.column
         [ Element.width Element.fill
         , Element.spacing 10
@@ -311,7 +460,7 @@ viewAddPlayerSection model colors =
                 , Element.padding 8
                 , Element.Background.color colors.surface
                 , Element.Font.color colors.text
-                , onEnterPress AddPlayer
+                , onEnterPressIf canAdd AddPlayer
                 ]
                 { onChange = PlayerNameChanged
                 , text = model.newPlayerName
@@ -322,10 +471,27 @@ viewAddPlayerSection model colors =
             , Element.Input.button
                 [ Element.padding 8
                 , Element.width (Element.fillPortion 1)
-                , Element.Background.color colors.primary
-                , Element.Font.color colors.text
+                , Element.Background.color
+                    (if canAdd then
+                        colors.primary
+
+                     else
+                        colors.surface
+                    )
+                , Element.Font.color
+                    (if canAdd then
+                        colors.text
+
+                     else
+                        colors.textSecondary
+                    )
                 ]
-                { onPress = Just AddPlayer
+                { onPress =
+                    if canAdd then
+                        Just AddPlayer
+
+                    else
+                        Nothing
                 , label = Element.text "Add"
                 }
             ]
@@ -542,3 +708,12 @@ onEnterPress msg =
                     )
             )
         )
+
+
+onEnterPressIf : Bool -> Msg -> Element.Attribute Msg
+onEnterPressIf condition msg =
+    if condition then
+        onEnterPress msg
+
+    else
+        Element.htmlAttribute (Html.Attributes.class "")
