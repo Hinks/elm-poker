@@ -6,6 +6,7 @@ import Element.Font as Font
 import Html
 import Html.Attributes as Attr
 import Icons
+import Marquee
 import PokerHandRanking
 import TextAnimation
 import Theme exposing (Theme)
@@ -54,6 +55,25 @@ view theme =
                     ]
                     [ TextAnimation.view TextAnimation.defaultConfig "ELM POKER" ]
                 )
+            , Element.column
+                [ Element.spacing 10
+                , Element.width Element.fill
+                , Element.padding 20
+                , Background.color colors.surface
+                ]
+                [ Element.el
+                    [ Font.size 20
+                    , Font.bold
+                    , Font.color colors.text
+                    ]
+                    (Element.text "Marquee")
+                , Marquee.view
+                    [ "Welcome to Elm Poker"
+                    , "Test marquee component"
+                    , "Scrolling text animation"
+                    , "Right to left movement"
+                    ]
+                ]
             , Element.el
                 [ Element.width Element.fill
                 , Element.spacing 20

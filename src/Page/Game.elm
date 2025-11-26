@@ -8,6 +8,7 @@ import Html
 import Html.Attributes
 import Html.Events
 import Icons
+import Marquee
 import Page.Players exposing (Player)
 import PokerHandRanking
 import Random
@@ -498,6 +499,15 @@ view model theme =
                 , Element.paddingEach { top = 0, right = 0, bottom = 0, left = 10 }
                 ]
                 (viewBuyInSection model theme colors)
+            )
+        , Element.inFront
+            (Element.el
+                [ Element.width Element.fill
+                , Element.alignBottom
+                , Element.moveUp -280
+                , Background.color colors.surface
+                ]
+                (viewFooterMarquee colors)
             )
         ]
         (Element.column
@@ -1249,6 +1259,25 @@ viewBuyInCollapseExpandButton model colors =
 
     else
         Element.none
+
+
+viewFooterMarquee : Theme.ColorPalette -> Element.Element Msg
+viewFooterMarquee _ =
+    Marquee.view
+        [ "Don't talk about your hand while cards are still being dealt"
+        , "Never reveal your folded cards"
+        , "Don't discuss ongoing hands"
+        , "Don't slow roll — show your winning hand quickly"
+        , "Don't soft-play friends — always play competitively"
+        , "Act only when it's your turn"
+        , "Announce your action clearly: call, raise, or fold"
+        , "A raise must be one smooth motion"
+        , "Chips placed in silently count as a call"
+        , "Minimum raise must match the previous full raise"
+        , "Only chips on the table count"
+        , "Show both hole cards to win the pot at showdown"
+        , "Blinds rotate clockwise each hand"
+        ]
 
 
 
