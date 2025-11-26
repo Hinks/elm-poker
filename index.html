@@ -2,6 +2,16 @@
 <html>
     <head>
         <meta charset="UTF-8" />
+        <style>
+            @keyframes marquee-content {
+                0% {
+                    transform: translateX(0%);
+                }
+                100% {
+                    transform: translateX(-100%);
+                }
+            }
+        </style>
     </head>
 
     <body>
@@ -15,7 +25,8 @@
             });
 
             function blindTimerAlert() {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = new (window.AudioContext ||
+                    window.webkitAudioContext)();
 
                 function tone(freq, startTime, duration) {
                     const osc = ctx.createOscillator();
@@ -26,8 +37,14 @@
 
                     // Envelope
                     gain.gain.setValueAtTime(0.0001, startTime);
-                    gain.gain.exponentialRampToValueAtTime(1.0, startTime + 0.02);  // quick attack
-                    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+                    gain.gain.exponentialRampToValueAtTime(
+                        1.0,
+                        startTime + 0.02
+                    ); // quick attack
+                    gain.gain.exponentialRampToValueAtTime(
+                        0.0001,
+                        startTime + duration
+                    );
 
                     osc.connect(gain);
                     gain.connect(ctx.destination);
@@ -38,11 +55,11 @@
 
                 const now = ctx.currentTime;
 
-                tone(1200, now, 0.25);        // High "ding"
-                tone(900,  now + 0.20, 0.35); // Lower "dong"
+                tone(1200, now, 0.25); // High "ding"
+                tone(900, now + 0.2, 0.35); // Lower "dong"
             }
 
-            app.ports.blindTimerAlert.subscribe(function() {
+            app.ports.blindTimerAlert.subscribe(function () {
                 blindTimerAlert();
             });
         </script>
