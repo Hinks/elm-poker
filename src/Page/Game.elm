@@ -6,6 +6,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
+import Html.Events
 import Icons
 import Page.Players exposing (Player)
 import PokerHandRanking
@@ -36,6 +37,13 @@ type alias Model =
     , players : List Player
     , initialBuyIn : Int
     , activeRankingIndex : Maybe Int
+    , buyIns : List BuyIn
+    , selectedPlayerForBuyIn : Maybe Int
+    , buyInTimerDuration : Seconds
+    , buyInTimerDurationInput : String
+    , buyInRemainingTime : Seconds
+    , buyInTimerState : TimerState
+    , buyInListCollapsed : Bool
     }
 
 
@@ -68,6 +76,10 @@ type Chip
     = Chip ChipColor Int
 
 
+type BuyIn
+    = BuyIn Int
+
+
 init : Maybe Model -> List Player -> Int -> Model
 init maybeExistingModel players buyIn =
     case maybeExistingModel of
@@ -97,6 +109,13 @@ init maybeExistingModel players buyIn =
             , players = players
             , initialBuyIn = buyIn
             , activeRankingIndex = Just 0
+            , buyIns = []
+            , selectedPlayerForBuyIn = Nothing
+            , buyInTimerDuration = 30 * 60
+            , buyInTimerDurationInput = "30"
+            , buyInRemainingTime = 30 * 60
+            , buyInTimerState = Stopped
+            , buyInListCollapsed = True
             }
 
 
@@ -166,6 +185,32 @@ getSmallBlindBackgroundColor theme colors =
 -- UPDATE
 
 
+isPlayerInBuyIns : Int -> List BuyIn -> Bool
+isPlayerInBuyIns playerIndex buyIns =
+    List.any
+        (\buyIn ->
+            case buyIn of
+                BuyIn index ->
+                    index == playerIndex
+        )
+        buyIns
+
+
+canAddBuyIn : Model -> Bool
+canAddBuyIn model =
+    model.buyInTimerState
+        /= Expired
+        && model.selectedPlayerForBuyIn
+        /= Nothing
+        && (case model.selectedPlayerForBuyIn of
+                Just playerIndex ->
+                    not (isPlayerInBuyIns playerIndex model.buyIns)
+
+                Nothing ->
+                    False
+           )
+
+
 type Msg
     = NoOp
     | BlindDurationChanged String
@@ -177,6 +222,14 @@ type Msg
     | RankingTimerTick Time.Posix
     | GenerateRandomRanking Int
     | StartNextBlind
+    | BuyInPlayerSelected (Maybe Int)
+    | BuyInDurationChanged String
+    | AddBuyIn
+    | RemoveBuyIn Int
+    | BuyInTimerTick Time.Posix
+    | StartPauseBuyInTimer
+    | ResetBuyInTimer
+    | ToggleBuyInList
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -291,6 +344,101 @@ update msg model =
             else
                 ( model, Cmd.none )
 
+        BuyInPlayerSelected maybeIndex ->
+            ( { model | selectedPlayerForBuyIn = maybeIndex }, Cmd.none )
+
+        BuyInDurationChanged str ->
+            if model.buyInTimerState == Stopped then
+                case String.toInt str of
+                    Just minutes ->
+                        if minutes > 0 then
+                            let
+                                durationInSeconds =
+                                    minutes * 60
+                            in
+                            ( { model
+                                | buyInTimerDurationInput = str
+                                , buyInTimerDuration = durationInSeconds
+                                , buyInRemainingTime = durationInSeconds
+                              }
+                            , Cmd.none
+                            )
+
+                        else
+                            ( { model | buyInTimerDurationInput = str }, Cmd.none )
+
+                    Nothing ->
+                        ( { model | buyInTimerDurationInput = str }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        AddBuyIn ->
+            if canAddBuyIn model then
+                case model.selectedPlayerForBuyIn of
+                    Just playerIndex ->
+                        ( { model
+                            | buyIns = model.buyIns ++ [ BuyIn playerIndex ]
+                            , selectedPlayerForBuyIn = Nothing
+                          }
+                        , Cmd.none
+                        )
+
+                    Nothing ->
+                        ( model, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        RemoveBuyIn index ->
+            let
+                updatedBuyIns =
+                    model.buyIns
+                        |> List.indexedMap Tuple.pair
+                        |> List.filter (\( i, _ ) -> i /= index)
+                        |> List.map Tuple.second
+            in
+            ( { model | buyIns = updatedBuyIns }, Cmd.none )
+
+        BuyInTimerTick _ ->
+            if model.buyInTimerState == Running then
+                if model.buyInRemainingTime > 0 then
+                    ( { model | buyInRemainingTime = model.buyInRemainingTime - 1 }
+                    , Cmd.none
+                    )
+
+                else
+                    ( { model | buyInTimerState = Expired }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        StartPauseBuyInTimer ->
+            case model.buyInTimerState of
+                Stopped ->
+                    ( { model | buyInTimerState = Running }, Cmd.none )
+
+                Paused ->
+                    ( { model | buyInTimerState = Running }, Cmd.none )
+
+                Running ->
+                    ( { model | buyInTimerState = Paused }, Cmd.none )
+
+                Expired ->
+                    ( model, Cmd.none )
+
+        ResetBuyInTimer ->
+            ( { model
+                | buyInRemainingTime = model.buyInTimerDuration
+                , buyInTimerState = Stopped
+                , buyInTimerDurationInput = String.fromInt (model.buyInTimerDuration // 60)
+              }
+            , Cmd.none
+            )
+
+        ToggleBuyInList ->
+            ( { model | buyInListCollapsed = not model.buyInListCollapsed }, Cmd.none )
+
 
 advanceToNextBlind : Model -> Model
 advanceToNextBlind model =
@@ -342,6 +490,15 @@ view model theme =
                 ]
                 (PokerHandRanking.view cardSize colors model.activeRankingIndex)
             )
+        , Element.inFront
+            (Element.el
+                [ Element.width Element.shrink
+                , Element.alignTop
+                , Element.moveDown 550
+                , Element.paddingEach { top = 0, right = 0, bottom = 0, left = 10 }
+                ]
+                (viewBuyInSection model theme colors)
+            )
         ]
         (Element.column
             [ Element.width Element.fill
@@ -366,7 +523,7 @@ view model theme =
                             , Element.centerX
                             , Element.centerY
                             ]
-                            (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn) colors)
+                            (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn model.buyIns) colors)
                         )
                     , Element.inFront
                         (Element.el
@@ -792,13 +949,315 @@ viewPriceMoney amount colors =
         ]
 
 
+viewBuyInSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInSection model _ colors =
+    Element.column
+        [ Element.width Element.fill
+        , Element.spacing 10
+        , Element.padding 12
+        ]
+        [ Element.el
+            [ Font.size 16
+            , Font.bold
+            ]
+            (Element.text "Buy-In Registration")
+        , viewBuyInTimerControls model colors
+        , viewBuyInPlayerSelector model colors
+        , viewBuyInList model colors
+        ]
+
+
+viewBuyInTimerControls : Model -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInTimerControls model colors =
+    let
+        isInputDisabled =
+            model.buyInTimerState /= Stopped
+    in
+    Element.column
+        [ Element.width Element.fill
+        , Element.spacing 5
+        , Element.alignLeft
+        ]
+        [ Element.el
+            [ Font.size 14
+            ]
+            (Element.text "Buy-In Timer Duration:")
+        , Input.text
+            [ Element.width (Element.px 80)
+            , Element.alignLeft
+            , Element.padding 8
+            , Background.color colors.background
+            , Font.color colors.text
+            , Element.htmlAttribute
+                (if isInputDisabled then
+                    Html.Attributes.disabled True
+
+                 else
+                    Html.Attributes.disabled False
+                )
+            ]
+            { onChange = BuyInDurationChanged
+            , text = model.buyInTimerDurationInput
+            , placeholder = Nothing
+            , label = Input.labelHidden "Buy-in timer duration in minutes"
+            }
+        , Element.row
+            [ Element.spacing 10
+            , Element.alignLeft
+            ]
+            [ Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress = Just StartPauseBuyInTimer
+                , label =
+                    Element.text
+                        (case model.buyInTimerState of
+                            Running ->
+                                "Pause"
+
+                            Paused ->
+                                "Start"
+
+                            Stopped ->
+                                "Start"
+
+                            Expired ->
+                                "Start"
+                        )
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.primary
+                , Font.color colors.text
+                ]
+                { onPress = Just ResetBuyInTimer
+                , label = Element.text "Reset"
+                }
+            , Element.el
+                [ Font.size 24
+                , Font.bold
+                , Font.family [ Font.monospace ]
+                , Element.paddingXY 10 0
+                ]
+                (Element.text (formatTime model.buyInRemainingTime))
+            ]
+        ]
+
+
+viewBuyInPlayerSelector : Model -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInPlayerSelector model colors =
+    let
+        availablePlayers =
+            model.players
+                |> List.indexedMap Tuple.pair
+                |> List.filter (\( index, _ ) -> not (isPlayerInBuyIns index model.buyIns))
+
+        canAdd =
+            canAddBuyIn model
+
+        selectHtml =
+            Html.select
+                [ Html.Attributes.style "width" "100%"
+                , Html.Attributes.style "padding" "8px"
+                , Html.Attributes.style "background-color"
+                    (if model.buyInTimerState == Expired then
+                        "#cccccc"
+
+                     else
+                        "transparent"
+                    )
+                , Html.Attributes.style "color"
+                    (if model.buyInTimerState == Expired then
+                        "#666666"
+
+                     else
+                        "inherit"
+                    )
+                , Html.Attributes.disabled (model.buyInTimerState == Expired)
+                , Html.Events.onInput
+                    (\val ->
+                        if val == "" then
+                            BuyInPlayerSelected Nothing
+
+                        else
+                            case String.toInt val of
+                                Just idx ->
+                                    BuyInPlayerSelected (Just idx)
+
+                                Nothing ->
+                                    BuyInPlayerSelected Nothing
+                    )
+                ]
+                (Html.option
+                    [ Html.Attributes.value ""
+                    , Html.Attributes.selected (model.selectedPlayerForBuyIn == Nothing)
+                    ]
+                    [ Html.text "Select a player..." ]
+                    :: List.map
+                        (\( index, player ) ->
+                            let
+                                playerName =
+                                    Page.Players.getPlayerName player
+                            in
+                            Html.option
+                                [ Html.Attributes.value (String.fromInt index)
+                                , Html.Attributes.selected (model.selectedPlayerForBuyIn == Just index)
+                                ]
+                                [ Html.text playerName ]
+                        )
+                        availablePlayers
+                )
+    in
+    Element.row
+        [ Element.width Element.fill
+        , Element.spacing 10
+        ]
+        [ Element.el
+            [ Element.width (Element.fillPortion 3)
+            ]
+            (Element.html selectHtml)
+        , Input.button
+            [ Element.padding 8
+            , Element.width (Element.fillPortion 1)
+            , Background.color
+                (if canAdd then
+                    colors.primary
+
+                 else
+                    colors.surface
+                )
+            , Font.color
+                (if canAdd then
+                    colors.text
+
+                 else
+                    colors.textSecondary
+                )
+            ]
+            { onPress =
+                if canAdd then
+                    Just AddBuyIn
+
+                else
+                    Nothing
+            , label = Element.text "Add"
+            }
+        ]
+
+
+viewBuyInList : Model -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInList model colors =
+    Element.column
+        [ Element.width Element.fill
+        , Element.spacing 10
+        ]
+        [ Element.row
+            [ Element.width Element.fill
+            , Element.spacing 10
+            ]
+            [ Element.el
+                [ Font.size 16
+                , Font.bold
+                ]
+                (Element.text "Registered Buy-Ins:")
+            , viewBuyInCollapseExpandButton model colors
+            ]
+        , if List.isEmpty model.buyIns then
+            Element.el
+                [ Font.color colors.textSecondary
+                , Font.italic
+                ]
+                (Element.text "No buy-ins registered yet.")
+
+          else if model.buyInListCollapsed then
+            Element.el
+                [ Font.color colors.textSecondary
+                , Font.italic
+                ]
+                (Element.text (String.fromInt (List.length model.buyIns) ++ " buy-ins"))
+
+          else
+            Element.column
+                [ Element.width Element.fill
+                , Element.spacing 8
+                ]
+                (List.indexedMap (\index buyIn -> viewBuyInRow index buyIn model.players colors) model.buyIns)
+        ]
+
+
+viewBuyInRow : Int -> BuyIn -> List Player -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInRow index buyIn players colors =
+    let
+        playerIndex =
+            case buyIn of
+                BuyIn idx ->
+                    idx
+
+        playerName =
+            players
+                |> List.drop playerIndex
+                |> List.head
+                |> Maybe.map Page.Players.getPlayerName
+                |> Maybe.withDefault "Unknown Player"
+    in
+    Element.row
+        [ Element.width Element.fill
+        , Element.spacing 10
+        ]
+        [ Element.el
+            [ Element.width Element.fill
+            ]
+            (Element.text ("- " ++ playerName))
+        , Input.button
+            [ Element.padding 8
+            , Background.color colors.accent
+            , Font.color colors.text
+            ]
+            { onPress = Just (RemoveBuyIn index)
+            , label = Element.text "Remove"
+            }
+        ]
+
+
+viewBuyInCollapseExpandButton : Model -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInCollapseExpandButton model colors =
+    if not (List.isEmpty model.buyIns) then
+        Input.button
+            [ Element.padding 4
+            , Element.width (Element.px 40)
+            , Element.height (Element.px 40)
+            , Background.color colors.primary
+            , Font.color colors.text
+            ]
+            { onPress = Just ToggleBuyInList
+            , label =
+                Element.el
+                    [ Element.centerX
+                    , Element.centerY
+                    ]
+                    (Element.text
+                        (if model.buyInListCollapsed then
+                            "↓"
+
+                         else
+                            "↑"
+                        )
+                    )
+            }
+
+    else
+        Element.none
+
+
 
 -- Helper functions
 
 
-calculateTotalPot : List Player -> Int -> Int
-calculateTotalPot players buyIn =
-    List.length players * buyIn
+calculateTotalPot : List Player -> Int -> List BuyIn -> Int
+calculateTotalPot players buyIn buyIns =
+    (List.length players + List.length buyIns) * buyIn
 
 
 formatTime : Int -> String
@@ -874,6 +1333,18 @@ subscriptions model =
         [ case model.timerState of
             Running ->
                 Time.every 1000 TimerTick
+
+            Paused ->
+                Sub.none
+
+            Stopped ->
+                Sub.none
+
+            Expired ->
+                Sub.none
+        , case model.buyInTimerState of
+            Running ->
+                Time.every 1000 BuyInTimerTick
 
             Paused ->
                 Sub.none

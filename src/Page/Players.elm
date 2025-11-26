@@ -1,4 +1,4 @@
-module Page.Players exposing (Model, Msg, Player, init, update, view)
+module Page.Players exposing (Model, Msg, Player, getPlayerName, init, update, view)
 
 import Element
 import Element.Background
@@ -721,3 +721,10 @@ onEnterPressIf condition msg =
 
     else
         Element.htmlAttribute (Html.Attributes.class "")
+
+
+getPlayerName : Player -> String
+getPlayerName player =
+    case player of
+        Player name ->
+            name
