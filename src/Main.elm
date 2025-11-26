@@ -200,7 +200,42 @@ updateUrl url model =
                 |> toGame model model.playersPageState
 
         Just Champion ->
-            ( Page.Champion.init, Cmd.none )
+            let
+                extractedPlayers =
+                    case model.playersPageState of
+                        Just playersModel ->
+                            playersModel.players
+
+                        Nothing ->
+                            []
+
+                extractedBuyIn =
+                    case model.playersPageState of
+                        Just playersModel ->
+                            playersModel.initialBuyIn
+
+                        Nothing ->
+                            0
+
+                extractedBuyIns =
+                    case model.gamePageState of
+                        Just gameModel ->
+                            gameModel.buyIns
+
+                        Nothing ->
+                            []
+
+                totalPot =
+                    (List.length extractedPlayers + List.length extractedBuyIns) * extractedBuyIn
+
+                -- Extract players from buy-ins
+                championBuyInPlayers =
+                    Page.Game.buyInPlayers extractedBuyIns
+
+                championModel =
+                    Page.Champion.init extractedPlayers totalPot championBuyInPlayers extractedBuyIn
+            in
+            ( championModel, Cmd.none )
                 |> toChampion model
 
         Just Playground ->

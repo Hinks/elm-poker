@@ -1,4 +1,4 @@
-port module Page.Game exposing (Model, Msg, init, subscriptions, update, view)
+port module Page.Game exposing (Model, Msg, buyInPlayers, init, subscriptions, update, view)
 
 import Element
 import Element.Background as Background
@@ -39,7 +39,7 @@ type alias Model =
     , initialBuyIn : Int
     , activeRankingIndex : Maybe Int
     , buyIns : List BuyIn
-    , selectedPlayerForBuyIn : Maybe Int
+    , selectedPlayerForBuyIn : Maybe Player
     , buyInTimerDuration : Seconds
     , buyInTimerDurationInput : String
     , buyInRemainingTime : Seconds
@@ -78,7 +78,7 @@ type Chip
 
 
 type BuyIn
-    = BuyIn Int
+    = BuyIn Player
 
 
 init : Maybe Model -> List Player -> Int -> Model
@@ -186,13 +186,13 @@ getSmallBlindBackgroundColor theme colors =
 -- UPDATE
 
 
-isPlayerInBuyIns : Int -> List BuyIn -> Bool
-isPlayerInBuyIns playerIndex buyIns =
+isPlayerInBuyIns : Player -> List BuyIn -> Bool
+isPlayerInBuyIns player buyIns =
     List.any
         (\buyIn ->
             case buyIn of
-                BuyIn index ->
-                    index == playerIndex
+                BuyIn buyInPlayer ->
+                    buyInPlayer == player
         )
         buyIns
 
@@ -204,8 +204,8 @@ canAddBuyIn model =
         && model.selectedPlayerForBuyIn
         /= Nothing
         && (case model.selectedPlayerForBuyIn of
-                Just playerIndex ->
-                    not (isPlayerInBuyIns playerIndex model.buyIns)
+                Just player ->
+                    not (isPlayerInBuyIns player model.buyIns)
 
                 Nothing ->
                     False
@@ -223,7 +223,7 @@ type Msg
     | RankingTimerTick Time.Posix
     | GenerateRandomRanking Int
     | StartNextBlind
-    | BuyInPlayerSelected (Maybe Int)
+    | BuyInPlayerSelected (Maybe Player)
     | BuyInDurationChanged String
     | AddBuyIn
     | RemoveBuyIn Int
@@ -345,8 +345,8 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        BuyInPlayerSelected maybeIndex ->
-            ( { model | selectedPlayerForBuyIn = maybeIndex }, Cmd.none )
+        BuyInPlayerSelected maybePlayer ->
+            ( { model | selectedPlayerForBuyIn = maybePlayer }, Cmd.none )
 
         BuyInDurationChanged str ->
             if model.buyInTimerState == Stopped then
@@ -377,9 +377,9 @@ update msg model =
         AddBuyIn ->
             if canAddBuyIn model then
                 case model.selectedPlayerForBuyIn of
-                    Just playerIndex ->
+                    Just player ->
                         ( { model
-                            | buyIns = model.buyIns ++ [ BuyIn playerIndex ]
+                            | buyIns = model.buyIns ++ [ BuyIn player ]
                             , selectedPlayerForBuyIn = Nothing
                           }
                         , Cmd.none
@@ -1061,11 +1061,19 @@ viewBuyInPlayerSelector model colors =
     let
         availablePlayers =
             model.players
-                |> List.indexedMap Tuple.pair
-                |> List.filter (\( index, _ ) -> not (isPlayerInBuyIns index model.buyIns))
+                |> List.filter (\player -> not (isPlayerInBuyIns player model.buyIns))
 
         canAdd =
             canAddBuyIn model
+
+        isSelected : Player -> Bool
+        isSelected player =
+            case model.selectedPlayerForBuyIn of
+                Just selectedPlayer ->
+                    selectedPlayer == player
+
+                Nothing ->
+                    False
 
         selectHtml =
             Html.select
@@ -1092,12 +1100,11 @@ viewBuyInPlayerSelector model colors =
                             BuyInPlayerSelected Nothing
 
                         else
-                            case String.toInt val of
-                                Just idx ->
-                                    BuyInPlayerSelected (Just idx)
-
-                                Nothing ->
-                                    BuyInPlayerSelected Nothing
+                            availablePlayers
+                                |> List.filter (\p -> Page.Players.getPlayerName p == val)
+                                |> List.head
+                                |> Maybe.map (\p -> BuyInPlayerSelected (Just p))
+                                |> Maybe.withDefault (BuyInPlayerSelected Nothing)
                     )
                 ]
                 (Html.option
@@ -1106,14 +1113,14 @@ viewBuyInPlayerSelector model colors =
                     ]
                     [ Html.text "Select a player..." ]
                     :: List.map
-                        (\( index, player ) ->
+                        (\player ->
                             let
                                 playerName =
                                     Page.Players.getPlayerName player
                             in
                             Html.option
-                                [ Html.Attributes.value (String.fromInt index)
-                                , Html.Attributes.selected (model.selectedPlayerForBuyIn == Just index)
+                                [ Html.Attributes.value playerName
+                                , Html.Attributes.selected (isSelected player)
                                 ]
                                 [ Html.text playerName ]
                         )
@@ -1193,24 +1200,20 @@ viewBuyInList model colors =
                 [ Element.width Element.fill
                 , Element.spacing 8
                 ]
-                (List.indexedMap (\index buyIn -> viewBuyInRow index buyIn model.players colors) model.buyIns)
+                (List.indexedMap (\index buyIn -> viewBuyInRow index buyIn colors) model.buyIns)
         ]
 
 
-viewBuyInRow : Int -> BuyIn -> List Player -> Theme.ColorPalette -> Element.Element Msg
-viewBuyInRow index buyIn players colors =
+viewBuyInRow : Int -> BuyIn -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInRow index buyIn colors =
     let
-        playerIndex =
+        player =
             case buyIn of
-                BuyIn idx ->
-                    idx
+                BuyIn buyInPlayer ->
+                    buyInPlayer
 
         playerName =
-            players
-                |> List.drop playerIndex
-                |> List.head
-                |> Maybe.map Page.Players.getPlayerName
-                |> Maybe.withDefault "Unknown Player"
+            Page.Players.getPlayerName player
     in
     Element.row
         [ Element.width Element.fill
@@ -1285,6 +1288,17 @@ viewFooterMarquee _ =
 calculateTotalPot : List Player -> Int -> List BuyIn -> Int
 calculateTotalPot players buyIn buyIns =
     (List.length players + List.length buyIns) * buyIn
+
+
+buyInPlayers : List BuyIn -> List Player
+buyInPlayers buyIns =
+    List.map
+        (\buyIn ->
+            case buyIn of
+                BuyIn player ->
+                    player
+        )
+        buyIns
 
 
 formatTime : Int -> String
