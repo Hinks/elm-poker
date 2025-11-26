@@ -611,6 +611,63 @@ type alias PayerInfo =
     }
 
 
+assignPayersRoundRobin : List WinnerPayout -> List Player -> List ( Player, Int ) -> List ( Int, List PayerInfo )
+assignPayersRoundRobin winnerPayouts nonWinners playerContributions =
+    let
+        numWinners =
+            List.length winnerPayouts
+
+        -- Assign each payer to a winner using round-robin
+        payerAssignments =
+            nonWinners
+                |> List.indexedMap
+                    (\index payer ->
+                        let
+                            winnerIndex =
+                                modBy numWinners index
+
+                            payerContribution =
+                                playerContributions
+                                    |> List.filter (\( p, _ ) -> p == payer)
+                                    |> List.head
+                                    |> Maybe.map Tuple.second
+                                    |> Maybe.withDefault 0
+
+                            payerInfo =
+                                { payerName = Page.Players.getPlayerName payer
+                                , amountOwed = payerContribution
+                                }
+                        in
+                        ( winnerIndex, payerInfo )
+                    )
+
+        -- Group payers by their assigned winner index
+        groupedPayers =
+            payerAssignments
+                |> List.foldl
+                    (\( winnerIndex, payerInfo ) acc ->
+                        let
+                            existingPayers =
+                                acc
+                                    |> List.filter (\( idx, _ ) -> idx == winnerIndex)
+                                    |> List.head
+                                    |> Maybe.map Tuple.second
+                                    |> Maybe.withDefault []
+
+                            updatedPayers =
+                                payerInfo :: existingPayers
+
+                            filteredAcc =
+                                acc
+                                    |> List.filter (\( idx, _ ) -> idx /= winnerIndex)
+                        in
+                        ( winnerIndex, updatedPayers ) :: filteredAcc
+                    )
+                    []
+    in
+    groupedPayers
+
+
 calculatePayments : Model -> List PaymentCalculation
 calculatePayments model =
     case model.potDivision of
@@ -633,63 +690,34 @@ calculatePayments model =
                                 not (List.any (\w -> w.player == player) model.winners)
                             )
 
-                -- Calculate total payout percentage for winners (for proportional distribution)
-                totalWinnerPercentage =
-                    case division of
-                        WinnerTakesAll ->
-                            1.0
+                -- Assign payers to winners using round-robin
+                payerAssignments =
+                    if List.isEmpty nonWinners || List.isEmpty winnerPayouts then
+                        []
 
-                        FirstSecond ->
-                            1.0
-
-                        FirstSecondThird ->
-                            1.0
+                    else
+                        assignPayersRoundRobin winnerPayouts nonWinners playerContributions
             in
-            List.map
-                (\winnerPayout ->
-                    let
-                        -- Calculate this winner's percentage of total payouts
-                        winnerPercentage =
-                            if model.totalPot > 0 then
-                                toFloat winnerPayout.payoutAmount / toFloat model.totalPot
-
-                            else
-                                0.0
-
-                        payers =
-                            if List.isEmpty nonWinners then
-                                []
-
-                            else
-                                -- Each non-winner pays their contribution proportionally to this winner
-                                List.map
-                                    (\payer ->
-                                        let
-                                            payerContribution =
-                                                playerContributions
-                                                    |> List.filter (\( p, _ ) -> p == payer)
-                                                    |> List.head
-                                                    |> Maybe.map Tuple.second
-                                                    |> Maybe.withDefault 0
-
-                                            -- Amount this payer owes to this specific winner
-                                            amountOwed =
-                                                round (toFloat payerContribution * winnerPercentage)
-                                        in
-                                        { payerName = Page.Players.getPlayerName payer
-                                        , amountOwed = amountOwed
-                                        }
-                                    )
-                                    nonWinners
-                    in
-                    { winnerName = winnerPayout.winnerName
-                    , positionLabel = winnerPayout.positionLabel
-                    , phoneNumber = winnerPayout.phoneNumber
-                    , payoutAmount = winnerPayout.payoutAmount
-                    , payers = payers
-                    }
-                )
-                winnerPayouts
+            winnerPayouts
+                |> List.indexedMap
+                    (\index winnerPayout ->
+                        let
+                            -- Find payers assigned to this winner (by index)
+                            payers =
+                                payerAssignments
+                                    |> List.filter (\( winnerIdx, _ ) -> winnerIdx == index)
+                                    |> List.head
+                                    |> Maybe.map Tuple.second
+                                    |> Maybe.withDefault []
+                                    |> List.reverse
+                        in
+                        { winnerName = winnerPayout.winnerName
+                        , positionLabel = winnerPayout.positionLabel
+                        , phoneNumber = winnerPayout.phoneNumber
+                        , payoutAmount = winnerPayout.payoutAmount
+                        , payers = payers
+                        }
+                    )
 
 
 calculatePlayerContributions : List Player -> List Player -> Int -> List ( Player, Int )
