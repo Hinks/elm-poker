@@ -437,7 +437,7 @@ viewInitialBuyInSection model colors =
             , Element.html
                 (Icons.strawberry
                     { size = 32.0
-                    , color = Element.rgb255 232 67 63
+                    , color = colors.removeButton
                     }
                 )
             ]
@@ -561,7 +561,7 @@ viewPlayerRow index player colors =
         , Element.Input.button
             [ Element.padding 8
             , Element.Background.color colors.accent
-            , Element.Font.color colors.text
+            , Element.Font.color colors.buttonText
             ]
             { onPress = Just (RemovePlayer index)
             , label = Element.text "Remove"
@@ -578,7 +578,7 @@ viewSeatingControls model colors =
         [ Element.Input.button
             [ Element.padding 8
             , Element.Background.color colors.primary
-            , Element.Font.color colors.text
+            , Element.Font.color colors.buttonText
             ]
             { onPress =
                 if List.isEmpty model.players || model.seatingArrangement /= Nothing then
@@ -591,7 +591,7 @@ viewSeatingControls model colors =
         , Element.Input.button
             [ Element.padding 8
             , Element.Background.color colors.accent
-            , Element.Font.color colors.text
+            , Element.Font.color colors.buttonText
             ]
             { onPress =
                 if model.seatingArrangement == Nothing then
@@ -671,7 +671,7 @@ viewCollapseExpandButton model colors =
             , Element.width (Element.px 40)
             , Element.height (Element.px 40)
             , Element.Background.color colors.primary
-            , Element.Font.color colors.text
+            , Element.Font.color colors.buttonText
             ]
             { onPress = Just TogglePlayerList
             , label =

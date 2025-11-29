@@ -1,7 +1,6 @@
 module PokerHandRanking exposing (view)
 
 import Element
-import Element.Font as Font
 import Html
 import Html.Attributes
 import Icons exposing (Suit(..))
@@ -116,24 +115,24 @@ handRankings =
     ]
 
 
-getSuitColor : Suit -> Element.Color
-getSuitColor suit =
+getSuitColor : Suit -> ColorPalette -> Element.Color
+getSuitColor suit colors =
     case suit of
         Diamond ->
-            Element.rgb255 215 30 0
+            colors.cardRedSuit
 
         Heart ->
-            Element.rgb255 215 30 0
+            colors.cardRedSuit
 
         Spade ->
-            Element.rgb255 0 0 0
+            colors.cardBlackSuit
 
         Club ->
-            Element.rgb255 0 0 0
+            colors.cardBlackSuit
 
 
-viewCard : Float -> Float -> Bool -> Card -> Element.Element msg
-viewCard cardSize opacity isLastCard card =
+viewCard : Float -> Float -> Bool -> Card -> ColorPalette -> Element.Element msg
+viewCard cardSize opacity isLastCard card colors =
     Element.el
         [ Element.paddingEach
             { top = 0
@@ -155,9 +154,9 @@ viewCard cardSize opacity isLastCard card =
                     { size = cardSize
                     , rank = card.rank
                     , suit = card.suit
-                    , backgroundColor = Element.rgb255 230 238 244
-                    , rankColor = getSuitColor card.suit
-                    , suitColor = getSuitColor card.suit
+                    , backgroundColor = colors.cardBackground
+                    , rankColor = getSuitColor card.suit colors
+                    , suitColor = getSuitColor card.suit colors
                     }
                 ]
             )
@@ -262,7 +261,7 @@ viewHandRanking cardSize colors shouldAnimate ranking =
                                 isLastCard =
                                     index == List.length paddedCards - 1
                             in
-                            viewCard cardSize opacity isLastCard card
+                            viewCard cardSize opacity isLastCard card colors
                         )
                 )
 
@@ -278,16 +277,11 @@ viewHandRanking cardSize colors shouldAnimate ranking =
                         , fontSizeMin = 0.3
                         , fontSizePreferred = "4vh"
                         , fontSizeMax = 1.0
+                        , message = ranking.name
                         }
                 in
                 Element.html
-                    (Html.div
-                        [ Html.Attributes.style "width" "100%"
-                        , Html.Attributes.style "height" (String.fromInt containerHeight ++ "px")
-                        ]
-                        [ TextAnimation.view animatedTextConfig ranking.name
-                        ]
-                    )
+                    (TextAnimation.view animatedTextConfig)
 
             else
                 Element.none

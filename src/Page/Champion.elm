@@ -365,7 +365,7 @@ viewPlayerSelectionOption model colors player availablePositions =
                 Input.button
                     [ Element.padding 8
                     , Background.color colors.accent
-                    , Font.color colors.text
+                    , Font.color colors.buttonText
                     ]
                     { onPress = Just (WinnerRemoved player)
                     , label = Element.text "Remove"
@@ -380,7 +380,7 @@ viewPlayerSelectionOption model colors player availablePositions =
                             Input.button
                                 [ Element.padding 8
                                 , Background.color colors.primary
-                                , Font.color colors.text
+                                , Font.color colors.buttonText
                                 ]
                                 { onPress = Just (WinnerSelected player position)
                                 , label =
@@ -447,7 +447,7 @@ viewWinnerWithPhoneInput model colors winner =
             , Input.button
                 [ Element.padding 6
                 , Background.color colors.accent
-                , Font.color colors.text
+                , Font.color colors.buttonText
                 ]
                 { onPress = Just (WinnerRemoved winner.player)
                 , label = Element.text "Remove"

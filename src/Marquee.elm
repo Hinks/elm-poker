@@ -5,30 +5,37 @@ import Html
 import Html.Attributes as Attr
 
 
-generateCss : String -> String
-generateCss animationDuration =
-    ".marquee-container {\n"
-        ++ "    width: 100%;\n"
-        ++ "    height: 40px;\n"
-        ++ "    background-color: transparent;\n"
-        ++ "    overflow: hidden;\n"
-        ++ "    white-space: nowrap;\n"
-        ++ "    display: flex;\n"
-        ++ "    position: relative;\n"
-        ++ "}\n\n"
-        ++ ".marquee-item {\n"
-        ++ "    animation: marquee-content "
-        ++ animationDuration
-        ++ " linear infinite;\n"
-        ++ "    padding: 5px 15px;\n"
-        ++ "    line-height: 40px;\n"
-        ++ "    font-size: 16px;\n"
-        ++ "    color: rgb(255, 255, 255);\n"
-        ++ "    font-weight: 500;\n"
-        ++ "    white-space: nowrap;\n"
-        ++ "    flex-shrink: 0;\n"
-        ++ "}\n\n"
-        ++ "@keyframes marquee-content {\n"
+-- Style Helpers
+
+
+containerStyles : List (Html.Attribute msg)
+containerStyles =
+    [ Attr.style "width" "100%"
+    , Attr.style "height" "40px"
+    , Attr.style "background-color" "transparent"
+    , Attr.style "overflow" "hidden"
+    , Attr.style "white-space" "nowrap"
+    , Attr.style "display" "flex"
+    , Attr.style "position" "relative"
+    ]
+
+
+itemStyles : String -> List (Html.Attribute msg)
+itemStyles animationDuration =
+    [ Attr.style "animation" ("marquee-content " ++ animationDuration ++ " linear infinite")
+    , Attr.style "padding" "5px 15px"
+    , Attr.style "line-height" "40px"
+    , Attr.style "font-size" "16px"
+    , Attr.style "color" "rgb(255, 255, 255)"
+    , Attr.style "font-weight" "500"
+    , Attr.style "white-space" "nowrap"
+    , Attr.style "flex-shrink" "0"
+    ]
+
+
+keyframesCss : String
+keyframesCss =
+    "@keyframes marquee-content {\n"
         ++ "    0% {\n"
         ++ "        transform: translateX(0%);\n"
         ++ "    }\n"
@@ -68,14 +75,14 @@ view strings =
     in
     Element.html <|
         Html.div []
-            [ Html.node "style" [] [ Html.text (generateCss animationDuration) ]
+            [ Html.node "style" [] [ Html.text keyframesCss ]
             , Html.div
-                [ Attr.class "marquee-container" ]
+                containerStyles
                 [ Html.div
-                    [ Attr.class "marquee-item" ]
+                    (itemStyles animationDuration)
                     [ Html.text marqueeText ]
                 , Html.div
-                    [ Attr.class "marquee-item" ]
+                    (itemStyles animationDuration)
                     [ Html.text marqueeText ]
                 ]
             ]

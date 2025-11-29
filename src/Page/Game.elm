@@ -120,23 +120,23 @@ init maybeExistingModel players buyIn =
             }
 
 
-chipColorToElementColor : ChipColor -> Element.Color
-chipColorToElementColor chipColor =
+chipColorToElementColor : ChipColor -> Theme.ColorPalette -> Element.Color
+chipColorToElementColor chipColor colors =
     case chipColor of
         White ->
-            Element.rgb255 255 255 255
+            colors.chipWhite
 
         Red ->
-            Element.rgb255 220 20 60
+            colors.chipRed
 
         Blue ->
-            Element.rgb255 30 144 255
+            colors.chipBlue
 
         Green ->
-            Element.rgb255 34 139 34
+            colors.chipGreen
 
         Black ->
-            Element.rgb255 0 0 0
+            colors.chipBlack
 
 
 getChipTextColor : ChipColor -> Theme.ColorPalette -> Element.Color
@@ -156,7 +156,7 @@ getTimerBackgroundColor : Theme -> Theme.ColorPalette -> Element.Color
 getTimerBackgroundColor theme colors =
     case theme of
         Theme.Light ->
-            Element.rgb255 180 230 210
+            colors.timerBackground
 
         Theme.Dark ->
             colors.surface
@@ -166,7 +166,7 @@ getBigBlindBackgroundColor : Theme -> Theme.ColorPalette -> Element.Color
 getBigBlindBackgroundColor theme colors =
     case theme of
         Theme.Light ->
-            Element.rgb255 220 170 80
+            colors.bigBlindBackground
 
         Theme.Dark ->
             colors.surface
@@ -176,7 +176,7 @@ getSmallBlindBackgroundColor : Theme -> Theme.ColorPalette -> Element.Color
 getSmallBlindBackgroundColor theme colors =
     case theme of
         Theme.Light ->
-            Element.rgb255 160 210 255
+            colors.smallBlindBackground
 
         Theme.Dark ->
             colors.surface
@@ -469,93 +469,94 @@ view model theme =
         cardSize =
             50.0
     in
-    Element.el
+    Element.column
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.padding 20
         , Font.color colors.text
-        , Element.inFront
-            (Element.el
-                [ Element.width Element.shrink
-                , Element.alignTop
-                , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
-                ]
-                (viewBlindsSection model theme colors)
-            )
-        , Element.inFront
-            (Element.el
-                [ Element.width Element.shrink
-                , Element.alignTop
-                , Element.alignRight
-                , Element.paddingEach { top = 30, right = 20, bottom = 0, left = 0 }
-                ]
-                (PokerHandRanking.view cardSize colors model.activeRankingIndex)
-            )
-        , Element.inFront
-            (Element.el
-                [ Element.width Element.shrink
-                , Element.alignTop
-                , Element.moveDown 550
-                , Element.paddingEach { top = 0, right = 0, bottom = 0, left = 10 }
-                ]
-                (viewBuyInSection model theme colors)
-            )
-        , Element.inFront
-            (Element.el
-                [ Element.width Element.fill
-                , Element.alignBottom
-                , Element.moveUp -280
-                , Background.color colors.surface
-                ]
-                (viewFooterMarquee colors)
-            )
         ]
-        (Element.column
+        [ Element.el
             [ Element.width Element.fill
             , Element.height Element.fill
-            , Element.spacing 20
-            , Element.centerX
-            ]
-            [ Element.el
-                [ Element.width Element.fill
-                , Element.height Element.fill
-                , Element.centerX
-                , Element.centerY
-                ]
+            , Element.inFront
                 (Element.el
-                    [ Element.width (Element.px (round tableSize))
-                    , Element.height (Element.px (round tableSize))
-                    , Element.centerX
-                    , Element.inFront
-                        (Element.el
-                            [ Element.width Element.fill
-                            , Element.height Element.fill
-                            , Element.centerX
-                            , Element.centerY
-                            ]
-                            (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn model.buyIns) colors)
-                        )
-                    , Element.inFront
-                        (Element.el
-                            [ Element.width Element.fill
-                            , Element.height Element.fill
-                            , Element.centerX
-                            , Element.centerY
-                            ]
-                            (viewCenterBlinds model theme colors)
-                        )
-                    , Element.inFront
-                        (Element.el
-                            [ Element.width Element.fill
-                            , Element.alignBottom
-                            ]
-                            (viewChips model.chips colors)
-                        )
+                    [ Element.width Element.shrink
+                    , Element.alignTop
+                    , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
                     ]
-                    viewPokerTable
+                    (viewBlindsSection model theme colors)
+                )
+            , Element.inFront
+                (Element.el
+                    [ Element.width Element.shrink
+                    , Element.alignTop
+                    , Element.alignRight
+                    , Element.paddingEach { top = 30, right = 20, bottom = 0, left = 0 }
+                    ]
+                    (PokerHandRanking.view cardSize colors model.activeRankingIndex)
+                )
+            , Element.inFront
+                (Element.el
+                    [ Element.width Element.shrink
+                    , Element.alignTop
+                    , Element.moveDown 550
+                    , Element.paddingEach { top = 0, right = 0, bottom = 0, left = 10 }
+                    ]
+                    (viewBuyInSection model theme colors)
                 )
             ]
-        )
+            (Element.column
+                [ Element.width Element.fill
+                , Element.height Element.fill
+                , Element.spacing 20
+                , Element.centerX
+                ]
+                [ Element.el
+                    [ Element.width Element.fill
+                    , Element.height Element.fill
+                    , Element.centerX
+                    , Element.centerY
+                    ]
+                    (Element.el
+                        [ Element.width (Element.px (round tableSize))
+                        , Element.height (Element.px (round tableSize))
+                        , Element.centerX
+                        , Element.inFront
+                            (Element.el
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                , Element.centerX
+                                , Element.centerY
+                                ]
+                                (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn model.buyIns) colors)
+                            )
+                        , Element.inFront
+                            (Element.el
+                                [ Element.width Element.fill
+                                , Element.height Element.fill
+                                , Element.centerX
+                                , Element.centerY
+                                ]
+                                (viewCenterBlinds model theme colors)
+                            )
+                        , Element.inFront
+                            (Element.el
+                                [ Element.width Element.fill
+                                , Element.alignBottom
+                                ]
+                                (viewChips model.chips colors)
+                            )
+                        ]
+                        (viewPokerTable colors)
+                    )
+                ]
+            )
+        , Element.el
+            [ Element.width Element.fill
+            , Background.color colors.surface
+            ]
+            (viewFooterMarquee colors)
+        ]
 
 
 viewBlindsSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
@@ -607,7 +608,7 @@ viewLeftControls model theme colors =
                         [ Input.button
                             [ Element.padding 10
                             , Background.color colors.primary
-                            , Font.color colors.text
+                            , Font.color colors.buttonText
                             ]
                             { onPress = Just StartPauseTimer
                             , label =
@@ -629,7 +630,7 @@ viewLeftControls model theme colors =
                         , Input.button
                             [ Element.padding 10
                             , Background.color colors.primary
-                            , Font.color colors.text
+                            , Font.color colors.buttonText
                             ]
                             { onPress = Just ResetTimer
                             , label = Element.text "Reset"
@@ -720,8 +721,8 @@ viewCenterBlinds model theme colors =
                     (Icons.bigBlind
                         { size = iconSize
                         , backgroundColor = getBigBlindBackgroundColor theme colors
-                        , labelTextColor = Element.rgb255 255 215 0
-                        , valueTextColor = Element.rgb255 255 215 0
+                        , labelTextColor = colors.bigBlindText
+                        , valueTextColor = colors.bigBlindText
                         , value = blind.bigBlind
                         }
                     )
@@ -729,8 +730,8 @@ viewCenterBlinds model theme colors =
                     (Icons.smallBlind
                         { size = iconSize
                         , backgroundColor = getSmallBlindBackgroundColor theme colors
-                        , labelTextColor = Element.rgb255 30 144 255
-                        , valueTextColor = Element.rgb255 30 144 255
+                        , labelTextColor = colors.smallBlindText
+                        , valueTextColor = colors.smallBlindText
                         , value = blind.smallBlind
                         }
                     )
@@ -753,7 +754,7 @@ viewManualBlindsAdvance model colors =
             [ Input.button
                 [ Element.padding 10
                 , Background.color colors.primary
-                , Font.color colors.text
+                , Font.color colors.buttonText
                 ]
                 { onPress =
                     if model.currentBlindIndex < List.length model.blinds - 1 then
@@ -766,7 +767,7 @@ viewManualBlindsAdvance model colors =
             , Input.button
                 [ Element.padding 10
                 , Background.color colors.primary
-                , Font.color colors.text
+                , Font.color colors.buttonText
                 ]
                 { onPress =
                     if model.currentBlindIndex > 0 then
@@ -807,7 +808,7 @@ viewBlinkingStartNextBlindButton model colors =
         , Input.button
             [ Element.padding 10
             , Background.color colors.primary
-            , Font.color colors.text
+            , Font.color colors.buttonText
             , Element.htmlAttribute blinkAnimationStyle
             ]
             { onPress =
@@ -890,7 +891,7 @@ viewChip chip colors =
                     ( color, val )
 
         chipElementColor =
-            chipColorToElementColor chipColor
+            chipColorToElementColor chipColor colors
 
         chipSize =
             150.0
@@ -912,11 +913,11 @@ viewChip chip colors =
         )
 
 
-viewPokerTable : Element.Element Msg
-viewPokerTable =
+viewPokerTable : Theme.ColorPalette -> Element.Element Msg
+viewPokerTable colors =
     let
         tableColor =
-            Element.rgb255 10 143 60
+            colors.pokerTable
 
         tableSize =
             800.0
@@ -936,7 +937,7 @@ viewPriceMoney amount colors =
             60.0
 
         dollarColor =
-            Element.rgb255 255 215 0
+            colors.prizeGold
     in
     Element.row
         [ Element.centerX
@@ -1018,7 +1019,7 @@ viewBuyInTimerControls model colors =
             [ Input.button
                 [ Element.padding 10
                 , Background.color colors.primary
-                , Font.color colors.text
+                , Font.color colors.buttonText
                 ]
                 { onPress = Just StartPauseBuyInTimer
                 , label =
@@ -1040,7 +1041,7 @@ viewBuyInTimerControls model colors =
             , Input.button
                 [ Element.padding 10
                 , Background.color colors.primary
-                , Font.color colors.text
+                , Font.color colors.buttonText
                 ]
                 { onPress = Just ResetBuyInTimer
                 , label = Element.text "Reset"
@@ -1226,7 +1227,7 @@ viewBuyInRow index buyIn colors =
         , Input.button
             [ Element.padding 8
             , Background.color colors.accent
-            , Font.color colors.text
+            , Font.color colors.buttonText
             ]
             { onPress = Just (RemoveBuyIn index)
             , label = Element.text "Remove"
@@ -1242,7 +1243,7 @@ viewBuyInCollapseExpandButton model colors =
             , Element.width (Element.px 40)
             , Element.height (Element.px 40)
             , Background.color colors.primary
-            , Font.color colors.text
+            , Font.color colors.buttonText
             ]
             { onPress = Just ToggleBuyInList
             , label =

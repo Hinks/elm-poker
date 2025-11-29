@@ -343,7 +343,7 @@ navButton colors route page basePath =
             [ Element.padding 10
             , Element.spacing 5
             , Background.color colors.primary
-            , Font.color colors.text
+            , Font.color colors.buttonText
             ]
                 ++ (if active then
                         [ Font.underline ]

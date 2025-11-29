@@ -63,11 +63,6 @@ suitYRatio =
     0.68
 
 
-rankFontSizeRatio : Float
-rankFontSizeRatio =
-    2.0
-
-
 
 -- Path-based suit constants (Diamond, Heart, Spade, Club)
 -- All suits are normalized to match diamond's size and position
@@ -240,7 +235,7 @@ pokerCard options =
             String.fromFloat (options.size * heightRatio)
 
         rankFontSize =
-            String.fromFloat (options.size * rankFontSizeRatio)
+            String.fromFloat (cardHeight * 0.3)
 
         -- Calculate positions
         rankX =

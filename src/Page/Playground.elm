@@ -4,7 +4,6 @@ import Element
 import Element.Background as Background
 import Element.Font as Font
 import Html
-import Html.Attributes as Attr
 import Icons
 import Marquee
 import PokerHandRanking
@@ -41,20 +40,40 @@ view theme =
                 ]
                 [ Element.text "Development playground for testing components and icons."
                 ]
-            , Element.el
-                [ Element.width (Element.px 900)
-                , Element.centerX
-                , Element.paddingXY 0 40
+            , Element.column
+                [ Element.spacing 10
+                , Element.width Element.fill
+                , Element.padding 20
+                , Background.color colors.surface
                 ]
-                (PokerHandRanking.view 60 colors Nothing)
-            , viewIconSection "Text Animation"
-                colors
-                (Html.div
-                    [ Attr.style "width" "100%"
-                    , Attr.style "height" "400px"
+                [ Element.el
+                    [ Font.size 20
+                    , Font.bold
+                    , Font.color colors.text
                     ]
-                    [ TextAnimation.view TextAnimation.defaultConfig "ELM POKER" ]
-                )
+                    (Element.text "Text Animation")
+                , Element.el
+                    [ Element.padding 10
+                    , Element.width Element.fill
+                    , Element.height (Element.px 400)
+                    ]
+                    (Element.html
+                        (let
+                            textAnimationConfig : TextAnimation.Config
+                            textAnimationConfig =
+                                { speed = 10.0
+                                , repeat = 3
+                                , textColor = colors.text
+                                , fontSizeMin = 0.5
+                                , fontSizePreferred = "6vh"
+                                , fontSizeMax = 1.5
+                                , message = "ELM POKER"
+                                }
+                         in
+                         TextAnimation.view textAnimationConfig
+                        )
+                    )
+                ]
             , Element.column
                 [ Element.spacing 10
                 , Element.width Element.fill
@@ -88,22 +107,28 @@ view theme =
                             { size = 80
                             , rank = "K"
                             , suit = Icons.Diamond
-                            , backgroundColor = Element.rgb255 230 238 244
-                            , rankColor = Element.rgb255 215 30 0
-                            , suitColor = Element.rgb255 215 30 0
+                            , backgroundColor = colors.cardBackground
+                            , rankColor = colors.cardRedSuit
+                            , suitColor = colors.cardRedSuit
                             }
                         )
-                    , viewAllSuitsRow colors
-                    , viewCardsRow colors
-                    , viewSpadeCardsRow colors
-                    , viewClubCardsRow colors
-                    , viewHeartCardsRow colors
+                    , viewIconSection "Poker Card Big"
+                        colors
+                        (Icons.pokerCard
+                            { size = 160
+                            , rank = "K"
+                            , suit = Icons.Diamond
+                            , backgroundColor = colors.cardBackground
+                            , rankColor = colors.cardRedSuit
+                            , suitColor = colors.cardRedSuit
+                            }
+                        )
                     , viewIconSection "Poker Chip"
                         colors
                         (Icons.pokerChip
                             { size = 100
                             , color = colors.primary
-                            , spinSpeed = 2.0
+                            , spinSpeed = 3.0
                             , value = Just 100
                             , textColor = colors.chipTextOnLight
                             }
@@ -126,7 +151,7 @@ view theme =
                         colors
                         (Icons.strawberry
                             { size = 200
-                            , color = Element.rgb255 232 67 63
+                            , color = colors.removeButton
                             }
                         )
                     , viewIconSection "Timer"
@@ -181,220 +206,8 @@ viewIconSection title colors icon =
             (Element.text title)
         , Element.el
             [ Element.padding 10
+            , Element.width Element.fill
+            , Element.height Element.shrink
             ]
             (Element.html icon)
-        ]
-
-
-viewCardsRow : Theme.ColorPalette -> Element.Element msg
-viewCardsRow colors =
-    let
-        ranks =
-            [ "A", "K", "Q", "J", "10" ]
-
-        card rank =
-            Element.el
-                [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
-                ]
-                (Element.html
-                    (Icons.pokerCard
-                        { size = 120
-                        , rank = rank
-                        , suit = Icons.Diamond
-                        , backgroundColor = Element.rgb255 230 238 244
-                        , rankColor = Element.rgb255 215 30 0
-                        , suitColor = Element.rgb255 215 30 0
-                        }
-                    )
-                )
-    in
-    Element.column
-        [ Element.spacing 10
-        , Element.width Element.fill
-        , Element.padding 20
-        , Background.color colors.surface
-        ]
-        [ Element.el
-            [ Font.size 20
-            , Font.bold
-            , Font.color colors.text
-            ]
-            (Element.text "Diamond Cards Row")
-        , Element.row
-            [ Element.spacing 20
-            , Element.padding 10
-            ]
-            (List.map card ranks)
-        ]
-
-
-viewSpadeCardsRow : Theme.ColorPalette -> Element.Element msg
-viewSpadeCardsRow colors =
-    let
-        ranks =
-            [ "A", "K", "Q", "J", "10" ]
-
-        card rank =
-            Element.el
-                [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
-                ]
-                (Element.html
-                    (Icons.pokerCard
-                        { size = 120
-                        , rank = rank
-                        , suit = Icons.Spade
-                        , backgroundColor = Element.rgb255 230 238 244
-                        , rankColor = Element.rgb255 0 0 0
-                        , suitColor = Element.rgb255 0 0 0
-                        }
-                    )
-                )
-    in
-    Element.column
-        [ Element.spacing 10
-        , Element.width Element.fill
-        , Element.padding 20
-        , Background.color colors.surface
-        ]
-        [ Element.el
-            [ Font.size 20
-            , Font.bold
-            , Font.color colors.text
-            ]
-            (Element.text "Spade Cards Row")
-        , Element.row
-            [ Element.spacing 20
-            , Element.padding 10
-            ]
-            (List.map card ranks)
-        ]
-
-
-viewClubCardsRow : Theme.ColorPalette -> Element.Element msg
-viewClubCardsRow colors =
-    let
-        ranks =
-            [ "A", "K", "Q", "J", "10" ]
-
-        card rank =
-            Element.el
-                [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
-                ]
-                (Element.html
-                    (Icons.pokerCard
-                        { size = 120
-                        , rank = rank
-                        , suit = Icons.Club
-                        , backgroundColor = Element.rgb255 230 238 244
-                        , rankColor = Element.rgb255 0 0 0
-                        , suitColor = Element.rgb255 0 0 0
-                        }
-                    )
-                )
-    in
-    Element.column
-        [ Element.spacing 10
-        , Element.width Element.fill
-        , Element.padding 20
-        , Background.color colors.surface
-        ]
-        [ Element.el
-            [ Font.size 20
-            , Font.bold
-            , Font.color colors.text
-            ]
-            (Element.text "Club Cards Row")
-        , Element.row
-            [ Element.spacing 20
-            , Element.padding 10
-            ]
-            (List.map card ranks)
-        ]
-
-
-viewAllSuitsRow : Theme.ColorPalette -> Element.Element msg
-viewAllSuitsRow colors =
-    let
-        suits =
-            [ ( Icons.Diamond, Element.rgb255 215 30 0 )
-            , ( Icons.Spade, Element.rgb255 0 0 0 )
-            , ( Icons.Club, Element.rgb255 0 0 0 )
-            , ( Icons.Heart, Element.rgb255 215 30 0 )
-            ]
-
-        card ( suit, suitColor ) =
-            Element.el
-                [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
-                ]
-                (Element.html
-                    (Icons.pokerCard
-                        { size = 120
-                        , rank = "A"
-                        , suit = suit
-                        , backgroundColor = Element.rgb255 230 238 244
-                        , rankColor = suitColor
-                        , suitColor = suitColor
-                        }
-                    )
-                )
-    in
-    Element.column
-        [ Element.spacing 10
-        , Element.width Element.fill
-        , Element.padding 20
-        , Background.color colors.surface
-        ]
-        [ Element.el
-            [ Font.size 20
-            , Font.bold
-            , Font.color colors.text
-            ]
-            (Element.text "All Suits Row")
-        , Element.row
-            [ Element.spacing 20
-            , Element.padding 10
-            ]
-            (List.map card suits)
-        ]
-
-
-viewHeartCardsRow : Theme.ColorPalette -> Element.Element msg
-viewHeartCardsRow colors =
-    let
-        ranks =
-            [ "A", "K", "Q", "J", "10" ]
-
-        card rank =
-            Element.el
-                [ Element.paddingEach { top = 0, right = 10, bottom = 0, left = 10 }
-                ]
-                (Element.html
-                    (Icons.pokerCard
-                        { size = 120
-                        , rank = rank
-                        , suit = Icons.Heart
-                        , backgroundColor = Element.rgb255 230 238 244
-                        , rankColor = Element.rgb255 215 30 0
-                        , suitColor = Element.rgb255 215 30 0
-                        }
-                    )
-                )
-    in
-    Element.column
-        [ Element.spacing 10
-        , Element.width Element.fill
-        , Element.padding 20
-        , Background.color colors.surface
-        ]
-        [ Element.el
-            [ Font.size 20
-            , Font.bold
-            , Font.color colors.text
-            ]
-            (Element.text "Heart Cards Row")
-        , Element.row
-            [ Element.spacing 20
-            , Element.padding 10
-            ]
-            (List.map card ranks)
         ]

@@ -16,6 +16,7 @@ type alias Config =
     , fontSizeMin : Float
     , fontSizePreferred : String
     , fontSizeMax : Float
+    , message : String
     }
 
 
@@ -27,75 +28,56 @@ defaultConfig =
     , fontSizeMin = 0.5
     , fontSizePreferred = "6vh"
     , fontSizeMax = 1.5
+    , message = ""
     }
 
 
 
--- Color Conversion
+-- Style Helpers
 
 
-colorToRgbString : Color -> String
-colorToRgbString color =
-    let
-        rgb =
-            Element.toRgb color
-    in
-    "rgb("
-        ++ String.fromInt (round (rgb.red * 255))
-        ++ ","
-        ++ String.fromInt (round (rgb.green * 255))
-        ++ ","
-        ++ String.fromInt (round (rgb.blue * 255))
-        ++ ")"
+fontSizeClampString : Config -> String
+fontSizeClampString config =
+    "clamp("
+        ++ String.fromFloat config.fontSizeMin
+        ++ "rem, "
+        ++ config.fontSizePreferred
+        ++ ", "
+        ++ String.fromFloat config.fontSizeMax
+        ++ "rem)"
 
 
 
--- CSS Styles
+-- Bright white gradient with strong shadow for visibility on dark backgrounds
 
 
-generateCss : Config -> String
-generateCss config =
-    let
-        textColorStr =
-            colorToRgbString config.textColor
+gradientBackground : String
+gradientBackground =
+    "linear-gradient(90deg, #ffffff, #f5f5f5, #ffffff, #fafafa, #ffffff, #f0f0f0)"
 
-        fontSizeClamp =
-            "clamp("
-                ++ String.fromFloat config.fontSizeMin
-                ++ "rem, "
-                ++ config.fontSizePreferred
-                ++ ", "
-                ++ String.fromFloat config.fontSizeMax
-                ++ "rem)"
-    in
-    ".marquee-container {\n"
-        ++ "    position: relative;\n"
-        ++ "    width: 100%;\n"
-        ++ "    height: 100%;\n"
-        ++ "    overflow: hidden;\n"
-        ++ "    display: flex;\n"
-        ++ "    align-items: center;\n"
-        ++ "    background-color: transparent;\n"
-        ++ "}\n\n"
-        ++ ".marquee-text {\n"
-        ++ "    position: absolute;\n"
-        ++ "    white-space: nowrap;\n"
-        ++ "    display: inline-block;\n"
-        ++ "    font-size: "
-        ++ fontSizeClamp
-        ++ ";\n"
-        ++ "    font-weight: bold;\n"
-        ++ "    color: "
-        ++ textColorStr
-        ++ " !important;\n"
-        ++ "    -webkit-text-stroke: 1px black;\n"
-        ++ "    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 1px #000;\n"
-        ++ "    font-family: Arial, sans-serif;\n"
-        ++ "    animation: marquee-left "
-        ++ String.fromFloat config.speed
-        ++ "s linear infinite;\n"
-        ++ "}\n\n"
-        ++ "@keyframes marquee-left {\n"
+
+textStyles : Config -> List (Html.Attribute msg)
+textStyles config =
+    [ Attr.style "position" "absolute"
+    , Attr.style "white-space" "nowrap"
+    , Attr.style "display" "inline-block"
+    , Attr.style "font-size" (fontSizeClampString config)
+    , Attr.style "font-weight" "900"
+    , Attr.style "background" gradientBackground
+    , Attr.style "-webkit-background-clip" "text"
+    , Attr.style "background-clip" "text"
+    , Attr.style "-webkit-text-fill-color" "transparent"
+    , Attr.style "color" "transparent"
+    , Attr.style "filter" "drop-shadow(0 0 3px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 6px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 9px rgba(0, 0, 0, 0.5))"
+    , Attr.style "font-family" "Arial, sans-serif"
+    , Attr.style "letter-spacing" "0.05em"
+    , Attr.style "animation" ("marquee-left " ++ String.fromFloat config.speed ++ "s linear infinite")
+    ]
+
+
+keyframesCss : String
+keyframesCss =
+    "@keyframes marquee-left {\n"
         ++ "    0% {\n"
         ++ "        left: 100%;\n"
         ++ "        transform: translateX(0);\n"
@@ -111,11 +93,11 @@ generateCss config =
 -- View
 
 
-view : Config -> String -> Html.Html msg
-view config message =
+view : Config -> Html.Html msg
+view config =
     let
         repeatedText =
-            String.join " " (List.repeat config.repeat message)
+            String.join " " (List.repeat config.repeat config.message)
 
         -- Calculate animation duration based on text length
         -- To make all text move at the same visual speed, we scale the duration
@@ -137,11 +119,22 @@ view config message =
         adjustedSpeed : Float
         adjustedSpeed =
             config.speed * (textLength / referenceLength)
+
+        containerStyles : List (Html.Attribute msg)
+        containerStyles =
+            [ Attr.style "position" "relative"
+            , Attr.style "width" "100%"
+            , Attr.style "height" "100%"
+            , Attr.style "overflow" "hidden"
+            , Attr.style "display" "flex"
+            , Attr.style "align-items" "center"
+            , Attr.style "background-color" "transparent"
+            ]
     in
     Html.div
-        [ Attr.class "marquee-container" ]
-        [ Html.node "style" [] [ Html.text (generateCss { config | speed = adjustedSpeed }) ]
+        containerStyles
+        [ Html.node "style" [] [ Html.text keyframesCss ]
         , Html.div
-            [ Attr.class "marquee-text" ]
+            (textStyles { config | speed = adjustedSpeed })
             [ Html.text repeatedText ]
         ]
