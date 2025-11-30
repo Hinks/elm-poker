@@ -1,0 +1,326 @@
+---
+description: Best-practice pattern for designing and organizing Elm ports and JS interop.
+globs: src/**/*.elm
+alwaysApply: false
+---
+
+## Elm Ports Best Practices (Single-Protocol Port Pattern)
+
+This rule defines a **standard pattern for using Elm ports** so that:
+
+-   Elm owns the protocol and remains the source of truth
+-   The compiler catches protocol changes
+-   JS stays as a **thin, side-effect-only** layer
+-   Ports remain **few, composable, and domain-focused**
+
+The pattern is built around **one outbound port + one inbound port per JS subsystem**, each carrying a **single tagged union protocol**.
+
+---
+
+### 1. One Outbound + One Inbound Port Per JS Subsystem
+
+For each JS subsystem (e.g. `browserInterop`, `analytics`, `videoPlayer`), define **at most one outbound and one inbound port**:
+
+```elm
+port module Ports exposing (Outgoing(..), Incoming(..), toJs, fromJs, send, subscriptions)
+
+import Json.Decode as Decode
+import Json.Encode as Encode
+
+
+port toJs : Encode.Value -> Cmd msg
+
+
+port fromJs : (Decode.Value -> msg) -> Sub msg
+```
+
+-   **Outbound**: `toJs` is the _only_ way Elm sends messages to that JS subsystem.
+-   **Inbound**: `fromJs` is the _only_ way Elm receives messages from that subsystem.
+
+Only define **additional port pairs** when concerns are truly **unrelated** (see rule 5).
+
+---
+
+### 2. Never Add a New Port for a New Action
+
+**Do not create a new port** every time you need a new action.
+
+Instead, extend your **protocol types**:
+
+```elm
+type Outgoing
+    = SavePost Post
+    | DeletePost PostId
+    | LoadPosts
+    | RenamePost PostId String
+```
+
+-   Add a new `Outgoing` (or `Incoming`) constructor for each new action.
+-   Keep using the **same** `toJs` / `fromJs` ports.
+
+This keeps your protocol **centralized** and allows the compiler to track changes.
+
+---
+
+### 3. Single Encoder and Decoder for All JS Communication
+
+All JS communication for a subsystem should go through **one encoder** and **one decoder**:
+
+```elm
+send : Outgoing -> Cmd msg
+send msg =
+    toJs (encodeOutgoing msg)
+
+
+encodeOutgoing : Outgoing -> Encode.Value
+encodeOutgoing outgoing =
+    -- see rule 4 for "tag" envelope
+    ...
+```
+
+For incoming messages, connect Elm subscriptions to a **single decoder entry point**:
+
+```elm
+type Incoming
+    = IncomingPosts (List Post)
+    | IncomingError String
+    | IncomingNoOp
+
+
+subscriptions : model -> Sub Incoming
+subscriptions _ =
+    fromJs decodeIncoming
+```
+
+Benefits:
+
+-   All protocol changes are in **one place**.
+-   Easy to audit and evolve the Elm ↔ JS contract.
+
+---
+
+### 4. JS Dispatches on a Top-Level `"tag"` Field
+
+All messages over ports use a **tagged envelope**:
+
+```elm
+encodeOutgoing : Outgoing -> Encode.Value
+encodeOutgoing outgoing =
+    case outgoing of
+        SavePost post ->
+            Encode.object
+                [ ( "tag", Encode.string "SavePost" )
+                , ( "data", encodePost post )
+                ]
+
+        DeletePost postId ->
+            Encode.object
+                [ ( "tag", Encode.string "DeletePost" )
+                , ( "data", encodePostId postId )
+                ]
+
+        LoadPosts ->
+            Encode.object
+                [ ( "tag", Encode.string "LoadPosts" )
+                , ( "data", Encode.null )
+                ]
+
+        RenamePost postId newTitle ->
+            Encode.object
+                [ ( "tag", Encode.string "RenamePost" )
+                , ( "data"
+                  , Encode.object
+                        [ ( "postId", encodePostId postId )
+                        , ( "title", Encode.string newTitle )
+                        ]
+                  )
+                ]
+```
+
+JS **must** dispatch on `"tag"`:
+
+```javascript
+app.ports.toJs.subscribe((payload) => {
+    switch (payload.tag) {
+        case "SavePost":
+            // payload.data = { ... }
+            break;
+        case "DeletePost":
+            // payload.data = { postId: ... }
+            break;
+        case "LoadPosts":
+            break;
+        case "RenamePost":
+            break;
+        default:
+            console.warn("Unknown port tag", payload);
+    }
+});
+```
+
+-   `"tag"` defines **what** the message is.
+-   `"data"` carries the payload, encoded/decoded by Elm.
+
+---
+
+### 5. Add Port Pairs Only for Unrelated JS Concerns
+
+Create **additional** port pairs only when JS concerns are **domain-separated**:
+
+-   `browserInteropToJs` / `browserInteropFromJs`
+-   `analyticsToJs` (outbound only)
+-   `videoPlayerFromJs` (inbound only)
+
+**Do not** duplicate ports within the same domain. If the concern is the same (e.g. posts, game state, storage), keep using the existing `Outgoing` / `Incoming` types and the same `toJs` / `fromJs`.
+
+---
+
+### 6. Elm Owns the Protocol (Schema vs Interpreter)
+
+Elm is the **schema**; JS is the **interpreter**:
+
+-   Elm defines:
+    -   `Outgoing` and `Incoming` types
+    -   `encodeOutgoing` and `decodeIncoming`
+    -   The allowed `"tag"` values and payload shapes
+-   JS:
+    -   Reads the `"tag"` field
+    -   Performs side effects
+    -   Encodes responses using the **same envelope** (`{ tag, data }`)
+
+**JS must not invent new tags or payload shapes** that Elm does not know about.
+
+---
+
+### 7. Let the Compiler Fail When the Protocol Grows
+
+Use **exhaustive pattern matches** so that adding a new message forces updates:
+
+```elm
+encodeOutgoing : Outgoing -> Encode.Value
+encodeOutgoing outgoing =
+    case outgoing of
+        SavePost post ->
+            ...
+
+        DeletePost postId ->
+            ...
+
+        LoadPosts ->
+            ...
+
+        RenamePost postId newTitle ->
+            ...
+```
+
+```elm
+handleIncoming : Incoming -> Model -> ( Model, Cmd Msg )
+handleIncoming incoming model =
+    case incoming of
+        IncomingPosts posts ->
+            ...
+
+        IncomingError message ->
+            ...
+
+        IncomingNoOp ->
+            ( model, Cmd.none )
+```
+
+If you add a new `Outgoing` or `Incoming` variant, the compiler will **force you** to update:
+
+-   `encodeOutgoing`
+-   `decodeIncoming`
+-   Any functions pattern-matching on those types
+
+---
+
+### 8. Isolate Port Code in a Dedicated `Ports.elm` Module
+
+Keep all low-level port wiring in a **single module**, typically `Ports.elm`:
+
+```plain
+src/
+  Ports.elm
+  Domain/
+    Posts.elm
+    Users.elm
+```
+
+**Only** `Ports.elm`:
+
+-   Declares `port module Ports`
+-   Defines `port toJs` and `port fromJs`
+-   Exposes `Outgoing`, `Incoming`, `send`, and `subscriptions`
+
+All other modules **depend on functions**, not port names:
+
+```elm
+import Ports
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        SaveRequested post ->
+            ( model, Ports.send (Ports.SavePost post) )
+```
+
+This keeps the rest of the app oblivious to the actual port identifiers.
+
+---
+
+### 9. JS as the Thinnest Possible Layer
+
+JS responsibilities should be **minimal**:
+
+-   Decode the top-level `{ tag, data }` envelope
+-   Perform side effects (DOM, browser APIs, external libraries)
+-   Encode responses using the **same envelope** pattern
+
+JS should **not**:
+
+-   Make business decisions
+-   Contain game logic or domain rules
+-   Introduce branching based on domain rules that Elm could handle
+
+Example JS response back to Elm:
+
+```javascript
+function sendToElm(tag, data) {
+    app.ports.fromJs.send({ tag, data });
+}
+
+// After loading posts:
+sendToElm("IncomingPosts", posts);
+```
+
+---
+
+### 10. Only Use Ports When No Elm Package Can Do the Job
+
+Ports are a **last resort** for effects that Elm cannot handle directly:
+
+-   Local storage and other browser storage APIs
+-   Web APIs not supported in Elm core or ecosystem
+-   JS libraries (charts, video players, analytics, etc.)
+-   Browser events or behaviors Elm cannot access
+
+If an effect can be implemented using:
+
+-   Pure Elm
+-   Existing Elm packages
+
+…then **prefer that** over introducing ports.
+
+---
+
+### Summary Checklist
+
+-   **One outbound + one inbound port per JS subsystem** (`toJs` / `fromJs`).
+-   **Do not add more ports** for new actions; add `Outgoing` / `Incoming` variants instead.
+-   **Single encoder/decoder** per subsystem with `{ tag, data }` envelope.
+-   **Elm owns** all protocol types and shapes; JS just interprets and performs side effects.
+-   **Exhaustive pattern matches** ensure the compiler guides protocol evolution.
+-   **Port wiring isolated** in `Ports.elm`; other modules call `Ports.send` and `Ports.subscriptions`.
+-   **Ports only for true JS interop needs**; everything else stays in pure Elm.

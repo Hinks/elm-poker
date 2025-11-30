@@ -11,6 +11,7 @@ import Page.Game
 import Page.Home
 import Page.Players
 import Page.Playground
+import Ports
 import Theme exposing (Theme(..))
 import Url exposing (Url)
 import Url.Parser exposing ((</>), Parser, s, top)
@@ -59,6 +60,7 @@ type Msg
     | GotGameMsg Page.Game.Msg
     | GotChampionMsg Page.Champion.Msg
     | ThemeToggled
+    | PortsMsg Ports.Incoming
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -128,6 +130,11 @@ update msg model =
               }
             , Cmd.none
             )
+
+        PortsMsg incoming ->
+            case incoming of
+                Ports.IncomingNoOp ->
+                    ( model, Cmd.none )
 
 
 toHome : Model -> ( Page.Home.Model, Cmd Page.Home.Msg ) -> ( Model, Cmd Msg )
@@ -269,12 +276,19 @@ init _ url key =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.page of
-        GamePage game ->
-            Sub.map GotGameMsg (Page.Game.subscriptions game)
+    let
+        pageSubscriptions =
+            case model.page of
+                GamePage game ->
+                    Sub.map GotGameMsg (Page.Game.subscriptions game)
 
-        _ ->
-            Sub.none
+                _ ->
+                    Sub.none
+    in
+    Sub.batch
+        [ pageSubscriptions
+        , Ports.subscriptions PortsMsg
+        ]
 
 
 
