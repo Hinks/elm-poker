@@ -59,8 +59,20 @@
                 tone(900, now + 0.2, 0.35); // Lower "dong"
             }
 
-            app.ports.blindTimerAlert.subscribe(function () {
-                blindTimerAlert();
+            function sendToElm(tag, data) {
+                if (app.ports.fromJs) {
+                    app.ports.fromJs.send({ tag: tag, data: data });
+                }
+            }
+
+            app.ports.toJs.subscribe(function (payload) {
+                switch (payload.tag) {
+                    case "BlindTimerAlert":
+                        blindTimerAlert();
+                        break;
+                    default:
+                        console.warn("Unknown port tag from Elm:", payload);
+                }
             });
         </script>
     </body>
