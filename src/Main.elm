@@ -25,9 +25,11 @@ type alias Model =
     { page : Page
     , theme : Theme
     , navigationKey : Navigation.Key
-    , playersPageState : Maybe Page.Players.Model
-    , gamePageState : Maybe Page.Game.Model
     , basePath : String
+    , home : Page.Home.Model
+    , players : Page.Players.Model
+    , game : Page.Game.Model
+    , champion : Page.Champion.Model
     }
 
 
@@ -40,10 +42,10 @@ type Route
 
 
 type Page
-    = HomePage Page.Home.Model
-    | PlayersPage Page.Players.Model
-    | GamePage Page.Game.Model
-    | ChampionPage Page.Champion.Model
+    = HomePage
+    | PlayersPage
+    | GamePage
+    | ChampionPage
     | PlaygroundPage
     | NotFound
 
@@ -79,22 +81,34 @@ update msg model =
 
         GotHomeMsg homeMsg ->
             case model.page of
-                HomePage home ->
-                    toHome model (Page.Home.update homeMsg home)
+                HomePage ->
+                    let
+                        ( updatedHome, cmd ) =
+                            Page.Home.update homeMsg model.home
+                    in
+                    ( { model | home = updatedHome }
+                    , Cmd.map GotHomeMsg cmd
+                    )
 
                 _ ->
                     ( model, Cmd.none )
 
         GotPlayersMsg playersMsg ->
             case model.page of
-                PlayersPage players ->
+                PlayersPage ->
                     let
                         ( updatedPlayers, cmd ) =
-                            Page.Players.update playersMsg players
+                            Page.Players.update playersMsg model.players
+
+                        syncedGame =
+                            Page.Game.init
+                                (Just model.game)
+                                (playersRoster updatedPlayers)
+                                updatedPlayers.initialBuyIn
                     in
                     ( { model
-                        | page = PlayersPage updatedPlayers
-                        , playersPageState = Just updatedPlayers
+                        | players = updatedPlayers
+                        , game = syncedGame
                       }
                     , Cmd.map GotPlayersMsg cmd
                     )
@@ -104,16 +118,28 @@ update msg model =
 
         GotGameMsg gameMsg ->
             case model.page of
-                GamePage game ->
-                    toGame model model.playersPageState (Page.Game.update gameMsg game)
+                GamePage ->
+                    let
+                        ( updatedGame, cmd ) =
+                            Page.Game.update gameMsg model.game
+                    in
+                    ( { model | game = updatedGame }
+                    , Cmd.map GotGameMsg cmd
+                    )
 
                 _ ->
                     ( model, Cmd.none )
 
         GotChampionMsg championMsg ->
             case model.page of
-                ChampionPage champion ->
-                    toChampion model (Page.Champion.update championMsg champion)
+                ChampionPage ->
+                    let
+                        ( updatedChampion, cmd ) =
+                            Page.Champion.update championMsg model.champion
+                    in
+                    ( { model | champion = updatedChampion }
+                    , Cmd.map GotChampionMsg cmd
+                    )
 
                 _ ->
                     ( model, Cmd.none )
@@ -137,113 +163,32 @@ update msg model =
                     ( model, Cmd.none )
 
 
-toHome : Model -> ( Page.Home.Model, Cmd Page.Home.Msg ) -> ( Model, Cmd Msg )
-toHome model ( home, cmd ) =
-    ( { model | page = HomePage home }
-    , Cmd.map GotHomeMsg cmd
-    )
-
-
-toPlayers : Model -> ( Page.Players.Model, Cmd Page.Players.Msg ) -> ( Model, Cmd Msg )
-toPlayers model ( players, cmd ) =
-    ( { model
-        | page = PlayersPage players
-        , playersPageState = Just players
-      }
-    , Cmd.map GotPlayersMsg cmd
-    )
-
-
-toGame : Model -> Maybe Page.Players.Model -> ( Page.Game.Model, Cmd Page.Game.Msg ) -> ( Model, Cmd Msg )
-toGame model maybePlayersModel ( game, cmd ) =
-    let
-        extractedPlayers =
-            case maybePlayersModel of
-                Just playersModel ->
-                    playersModel.players
-
-                Nothing ->
-                    []
-
-        extractedBuyIn =
-            case maybePlayersModel of
-                Just playersModel ->
-                    playersModel.initialBuyIn
-
-                Nothing ->
-                    0
-
-        updatedGame =
-            Page.Game.init (Just game) extractedPlayers extractedBuyIn
-    in
-    ( { model
-        | page = GamePage updatedGame
-        , gamePageState = Just updatedGame
-      }
-    , Cmd.map GotGameMsg cmd
-    )
-
-
-toChampion : Model -> ( Page.Champion.Model, Cmd Page.Champion.Msg ) -> ( Model, Cmd Msg )
-toChampion model ( champion, cmd ) =
-    ( { model | page = ChampionPage champion }
-    , Cmd.map GotChampionMsg cmd
-    )
-
-
 updateUrl : Url -> Model -> ( Model, Cmd Msg )
 updateUrl url model =
     case Url.Parser.parse routeParser url of
         Just Home ->
-            ( Page.Home.init, Cmd.none )
-                |> toHome model
+            ( { model | page = HomePage }, Cmd.none )
 
         Just Players ->
-            ( Page.Players.init model.playersPageState, Cmd.none )
-                |> toPlayers model
+            ( { model | page = PlayersPage }, Cmd.none )
 
         Just Game ->
-            ( Page.Game.init model.gamePageState [] 0, Cmd.none )
-                |> toGame model model.playersPageState
+            let
+                syncedGame =
+                    Page.Game.init
+                        (Just model.game)
+                        (playersRoster model.players)
+                        model.players.initialBuyIn
+            in
+            ( { model | page = GamePage, game = syncedGame }, Cmd.none )
 
         Just Champion ->
-            let
-                extractedPlayers =
-                    case model.playersPageState of
-                        Just playersModel ->
-                            playersModel.players
-
-                        Nothing ->
-                            []
-
-                extractedBuyIn =
-                    case model.playersPageState of
-                        Just playersModel ->
-                            playersModel.initialBuyIn
-
-                        Nothing ->
-                            0
-
-                extractedBuyIns =
-                    case model.gamePageState of
-                        Just gameModel ->
-                            gameModel.buyIns
-
-                        Nothing ->
-                            []
-
-                totalPot =
-                    (List.length extractedPlayers + List.length extractedBuyIns) * extractedBuyIn
-
-                -- Extract players from buy-ins
-                championBuyInPlayers =
-                    Page.Game.buyInPlayers extractedBuyIns
-
-                championModel =
-                    Page.Champion.init extractedPlayers totalPot championBuyInPlayers extractedBuyIn
-            in
-            ( championModel, Cmd.none )
-                |> toChampion model
+            ( { model
+                | page = ChampionPage
+                , champion = buildChampionModel model
+              }
+            , Cmd.none
+            )
 
         Just Playground ->
             ( { model | page = PlaygroundPage }, Cmd.none )
@@ -258,13 +203,27 @@ init _ url key =
         basePath =
             detectBasePath url
 
+        initialHome =
+            Page.Home.init
+
+        initialPlayers =
+            Page.Players.init Nothing
+
+        initialGame =
+            Page.Game.init Nothing (playersRoster initialPlayers) initialPlayers.initialBuyIn
+
+        initialChampion =
+            Page.Champion.init [] 0 [] initialPlayers.initialBuyIn
+
         initialModel =
             { page = NotFound
             , theme = Theme.defaultTheme
             , navigationKey = key
-            , playersPageState = Nothing
-            , gamePageState = Nothing
             , basePath = basePath
+            , home = initialHome
+            , players = initialPlayers
+            , game = initialGame
+            , champion = initialChampion
             }
     in
     updateUrl url initialModel
@@ -279,8 +238,8 @@ subscriptions model =
     let
         pageSubscriptions =
             case model.page of
-                GamePage game ->
-                    Sub.map GotGameMsg (Page.Game.subscriptions game)
+                GamePage ->
+                    Sub.map GotGameMsg (Page.Game.subscriptions model.game)
 
                 _ ->
                     Sub.none
@@ -376,20 +335,20 @@ navButton colors route page basePath =
 viewPageContent : Model -> Element.Element Msg
 viewPageContent model =
     case model.page of
-        HomePage home ->
-            Page.Home.view home model.theme
+        HomePage ->
+            Page.Home.view model.home model.theme
                 |> Element.map GotHomeMsg
 
-        PlayersPage players ->
-            Page.Players.view players model.theme
+        PlayersPage ->
+            Page.Players.view model.players model.theme
                 |> Element.map GotPlayersMsg
 
-        GamePage game ->
-            Page.Game.view game model.theme
+        GamePage ->
+            Page.Game.view model.game model.theme
                 |> Element.map GotGameMsg
 
-        ChampionPage champion ->
-            Page.Champion.view champion model.theme
+        ChampionPage ->
+            Page.Champion.view model.champion model.theme
                 |> Element.map GotChampionMsg
 
         PlaygroundPage ->
@@ -437,6 +396,32 @@ viewThemeToggle theme =
 -- Helper functions
 
 
+playersRoster : Page.Players.Model -> List Page.Players.Player
+playersRoster =
+    Page.Players.roster
+
+
+buildChampionModel : Model -> Page.Champion.Model
+buildChampionModel model =
+    let
+        roster =
+            playersRoster model.players
+
+        buyIns =
+            model.game.buyIns
+
+        initialBuyIn =
+            model.players.initialBuyIn
+
+        totalPot =
+            (List.length roster + List.length buyIns) * initialBuyIn
+
+        championBuyInPlayers =
+            Page.Game.buyInPlayers buyIns
+    in
+    Page.Champion.init roster totalPot championBuyInPlayers initialBuyIn
+
+
 detectBasePath : Url -> String
 detectBasePath url =
     if String.startsWith "/elm-poker" url.path then
@@ -449,25 +434,25 @@ detectBasePath url =
 isActive : { link : Route, page : Page } -> Bool
 isActive { link, page } =
     case ( link, page ) of
-        ( Home, HomePage _ ) ->
+        ( Home, HomePage ) ->
             True
 
         ( Home, _ ) ->
             False
 
-        ( Players, PlayersPage _ ) ->
+        ( Players, PlayersPage ) ->
             True
 
         ( Players, _ ) ->
             False
 
-        ( Game, GamePage _ ) ->
+        ( Game, GamePage ) ->
             True
 
         ( Game, _ ) ->
             False
 
-        ( Champion, ChampionPage _ ) ->
+        ( Champion, ChampionPage ) ->
             True
 
         ( Champion, _ ) ->

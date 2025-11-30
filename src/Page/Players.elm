@@ -1,4 +1,4 @@
-module Page.Players exposing (Model, Msg, Player, getPlayerName, init, update, view)
+module Page.Players exposing (Model, Msg, Player, getPlayerName, init, roster, update, view)
 
 import Element
 import Element.Background
@@ -18,10 +18,9 @@ import Theme exposing (Theme)
 
 type alias Model =
     { pageName : String
-    , players : List Player
+    , players : List PlayerEntry
     , newPlayerName : String
     , initialBuyIn : Int
-    , seatingArrangement : Maybe (List Table)
     , playerListCollapsed : Bool
     }
 
@@ -30,8 +29,20 @@ type Player
     = Player String
 
 
+type alias PlayerEntry =
+    { player : Player
+    , seat : Maybe TablePosition
+    }
+
+
 type Table
     = Table (List Player)
+
+
+type alias TablePosition =
+    { table : Int
+    , position : Int
+    }
 
 
 init : Maybe Model -> Model
@@ -45,7 +56,6 @@ init maybeExistingModel =
             , players = []
             , newPlayerName = ""
             , initialBuyIn = 0
-            , seatingArrangement = Nothing
             , playerListCollapsed = False
             }
 
@@ -93,58 +103,34 @@ update msg model =
                     newPlayer =
                         Player (String.trim model.newPlayerName)
 
-                    updatedPlayers =
-                        model.players ++ [ newPlayer ]
-
-                    updatedSeatingArrangement =
-                        Maybe.map (addPlayerToSeatingArrangement newPlayer) model.seatingArrangement
+                    newEntry =
+                        { player = newPlayer
+                        , seat = Nothing
+                        }
                 in
                 ( { model
-                    | players = updatedPlayers
+                    | players = model.players ++ [ newEntry ]
                     , newPlayerName = ""
-                    , seatingArrangement = updatedSeatingArrangement
                   }
                 , Cmd.none
                 )
 
         RemovePlayer index ->
             let
-                playerToRemove =
-                    model.players
-                        |> List.drop index
-                        |> List.head
-
                 updatedPlayers =
                     model.players
                         |> List.indexedMap Tuple.pair
                         |> List.filter (\( i, _ ) -> i /= index)
                         |> List.map Tuple.second
-
-                updatedSeatingArrangement =
-                    case ( playerToRemove, model.seatingArrangement ) of
-                        ( Just player, Just tables ) ->
-                            let
-                                updatedTables =
-                                    removePlayerFromSeatingArrangement player tables
-                            in
-                            if List.isEmpty updatedTables then
-                                Nothing
-
-                            else
-                                Just updatedTables
-
-                        _ ->
-                            model.seatingArrangement
             in
             ( { model
                 | players = updatedPlayers
-                , seatingArrangement = updatedSeatingArrangement
               }
             , Cmd.none
             )
 
         RandomizeSeating ->
-            if List.isEmpty model.players then
+            if List.isEmpty model.players || hasSeating model then
                 ( model, Cmd.none )
 
             else
@@ -155,13 +141,19 @@ update msg model =
         GotRandomSeed seed ->
             let
                 shuffledPlayers =
-                    shufflePlayers seed model.players
+                    shufflePlayers seed (roster model)
 
                 tables =
                     distributeIntoTables shuffledPlayers
+
+                assignments =
+                    seatsFromTables tables
+
+                updatedPlayers =
+                    assignSeats model.players assignments
             in
             ( { model
-                | seatingArrangement = Just tables
+                | players = updatedPlayers
                 , playerListCollapsed = True
               }
             , Cmd.none
@@ -172,27 +164,21 @@ update msg model =
 
         ClearSeating ->
             ( { model
-                | seatingArrangement = Nothing
+                | players = clearSeats model.players
                 , playerListCollapsed = False
               }
             , Cmd.none
             )
 
 
-isPlayerNameUnique : String -> List Player -> Bool
+isPlayerNameUnique : String -> List PlayerEntry -> Bool
 isPlayerNameUnique name players =
     let
         trimmedName =
             String.trim name
 
-        extractPlayerName : Player -> String
-        extractPlayerName player =
-            case player of
-                Player playerName ->
-                    playerName
-
         existingNames =
-            List.map extractPlayerName players
+            List.map (\entry -> getPlayerName entry.player) players
     in
     not (List.member trimmedName existingNames)
 
@@ -302,80 +288,6 @@ getTablePlayerCount table =
             List.length players
 
 
-addPlayerToTable : Player -> Table -> Table
-addPlayerToTable player table =
-    case table of
-        Table players ->
-            Table (players ++ [ player ])
-
-
-removePlayerFromTable : Player -> Table -> Table
-removePlayerFromTable playerToRemove table =
-    case table of
-        Table players ->
-            Table (List.filter (\player -> player /= playerToRemove) players)
-
-
-findTableWithLeastPlayersIndex : List Table -> Int
-findTableWithLeastPlayersIndex tables =
-    let
-        indexedTables =
-            List.indexedMap Tuple.pair tables
-
-        findMinIndex : List ( Int, Table ) -> Int -> Int -> Int
-        findMinIndex remaining currentIndex minCount =
-            case remaining of
-                [] ->
-                    currentIndex
-
-                ( index, table ) :: rest ->
-                    let
-                        count =
-                            getTablePlayerCount table
-                    in
-                    if count < minCount then
-                        findMinIndex rest index count
-
-                    else
-                        findMinIndex rest currentIndex minCount
-    in
-    case indexedTables of
-        [] ->
-            0
-
-        ( firstIndex, firstTable ) :: rest ->
-            findMinIndex rest firstIndex (getTablePlayerCount firstTable)
-
-
-addPlayerToSeatingArrangement : Player -> List Table -> List Table
-addPlayerToSeatingArrangement player tables =
-    let
-        targetIndex =
-            findTableWithLeastPlayersIndex tables
-
-        updateTableAtIndex : Int -> List Table -> List Table
-        updateTableAtIndex targetIdx remaining =
-            case remaining of
-                [] ->
-                    []
-
-                table :: rest ->
-                    if targetIdx == 0 then
-                        addPlayerToTable player table :: rest
-
-                    else
-                        table :: updateTableAtIndex (targetIdx - 1) rest
-    in
-    updateTableAtIndex targetIndex tables
-
-
-removePlayerFromSeatingArrangement : Player -> List Table -> List Table
-removePlayerFromSeatingArrangement playerToRemove tables =
-    tables
-        |> List.map (removePlayerFromTable playerToRemove)
-        |> List.filter (\table -> getTablePlayerCount table > 0)
-
-
 
 -- VIEW
 
@@ -401,12 +313,11 @@ view model theme =
             , viewDivider colors
             , viewCurrentPlayersSection model colors
             , viewSeatingControls model colors
-            , case model.seatingArrangement of
-                Just tables ->
-                    viewSeatingArrangement tables colors
+            , if hasSeating model then
+                viewSeatingArrangement model colors
 
-                Nothing ->
-                    Element.none
+              else
+                Element.none
             ]
         )
 
@@ -542,13 +453,11 @@ viewCurrentPlayersSection model colors =
         ]
 
 
-viewPlayerRow : Int -> Player -> Theme.ColorPalette -> Element.Element Msg
-viewPlayerRow index player colors =
+viewPlayerRow : Int -> PlayerEntry -> Theme.ColorPalette -> Element.Element Msg
+viewPlayerRow index entry colors =
     let
         playerName =
-            case player of
-                Player name ->
-                    name
+            getPlayerName entry.player
     in
     Element.row
         [ Element.width Element.fill
@@ -581,7 +490,7 @@ viewSeatingControls model colors =
             , Element.Font.color colors.buttonText
             ]
             { onPress =
-                if List.isEmpty model.players || model.seatingArrangement /= Nothing then
+                if List.isEmpty model.players || hasSeating model then
                     Nothing
 
                 else
@@ -594,40 +503,43 @@ viewSeatingControls model colors =
             , Element.Font.color colors.buttonText
             ]
             { onPress =
-                if model.seatingArrangement == Nothing then
-                    Nothing
+                if hasSeating model then
+                    Just ClearSeating
 
                 else
-                    Just ClearSeating
+                    Nothing
             , label = Element.text "Clear Seating"
             }
         ]
 
 
-viewSeatingArrangement : List Table -> Theme.ColorPalette -> Element.Element Msg
-viewSeatingArrangement tables colors =
-    Element.column
-        [ Element.width Element.fill
-        , Element.spacing 15
-        ]
-        [ Element.text "Seating Arrangement:"
-        , Element.row
-            [ Element.width Element.fill
-            , Element.spacing 20
-            , Element.alignTop
-            ]
-            (List.indexedMap (\index table -> viewTable (index + 1) table colors) tables)
-        ]
-
-
-viewTable : Int -> Table -> Theme.ColorPalette -> Element.Element Msg
-viewTable tableNumber table colors =
+viewSeatingArrangement : Model -> Theme.ColorPalette -> Element.Element Msg
+viewSeatingArrangement model colors =
     let
-        players =
-            case table of
-                Table tablePlayers ->
-                    tablePlayers
+        tables =
+            seatingTables model.players
     in
+    case tables of
+        [] ->
+            Element.none
+
+        _ ->
+            Element.column
+                [ Element.width Element.fill
+                , Element.spacing 15
+                ]
+                [ Element.text "Seating Arrangement:"
+                , Element.row
+                    [ Element.width Element.fill
+                    , Element.spacing 20
+                    , Element.alignTop
+                    ]
+                    (List.map (\( tableNumber, players ) -> viewTable tableNumber players colors) tables)
+                ]
+
+
+viewTable : Int -> List Player -> Theme.ColorPalette -> Element.Element Msg
+viewTable tableNumber players colors =
     Element.column
         [ Element.width (Element.fillPortion 1)
         , Element.spacing 8
@@ -652,9 +564,7 @@ viewSeatedPlayer : Player -> Theme.ColorPalette -> Element.Element Msg
 viewSeatedPlayer player colors =
     let
         playerName =
-            case player of
-                Player name ->
-                    name
+            getPlayerName player
     in
     Element.el
         [ Element.paddingXY 8 4
@@ -695,6 +605,87 @@ viewCollapseExpandButton model colors =
 
 
 -- Helper functions (general utilities)
+
+
+hasSeating : Model -> Bool
+hasSeating model =
+    List.any (\entry -> entry.seat /= Nothing) model.players
+
+
+roster : Model -> List Player
+roster model =
+    List.map (\entry -> entry.player) model.players
+
+
+clearSeats : List PlayerEntry -> List PlayerEntry
+clearSeats =
+    List.map (\entry -> { entry | seat = Nothing })
+
+
+assignSeats : List PlayerEntry -> List ( Player, TablePosition ) -> List PlayerEntry
+assignSeats entries assignments =
+    List.map
+        (\entry ->
+            { entry
+                | seat = seatForPlayer entry.player assignments
+            }
+        )
+        entries
+
+
+seatForPlayer : Player -> List ( Player, TablePosition ) -> Maybe TablePosition
+seatForPlayer player assignments =
+    assignments
+        |> List.filter (\( assignedPlayer, _ ) -> assignedPlayer == player)
+        |> List.head
+        |> Maybe.map Tuple.second
+
+
+seatsFromTables : List Table -> List ( Player, TablePosition )
+seatsFromTables tables =
+    tables
+        |> List.indexedMap
+            (\tableIndex table ->
+                case table of
+                    Table tablePlayers ->
+                        tablePlayers
+                            |> List.indexedMap
+                                (\playerIndex player ->
+                                    ( player
+                                    , { table = tableIndex + 1, position = playerIndex + 1 }
+                                    )
+                                )
+            )
+        |> List.concat
+
+
+seatingTables : List PlayerEntry -> List ( Int, List Player )
+seatingTables entries =
+    let
+        assignments =
+            entries
+                |> List.filterMap
+                    (\entry ->
+                        Maybe.map (\seat -> ( seat, entry.player )) entry.seat
+                    )
+                |> List.sortBy (\( seat, _ ) -> ( seat.table, seat.position ))
+    in
+    assignments
+        |> List.foldl
+            (\( seat, player ) acc ->
+                case acc of
+                    [] ->
+                        [ ( seat.table, [ player ] ) ]
+
+                    ( tableNumber, tablePlayers ) :: rest ->
+                        if tableNumber == seat.table then
+                            ( tableNumber, tablePlayers ++ [ player ] ) :: rest
+
+                        else
+                            ( seat.table, [ player ] ) :: acc
+            )
+            []
+        |> List.reverse
 
 
 onEnterPress : Msg -> Element.Attribute Msg

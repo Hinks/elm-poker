@@ -25,10 +25,129 @@ type alias Winner =
     }
 
 
+type WinnerFlow
+    = AwaitingDivision
+    | DivisionSelected SelectionState
+
+
+type alias SelectionState =
+    { division : PotDivision
+    , winners : List Winner
+    }
+
+
+positionsFor : PotDivision -> List Int
+positionsFor division =
+    case division of
+        WinnerTakesAll ->
+            [ 1 ]
+
+        FirstSecond ->
+            [ 1, 2 ]
+
+        FirstSecondThird ->
+            [ 1, 2, 3 ]
+
+
+selectDivision : PotDivision -> WinnerFlow -> WinnerFlow
+selectDivision division flow =
+    let
+        existingWinners =
+            case flow of
+                DivisionSelected state ->
+                    state.winners
+
+                AwaitingDivision ->
+                    []
+
+        trimmedWinners =
+            existingWinners
+                |> List.take (List.length (positionsFor division))
+                |> List.indexedMap
+                    (\idx winner ->
+                        { winner | position = idx + 1 }
+                    )
+    in
+    DivisionSelected
+        { division = division
+        , winners = trimmedWinners
+        }
+
+
+currentWinners : WinnerFlow -> List Winner
+currentWinners flow =
+    case flow of
+        DivisionSelected state ->
+            state.winners
+
+        AwaitingDivision ->
+            []
+
+
+currentDivision : WinnerFlow -> Maybe PotDivision
+currentDivision flow =
+    case flow of
+        DivisionSelected state ->
+            Just state.division
+
+        AwaitingDivision ->
+            Nothing
+
+
+availablePositions : SelectionState -> List Int
+availablePositions state =
+    positionsFor state.division
+        |> List.filter
+            (\pos ->
+                not (List.any (\winner -> winner.position == pos) state.winners)
+            )
+
+
+canAddWinner : SelectionState -> Player -> Int -> Bool
+canAddWinner state player position =
+    not (List.any (\winner -> winner.player == player) state.winners)
+        && List.member position (availablePositions state)
+
+
+addWinner : SelectionState -> Player -> Int -> SelectionState
+addWinner state player position =
+    let
+        newWinner =
+            { player = player
+            , phoneNumber = ""
+            , position = position
+            }
+    in
+    { state | winners = state.winners ++ [ newWinner ] }
+
+
+removeWinner : SelectionState -> Player -> SelectionState
+removeWinner state player =
+    let
+        updatedWinners =
+            state.winners
+                |> List.filter (\winner -> winner.player /= player)
+                |> List.indexedMap
+                    (\idx winner ->
+                        { winner | position = idx + 1 }
+                    )
+    in
+    { state | winners = updatedWinners }
+
+
+isDivisionSelected : WinnerFlow -> PotDivision -> Bool
+isDivisionSelected flow division =
+    case flow of
+        DivisionSelected state ->
+            state.division == division
+
+        AwaitingDivision ->
+            False
+
+
 type alias Model =
     { pageName : String
-    , potDivision : Maybe PotDivision
-    , winners : List Winner
+    , winnerFlow : WinnerFlow
     , players : List Player
     , totalPot : Int
     , buyInPlayers : List Player
@@ -39,8 +158,7 @@ type alias Model =
 init : List Player -> Int -> List Player -> Int -> Model
 init players totalPot buyInPlayers initialBuyIn =
     { pageName = "Champion"
-    , potDivision = Nothing
-    , winners = []
+    , winnerFlow = AwaitingDivision
     , players = players
     , totalPot = totalPot
     , buyInPlayers = buyInPlayers
@@ -64,95 +182,77 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PotDivisionSelected division ->
-            let
-                maxWinners =
-                    case division of
-                        WinnerTakesAll ->
-                            1
-
-                        FirstSecond ->
-                            2
-
-                        FirstSecondThird ->
-                            3
-
-                updatedWinners =
-                    model.winners
-                        |> List.take maxWinners
-                        |> List.indexedMap
-                            (\idx winner ->
-                                { winner | position = idx + 1 }
-                            )
-            in
-            ( { model
-                | potDivision = Just division
-                , winners = updatedWinners
-              }
+            ( { model | winnerFlow = selectDivision division model.winnerFlow }
             , Cmd.none
             )
 
         WinnerSelected player position ->
-            let
-                isAlreadyWinner =
-                    List.any (\w -> w.player == player) model.winners
-
-                maxWinners =
-                    case model.potDivision of
-                        Just WinnerTakesAll ->
-                            1
-
-                        Just FirstSecond ->
-                            2
-
-                        Just FirstSecondThird ->
-                            3
-
-                        Nothing ->
-                            0
-
-                canAdd =
-                    not isAlreadyWinner
-                        && List.length model.winners
-                        < maxWinners
-                        && model.potDivision
-                        /= Nothing
-
-                newWinner =
-                    { player = player
-                    , phoneNumber = ""
-                    , position = position
-                    }
-            in
-            if canAdd then
-                ( { model | winners = model.winners ++ [ newWinner ] }, Cmd.none )
-
-            else
-                ( model, Cmd.none )
-
-        WinnerRemoved player ->
-            let
-                updatedWinners =
-                    List.filter (\w -> w.player /= player) model.winners
-                        |> List.indexedMap
-                            (\idx winner ->
-                                { winner | position = idx + 1 }
-                            )
-            in
-            ( { model | winners = updatedWinners }, Cmd.none )
-
-        PhoneNumberChanged player phoneNumber ->
-            let
-                updateWinner winner =
-                    if winner.player == player then
-                        { winner | phoneNumber = phoneNumber }
+            case model.winnerFlow of
+                DivisionSelected selection ->
+                    if canAddWinner selection player position then
+                        ( { model
+                            | winnerFlow =
+                                DivisionSelected (addWinner selection player position)
+                          }
+                        , Cmd.none
+                        )
 
                     else
-                        winner
-            in
-            ( { model | winners = List.map updateWinner model.winners }, Cmd.none )
+                        ( model, Cmd.none )
+
+                AwaitingDivision ->
+                    ( model, Cmd.none )
+
+        WinnerRemoved player ->
+            case model.winnerFlow of
+                DivisionSelected selection ->
+                    ( { model
+                        | winnerFlow =
+                            DivisionSelected (removeWinner selection player)
+                      }
+                    , Cmd.none
+                    )
+
+                AwaitingDivision ->
+                    ( model, Cmd.none )
+
+        PhoneNumberChanged player phoneNumber ->
+            case model.winnerFlow of
+                DivisionSelected selection ->
+                    let
+                        updatedWinners =
+                            List.map
+                                (\winner ->
+                                    if winner.player == player then
+                                        { winner | phoneNumber = phoneNumber }
+
+                                    else
+                                        winner
+                                )
+                                selection.winners
+                    in
+                    ( { model
+                        | winnerFlow =
+                            DivisionSelected { selection | winners = updatedWinners }
+                      }
+                    , Cmd.none
+                    )
+
+                AwaitingDivision ->
+                    ( model, Cmd.none )
 
         ClearWinners ->
-            ( { model | winners = [] }, Cmd.none )
+            case model.winnerFlow of
+                DivisionSelected selection ->
+                    ( { model
+                        | winnerFlow =
+                            DivisionSelected { selection | winners = [] }
+                      }
+                    , Cmd.none
+                    )
+
+                AwaitingDivision ->
+                    ( model, Cmd.none )
 
 
 
@@ -209,17 +309,17 @@ viewPotDivisionSelector model colors =
             , Element.spacing 10
             ]
             [ viewDivisionOption
-                model
+                model.winnerFlow
                 colors
                 WinnerTakesAll
                 "Winner Takes All (100%)"
             , viewDivisionOption
-                model
+                model.winnerFlow
                 colors
                 FirstSecond
                 "First Place 80% / Second Place 20%"
             , viewDivisionOption
-                model
+                model.winnerFlow
                 colors
                 FirstSecondThird
                 "First Place 70% / Second Place 20% / Third Place 10%"
@@ -227,20 +327,20 @@ viewPotDivisionSelector model colors =
         ]
 
 
-viewDivisionOption : Model -> Theme.ColorPalette -> PotDivision -> String -> Element.Element Msg
-viewDivisionOption model colors division label =
+viewDivisionOption : WinnerFlow -> Theme.ColorPalette -> PotDivision -> String -> Element.Element Msg
+viewDivisionOption flow colors division label =
     Input.button
         [ Element.width Element.fill
         , Element.padding 12
         , Background.color
-            (if model.potDivision == Just division then
+            (if isDivisionSelected flow division then
                 colors.primary
 
              else
                 colors.surface
             )
         , Font.color
-            (if model.potDivision == Just division then
+            (if isDivisionSelected flow division then
                 colors.text
 
              else
@@ -263,33 +363,21 @@ viewWinnerSelection model colors =
             , Font.bold
             ]
             (Element.text "Select Winners:")
-        , case model.potDivision of
-            Nothing ->
+        , case model.winnerFlow of
+            AwaitingDivision ->
                 Element.el
                     [ Font.color colors.textSecondary
                     , Font.italic
                     ]
                     (Element.text "Please select a pot division type first.")
 
-            Just division ->
+            DivisionSelected selection ->
                 let
                     maxWinners =
-                        case division of
-                            WinnerTakesAll ->
-                                1
+                        List.length (positionsFor selection.division)
 
-                            FirstSecond ->
-                                2
-
-                            FirstSecondThird ->
-                                3
-
-                    availablePositions =
-                        List.range 1 maxWinners
-                            |> List.filter
-                                (\pos ->
-                                    not (List.any (\w -> w.position == pos) model.winners)
-                                )
+                    openSlots =
+                        availablePositions selection
                 in
                 Element.column
                     [ Element.width Element.fill
@@ -312,14 +400,14 @@ viewWinnerSelection model colors =
                         (List.map
                             (\player ->
                                 viewPlayerSelectionOption
-                                    model
+                                    selection
                                     colors
                                     player
-                                    availablePositions
+                                    openSlots
                             )
                             model.players
                         )
-                    , if List.isEmpty model.winners then
+                    , if List.isEmpty selection.winners then
                         Element.none
 
                       else
@@ -331,23 +419,23 @@ viewWinnerSelection model colors =
                                 (\winner ->
                                     viewWinnerWithPhoneInput model colors winner
                                 )
-                                (List.sortBy .position model.winners)
+                                (List.sortBy .position selection.winners)
                             )
                     ]
         ]
 
 
-viewPlayerSelectionOption : Model -> Theme.ColorPalette -> Player -> List Int -> Element.Element Msg
-viewPlayerSelectionOption model colors player availablePositions =
+viewPlayerSelectionOption : SelectionState -> Theme.ColorPalette -> Player -> List Int -> Element.Element Msg
+viewPlayerSelectionOption selection colors player remainingPositions =
     let
         playerName =
             Page.Players.getPlayerName player
 
         isWinner =
-            List.any (\w -> w.player == player) model.winners
+            List.any (\w -> w.player == player) selection.winners
 
         canSelect =
-            not isWinner && not (List.isEmpty availablePositions)
+            not isWinner && not (List.isEmpty remainingPositions)
     in
     Element.column
         [ Element.width Element.fill
@@ -400,7 +488,7 @@ viewPlayerSelectionOption model colors player availablePositions =
                                         )
                                 }
                         )
-                        availablePositions
+                        remainingPositions
                     )
 
               else
@@ -497,24 +585,33 @@ viewPaymentCalculations model colors =
             , Font.color colors.textSecondary
             ]
             (Element.text ("Total Pot: " ++ String.fromInt model.totalPot))
-        , if List.isEmpty model.winners || model.potDivision == Nothing then
-            Element.el
-                [ Font.color colors.textSecondary
-                , Font.italic
-                ]
-                (Element.text "Select winners to see payment calculations.")
+        , case model.winnerFlow of
+            AwaitingDivision ->
+                Element.el
+                    [ Font.color colors.textSecondary
+                    , Font.italic
+                    ]
+                    (Element.text "Select winners to see payment calculations.")
 
-          else
-            Element.column
-                [ Element.width Element.fill
-                , Element.spacing 20
-                ]
-                (List.map
-                    (\calc ->
-                        viewPaymentCalculation colors calc
-                    )
-                    calculations
-                )
+            DivisionSelected selection ->
+                if List.isEmpty selection.winners then
+                    Element.el
+                        [ Font.color colors.textSecondary
+                        , Font.italic
+                        ]
+                        (Element.text "Select winners to see payment calculations.")
+
+                else
+                    Element.column
+                        [ Element.width Element.fill
+                        , Element.spacing 20
+                        ]
+                        (List.map
+                            (\calc ->
+                                viewPaymentCalculation colors calc
+                            )
+                            calculations
+                        )
         ]
 
 
@@ -670,14 +767,14 @@ assignPayersRoundRobin winnerPayouts nonWinners playerContributions =
 
 calculatePayments : Model -> List PaymentCalculation
 calculatePayments model =
-    case model.potDivision of
-        Nothing ->
+    case model.winnerFlow of
+        AwaitingDivision ->
             []
 
-        Just division ->
+        DivisionSelected selection ->
             let
                 winnerPayouts =
-                    calculateWinnerPayouts division model.totalPot model.winners model.players
+                    calculateWinnerPayouts selection.division model.totalPot selection.winners model.players
 
                 -- Calculate each player's contribution to the pot
                 playerContributions =
@@ -687,7 +784,7 @@ calculatePayments model =
                     model.players
                         |> List.filter
                             (\player ->
-                                not (List.any (\w -> w.player == player) model.winners)
+                                not (List.any (\w -> w.player == player) selection.winners)
                             )
 
                 -- Assign payers to winners using round-robin

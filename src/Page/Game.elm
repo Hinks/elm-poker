@@ -16,13 +16,14 @@ import Random
 import Theme exposing (Theme)
 import Time
 
+
+
 -- MODEL
 
 
 type alias Model =
     { chips : List Chip
-    , blinds : List Blind
-    , currentBlindIndex : Int
+    , blindLevels : BlindLevels
     , blindDuration : Seconds
     , blindDurationInput : String
     , remainingTime : Seconds
@@ -48,6 +49,104 @@ type alias Blind =
     { smallBlind : Int
     , bigBlind : Int
     }
+
+
+type BlindLevels
+    = BlindLevels
+        { previous : List Blind
+        , current : Blind
+        , next : List Blind
+        }
+
+
+defaultBlinds : List Blind
+defaultBlinds =
+    [ { smallBlind = 100, bigBlind = 200 }
+    , { smallBlind = 200, bigBlind = 400 }
+    , { smallBlind = 300, bigBlind = 600 }
+    , { smallBlind = 400, bigBlind = 800 }
+    , { smallBlind = 500, bigBlind = 1000 }
+    , { smallBlind = 800, bigBlind = 1600 }
+    , { smallBlind = 1000, bigBlind = 2000 }
+    , { smallBlind = 2000, bigBlind = 4000 }
+    ]
+
+
+defaultBlindLevels : BlindLevels
+defaultBlindLevels =
+    case blindLevelsFromList defaultBlinds of
+        Just levels ->
+            levels
+
+        Nothing ->
+            BlindLevels
+                { previous = []
+                , current = { smallBlind = 0, bigBlind = 0 }
+                , next = []
+                }
+
+
+blindLevelsFromList : List Blind -> Maybe BlindLevels
+blindLevelsFromList blinds =
+    case blinds of
+        current :: rest ->
+            Just (BlindLevels { previous = [], current = current, next = rest })
+
+        [] ->
+            Nothing
+
+
+blindLevelsHasNext : BlindLevels -> Bool
+blindLevelsHasNext (BlindLevels levels) =
+    not (List.isEmpty levels.next)
+
+
+blindLevelsHasPrevious : BlindLevels -> Bool
+blindLevelsHasPrevious (BlindLevels levels) =
+    not (List.isEmpty levels.previous)
+
+
+advanceBlindLevels : BlindLevels -> BlindLevels
+advanceBlindLevels ((BlindLevels levels) as blindLevels) =
+    case levels.next of
+        nextBlind :: rest ->
+            BlindLevels
+                { previous = levels.current :: levels.previous
+                , current = nextBlind
+                , next = rest
+                }
+
+        [] ->
+            blindLevels
+
+
+rewindBlindLevels : BlindLevels -> BlindLevels
+rewindBlindLevels ((BlindLevels levels) as blindLevels) =
+    case levels.previous of
+        prevBlind :: rest ->
+            BlindLevels
+                { previous = rest
+                , current = prevBlind
+                , next = levels.current :: levels.next
+                }
+
+        [] ->
+            blindLevels
+
+
+blindLevelsCurrent : BlindLevels -> Blind
+blindLevelsCurrent (BlindLevels levels) =
+    levels.current
+
+
+upcomingBlinds : BlindLevels -> List Blind
+upcomingBlinds (BlindLevels levels) =
+    levels.next
+
+
+currentBlindNumber : BlindLevels -> Int
+currentBlindNumber (BlindLevels levels) =
+    List.length levels.previous + 1
 
 
 type TimerState
@@ -84,17 +183,7 @@ init maybeExistingModel players buyIn =
 
         Nothing ->
             { chips = [ Chip White 50, Chip Red 100, Chip Blue 200, Chip Green 250, Chip Black 500 ]
-            , blinds =
-                [ { smallBlind = 100, bigBlind = 200 }
-                , { smallBlind = 200, bigBlind = 400 }
-                , { smallBlind = 300, bigBlind = 600 }
-                , { smallBlind = 400, bigBlind = 800 }
-                , { smallBlind = 500, bigBlind = 1000 }
-                , { smallBlind = 800, bigBlind = 1600 }
-                , { smallBlind = 1000, bigBlind = 2000 }
-                , { smallBlind = 2000, bigBlind = 4000 }
-                ]
-            , currentBlindIndex = 0
+            , blindLevels = defaultBlindLevels
             , blindDuration = 12 * 60
             , blindDurationInput = "12"
             , remainingTime = 12 * 60
@@ -286,7 +375,7 @@ update msg model =
 
         ResetTimer ->
             ( { model
-                | currentBlindIndex = 0
+                | blindLevels = defaultBlindLevels
                 , remainingTime = model.blindDuration
                 , timerState = Stopped
                 , blindDurationInput = String.fromInt (model.blindDuration // 60)
@@ -295,9 +384,9 @@ update msg model =
             )
 
         BlindIndexUp ->
-            if model.currentBlindIndex < List.length model.blinds - 1 then
+            if blindLevelsHasNext model.blindLevels then
                 ( { model
-                    | currentBlindIndex = model.currentBlindIndex + 1
+                    | blindLevels = advanceBlindLevels model.blindLevels
                     , remainingTime = model.blindDuration
                   }
                 , Cmd.none
@@ -307,9 +396,9 @@ update msg model =
                 ( model, Cmd.none )
 
         BlindIndexDown ->
-            if model.currentBlindIndex > 0 then
+            if blindLevelsHasPrevious model.blindLevels then
                 ( { model
-                    | currentBlindIndex = model.currentBlindIndex - 1
+                    | blindLevels = rewindBlindLevels model.blindLevels
                     , remainingTime = model.blindDuration
                   }
                 , Cmd.none
@@ -325,7 +414,7 @@ update msg model =
             ( { model | activeRankingIndex = Just index }, Cmd.none )
 
         StartNextBlind ->
-            if model.currentBlindIndex < List.length model.blinds - 1 then
+            if blindLevelsHasNext model.blindLevels then
                 let
                     advancedModel =
                         advanceToNextBlind model
@@ -435,9 +524,9 @@ update msg model =
 
 advanceToNextBlind : Model -> Model
 advanceToNextBlind model =
-    if model.currentBlindIndex < List.length model.blinds - 1 then
+    if blindLevelsHasNext model.blindLevels then
         { model
-            | currentBlindIndex = model.currentBlindIndex + 1
+            | blindLevels = advanceBlindLevels model.blindLevels
             , remainingTime = model.blindDuration
         }
 
@@ -698,39 +787,34 @@ viewLeftControls model theme colors =
 viewCenterBlinds : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
 viewCenterBlinds model theme colors =
     let
-        currentBlind =
+        blind =
             getCurrentBlind model
 
         iconSize =
             140.0
     in
-    case currentBlind of
-        Just blind ->
-            Element.row
-                [ Element.centerX
-                ]
-                [ Element.html
-                    (Icons.bigBlind
-                        { size = iconSize
-                        , backgroundColor = getBigBlindBackgroundColor theme colors
-                        , labelTextColor = colors.bigBlindText
-                        , valueTextColor = colors.bigBlindText
-                        , value = blind.bigBlind
-                        }
-                    )
-                , Element.html
-                    (Icons.smallBlind
-                        { size = iconSize
-                        , backgroundColor = getSmallBlindBackgroundColor theme colors
-                        , labelTextColor = colors.smallBlindText
-                        , valueTextColor = colors.smallBlindText
-                        , value = blind.smallBlind
-                        }
-                    )
-                ]
-
-        Nothing ->
-            Element.text "No blind level"
+    Element.row
+        [ Element.centerX
+        ]
+        [ Element.html
+            (Icons.bigBlind
+                { size = iconSize
+                , backgroundColor = getBigBlindBackgroundColor theme colors
+                , labelTextColor = colors.bigBlindText
+                , valueTextColor = colors.bigBlindText
+                , value = blind.bigBlind
+                }
+            )
+        , Element.html
+            (Icons.smallBlind
+                { size = iconSize
+                , backgroundColor = getSmallBlindBackgroundColor theme colors
+                , labelTextColor = colors.smallBlindText
+                , valueTextColor = colors.smallBlindText
+                , value = blind.smallBlind
+                }
+            )
+        ]
 
 
 viewManualBlindsAdvance : Model -> Theme.ColorPalette -> Element.Element Msg
@@ -749,7 +833,7 @@ viewManualBlindsAdvance model colors =
                 , Font.color colors.buttonText
                 ]
                 { onPress =
-                    if model.currentBlindIndex < List.length model.blinds - 1 then
+                    if blindLevelsHasNext model.blindLevels then
                         Just BlindIndexUp
 
                     else
@@ -762,7 +846,7 @@ viewManualBlindsAdvance model colors =
                 , Font.color colors.buttonText
                 ]
                 { onPress =
-                    if model.currentBlindIndex > 0 then
+                    if blindLevelsHasPrevious model.blindLevels then
                         Just BlindIndexDown
 
                     else
@@ -777,7 +861,7 @@ viewBlinkingStartNextBlindButton : Model -> Theme.ColorPalette -> Element.Elemen
 viewBlinkingStartNextBlindButton model colors =
     let
         canAdvance =
-            model.currentBlindIndex < List.length model.blinds - 1
+            blindLevelsHasNext model.blindLevels
 
         blinkAnimationStyle =
             Html.Attributes.style "animation" "blink 1s infinite"
@@ -817,8 +901,11 @@ viewBlinkingStartNextBlindButton model colors =
 viewRightLevels : Model -> Element.Element Msg
 viewRightLevels model =
     let
-        upcomingBlinds =
+        upcomingBlindsList =
             getUpcomingBlinds model
+
+        currentLevelNumberIndex =
+            currentBlindNumber model.blindLevels
     in
     Element.column
         [ Element.width Element.fill
@@ -846,7 +933,7 @@ viewRightLevels model =
                             ]
                             (Element.text
                                 ("Level "
-                                    ++ String.fromInt (model.currentBlindIndex + idx + 2)
+                                    ++ String.fromInt (currentLevelNumberIndex + idx + 1)
                                     ++ ":  "
                                     ++ formatBlindValue upcomingBlind.smallBlind
                                     ++ " / "
@@ -854,7 +941,7 @@ viewRightLevels model =
                                 )
                             )
                     )
-                    upcomingBlinds
+                    upcomingBlindsList
                 )
             ]
         ]
@@ -1343,17 +1430,15 @@ formatBlindValue value =
         |> String.join " "
 
 
-getCurrentBlind : Model -> Maybe Blind
+getCurrentBlind : Model -> Blind
 getCurrentBlind model =
-    model.blinds
-        |> List.drop model.currentBlindIndex
-        |> List.head
+    blindLevelsCurrent model.blindLevels
 
 
 getUpcomingBlinds : Model -> List Blind
 getUpcomingBlinds model =
-    model.blinds
-        |> List.drop (model.currentBlindIndex + 1)
+    model.blindLevels
+        |> upcomingBlinds
         |> List.take 3
 
 

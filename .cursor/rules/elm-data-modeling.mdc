@@ -1,0 +1,154 @@
+---
+description: Guidelines for Elm data modeling to make impossible states impossible
+globs: src/**/*.elm
+alwaysApply: false
+---
+# Elm Data Modeling (Making Impossible States Impossible)
+
+When writing or editing Elm code, use types to **exclude invalid states by construction** rather than handling them at runtime.
+
+1. **Eliminate Representable Invalid States**
+
+   Before adding fields or types, always ask:
+
+   > Can this model represent a state my app should never reach?
+
+   If the answer is **yes**, redesign the type so the impossible state cannot be expressed.
+
+2. **Prefer Custom Union Types Over Multiple `Maybe`s**
+
+   Do **not** model related optional states as separate `Maybe` fields when they are logically connected.
+   Instead, create a domain-specific union type that captures only the valid combinations.
+
+   **Bad**
+
+   ```elm
+   type alias Model =
+       { status : Maybe String
+       , questionToRestore : Maybe Question
+       }
+   ```
+
+   This allows invalid states like `Just "Deleted"` with `Nothing` for `questionToRestore`.
+
+   **Good**
+
+   ```elm
+   type Status
+       = NoStatus
+       | TextStatus String
+       | DeletedStatus String Question
+
+
+   type alias Model =
+       { status : Status
+       }
+   ```
+
+   Here, every deleted status **must** carry its associated `Question`.
+
+3. **Avoid Parallel Lists**
+
+   Do not sync related data across multiple lists (for example, prompts vs responses) where indices must match.
+   Prefer a single list of records that keeps related data together.
+
+   **Bad**
+
+   ```elm
+   type alias Model =
+       { prompts : List Prompt
+       , responses : List (Maybe Response)
+       }
+   ```
+
+   **Good**
+
+   ```elm
+   type alias Turn =
+       { prompt : Prompt
+       , response : Maybe Response
+       }
+
+
+   type alias Model =
+       { turns : List Turn
+       }
+   ```
+
+4. **Use Non-Empty Structures for Non-Empty Requirements**
+
+   When empty lists are invalid in your domain, avoid plain `List a`.
+   Use a non-empty structure instead, so the compiler guarantees at least one element.
+
+   ```elm
+   type alias NonEmpty a =
+       { first : a
+       , others : List a
+       }
+   ```
+
+   Use `NonEmpty a` for things like “at least one player”, “at least one card”, etc.
+
+5. **Use Zippers / ZipLists for “Current + All” Situations**
+
+   Any time you track a “current item” from a list, ensure that the current item **must** come from that list by modeling them together.
+
+   ```elm
+   type alias Zipper a =
+       { previous : List a
+       , current : a
+       , next : List a
+       }
+   ```
+
+   Use a zipper when modeling things like **current player**, **current hand**, or **current step** in a flow, so it’s impossible to point at an item that is not part of the collection.
+
+6. **Opaque Types for Upgrade-Safe APIs**
+
+   When exposing data structures across modules, wrap internal records in a single-constructor custom type and hide the constructor.
+
+   ```elm
+   module History exposing (History, empty, push, toList)
+
+
+   type History
+       = History
+           { past : List State
+           , present : State
+           }
+   ```
+
+   Export the type but **not** its constructor. Provide accessor and modifier functions instead.
+   This lets you evolve the internal representation later without breaking callers.
+
+7. **Use Types to Guide the UI Flow**
+
+   Model UI state transitions explicitly as types and avoid “mixed” flags (e.g. both loading and loaded at the same time).
+
+   ```elm
+   type DataState data error
+       = NotAsked
+       | Loading
+       | Loaded data
+       | Failed error
+   ```
+
+   Avoid separate boolean flags like `isLoading : Bool` combined with `Maybe data`, which can represent contradictory states.
+
+8. **Favor Compile-Time Safety Over Runtime Validation**
+
+   If you find yourself writing validation code to guard against states that **should be impossible**, stop and restructure the data model.
+
+   - Prefer types that make invalid states unrepresentable.
+   - Use pattern matching to enforce that all valid cases are handled.
+
+9. **Model With Types Before Writing Behavior**
+
+   When starting a new feature or refactoring, begin by enumerating every valid state your UI or domain can be in.
+
+   - Write down the allowed states in plain language.
+   - Turn those states into custom types and union variants.
+   - Ensure there is no representable state that doesn’t correspond to a real, valid situation in your app.
+
+   Aim for types that encode **exactly** the valid states — no more, no less.
+
