@@ -1346,19 +1346,33 @@ viewBuyInCollapseExpandButton model colors =
 
 viewFooterMarquee : Theme.ColorPalette -> Element.Element Msg
 viewFooterMarquee _ =
-    Marquee.view
-        [ "Blinds move clockwise"
-        , "You must at least match the big blind to play"
-        , "A raise must be at least as big as the last raise"
-        , "Only use the chips in front of you for betting"
-        , "Place chips clearly in the pot"
-        , "Don’t say what you folded"
-        , "Don’t show your cards before showdown"
-        , "Don’t act before your turn"
-        , "Don’t talk about someone else’s hand"
-        , "Don’t touch other players’ chips or cards"
-        , "Keep your cards on the table while playing"
-        ]
+    Element.html
+        (Html.div
+            [ Html.Attributes.style "position" "fixed"
+            , Html.Attributes.style "bottom" "4px"
+            , Html.Attributes.style "left" "0"
+            , Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "z-index" "2"
+            ]
+            [ Element.layoutWith
+                { options = [ Element.noStaticStyleSheet ] }
+                []
+                (Marquee.view
+                    [ "Blinds move clockwise"
+                    , "You must at least match the big blind to play"
+                    , "A raise must be at least as big as the last raise"
+                    , "Only use the chips in front of you for betting"
+                    , "Place chips clearly in the pot"
+                    , "Don’t say what you folded"
+                    , "Don’t show your cards before showdown"
+                    , "Don’t act before your turn"
+                    , "Don’t talk about someone else’s hand"
+                    , "Don’t touch other players’ chips or cards"
+                    , "Keep your cards on the table while playing"
+                    ]
+                )
+            ]
+        )
 
 
 
