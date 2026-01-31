@@ -22,15 +22,31 @@ import Url.Parser exposing ((</>), Parser, s, top)
 
 
 type alias Model =
-    { page : Page
+    { -- Persistent page models (data shared across pages)
+      players : Page.Players.Model
+    , game : Page.Game.Model
+
+    -- Global state
     , theme : Theme
     , navigationKey : Navigation.Key
     , basePath : String
-    , home : Page.Home.Model
-    , players : Page.Players.Model
-    , game : Page.Game.Model
-    , champion : Page.Champion.Model
+
+    -- Active page (eliminates impossible page/model mismatch)
+    , activePage : Page
     }
+
+
+{-| Page combines the page indicator with any page-specific transient state.
+Champion model is transient (rebuilt on each navigation), while Players and Game
+models persist in the top-level Model.
+-}
+type Page
+    = HomePage
+    | PlayersPage
+    | GamePage
+    | ChampionPage Page.Champion.Model
+    | PlaygroundPage
+    | NotFoundPage
 
 
 type Route
@@ -39,15 +55,6 @@ type Route
     | Game
     | Champion
     | Playground
-
-
-type Page
-    = HomePage
-    | PlayersPage
-    | GamePage
-    | ChampionPage
-    | PlaygroundPage
-    | NotFound
 
 
 
@@ -79,22 +86,12 @@ update msg model =
         ChangedUrl url ->
             updateUrl url model
 
-        GotHomeMsg homeMsg ->
-            case model.page of
-                HomePage ->
-                    let
-                        ( updatedHome, cmd ) =
-                            Page.Home.update homeMsg model.home
-                    in
-                    ( { model | home = updatedHome }
-                    , Cmd.map GotHomeMsg cmd
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+        GotHomeMsg _ ->
+            -- Home page has no real state to update
+            ( model, Cmd.none )
 
         GotPlayersMsg playersMsg ->
-            case model.page of
+            case model.activePage of
                 PlayersPage ->
                     let
                         ( updatedPlayers, cmd ) =
@@ -117,7 +114,7 @@ update msg model =
                     ( model, Cmd.none )
 
         GotGameMsg gameMsg ->
-            case model.page of
+            case model.activePage of
                 GamePage ->
                     let
                         ( updatedGame, cmd ) =
@@ -131,13 +128,13 @@ update msg model =
                     ( model, Cmd.none )
 
         GotChampionMsg championMsg ->
-            case model.page of
-                ChampionPage ->
+            case model.activePage of
+                ChampionPage championModel ->
                     let
                         ( updatedChampion, cmd ) =
-                            Page.Champion.update championMsg model.champion
+                            Page.Champion.update championMsg championModel
                     in
-                    ( { model | champion = updatedChampion }
+                    ( { model | activePage = ChampionPage updatedChampion }
                     , Cmd.map GotChampionMsg cmd
                     )
 
@@ -167,10 +164,10 @@ updateUrl : Url -> Model -> ( Model, Cmd Msg )
 updateUrl url model =
     case Url.Parser.parse routeParser url of
         Just Home ->
-            ( { model | page = HomePage }, Cmd.none )
+            ( { model | activePage = HomePage }, Cmd.none )
 
         Just Players ->
-            ( { model | page = PlayersPage }, Cmd.none )
+            ( { model | activePage = PlayersPage }, Cmd.none )
 
         Just Game ->
             let
@@ -180,21 +177,18 @@ updateUrl url model =
                         (playersRoster model.players)
                         model.players.initialBuyIn
             in
-            ( { model | page = GamePage, game = syncedGame }, Cmd.none )
+            ( { model | activePage = GamePage, game = syncedGame }, Cmd.none )
 
         Just Champion ->
-            ( { model
-                | page = ChampionPage
-                , champion = buildChampionModel model
-              }
+            ( { model | activePage = ChampionPage (buildChampionModel model) }
             , Cmd.none
             )
 
         Just Playground ->
-            ( { model | page = PlaygroundPage }, Cmd.none )
+            ( { model | activePage = PlaygroundPage }, Cmd.none )
 
         Nothing ->
-            ( { model | page = NotFound }, Cmd.none )
+            ( { model | activePage = NotFoundPage }, Cmd.none )
 
 
 init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
@@ -203,27 +197,19 @@ init _ url key =
         basePath =
             detectBasePath url
 
-        initialHome =
-            Page.Home.init
-
         initialPlayers =
             Page.Players.init Nothing
 
         initialGame =
             Page.Game.init Nothing (playersRoster initialPlayers) initialPlayers.initialBuyIn
 
-        initialChampion =
-            Page.Champion.init [] 0 [] initialPlayers.initialBuyIn
-
         initialModel =
-            { page = NotFound
+            { players = initialPlayers
+            , game = initialGame
             , theme = Theme.defaultTheme
             , navigationKey = key
             , basePath = basePath
-            , home = initialHome
-            , players = initialPlayers
-            , game = initialGame
-            , champion = initialChampion
+            , activePage = NotFoundPage
             }
     in
     updateUrl url initialModel
@@ -237,7 +223,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     let
         pageSubscriptions =
-            case model.page of
+            case model.activePage of
                 GamePage ->
                     Sub.map GotGameMsg (Page.Game.subscriptions model.game)
 
@@ -279,7 +265,7 @@ view model =
                         [ Font.color colors.text
                         ]
                         (Element.text "PokerNight App")
-                    , viewNavigation colors model.page model.basePath
+                    , viewNavigation colors model.activePage model.basePath
                     , Element.el
                         [ Element.alignRight
                         ]
@@ -295,22 +281,22 @@ view model =
 
 
 viewNavigation : Theme.ColorPalette -> Page -> String -> Element.Element Msg
-viewNavigation colors page basePath =
+viewNavigation colors activePage basePath =
     Element.row
         [ Element.spacing 15
         ]
-        [ navButton colors Home page basePath
-        , navButton colors Players page basePath
-        , navButton colors Game page basePath
-        , navButton colors Champion page basePath
+        [ navButton colors Home activePage basePath
+        , navButton colors Players activePage basePath
+        , navButton colors Game activePage basePath
+        , navButton colors Champion activePage basePath
         ]
 
 
 navButton : Theme.ColorPalette -> Route -> Page -> String -> Element.Element Msg
-navButton colors route page basePath =
+navButton colors route activePage basePath =
     let
         active =
-            isActive { link = route, page = page }
+            isActive { link = route, activePage = activePage }
 
         attributes =
             [ Element.padding 10
@@ -334,9 +320,9 @@ navButton colors route page basePath =
 
 viewPageContent : Model -> Element.Element Msg
 viewPageContent model =
-    case model.page of
+    case model.activePage of
         HomePage ->
-            Page.Home.view model.home model.theme
+            Page.Home.view Page.Home.init model.theme
                 |> Element.map GotHomeMsg
 
         PlayersPage ->
@@ -347,14 +333,14 @@ viewPageContent model =
             Page.Game.view model.game model.theme
                 |> Element.map GotGameMsg
 
-        ChampionPage ->
-            Page.Champion.view model.champion model.theme
+        ChampionPage championModel ->
+            Page.Champion.view championModel model.theme
                 |> Element.map GotChampionMsg
 
         PlaygroundPage ->
             Page.Playground.view model.theme
 
-        NotFound ->
+        NotFoundPage ->
             Element.el
                 [ Element.width Element.fill
                 , Element.padding 20
@@ -431,9 +417,9 @@ detectBasePath url =
         ""
 
 
-isActive : { link : Route, page : Page } -> Bool
-isActive { link, page } =
-    case ( link, page ) of
+isActive : { link : Route, activePage : Page } -> Bool
+isActive { link, activePage } =
+    case ( link, activePage ) of
         ( Home, HomePage ) ->
             True
 
@@ -452,7 +438,7 @@ isActive { link, page } =
         ( Game, _ ) ->
             False
 
-        ( Champion, ChampionPage ) ->
+        ( Champion, ChampionPage _ ) ->
             True
 
         ( Champion, _ ) ->

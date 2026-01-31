@@ -1,8 +1,8 @@
 module Page.Playground exposing (view)
 
 import Element
-import Element.Background as Background
-import Element.Font as Font
+import Element.Background
+import Element.Font
 import Html
 import Icons
 import Marquee
@@ -20,22 +20,22 @@ view theme =
     Element.el
         [ Element.width Element.fill
         , Element.padding 20
-        , Background.color colors.background
-        , Font.color colors.text
+        , Element.Background.color colors.background
+        , Element.Font.color colors.text
         ]
         (Element.column
             [ Element.spacing 30
             , Element.width Element.fill
             ]
             [ Element.el
-                [ Font.size 32
-                , Font.bold
-                , Font.color colors.text
+                [ Element.Font.size 32
+                , Element.Font.bold
+                , Element.Font.color colors.text
                 ]
                 (Element.text "Playground")
             , Element.paragraph
-                [ Font.size 18
-                , Font.color colors.textSecondary
+                [ Element.Font.size 18
+                , Element.Font.color colors.textSecondary
                 , Element.spacing 4
                 ]
                 [ Element.text "Development playground for testing components and icons."
@@ -44,12 +44,12 @@ view theme =
                 [ Element.spacing 10
                 , Element.width Element.fill
                 , Element.padding 20
-                , Background.color colors.surface
+                , Element.Background.color colors.surface
                 ]
                 [ Element.el
-                    [ Font.size 20
-                    , Font.bold
-                    , Font.color colors.text
+                    [ Element.Font.size 20
+                    , Element.Font.bold
+                    , Element.Font.color colors.text
                     ]
                     (Element.text "Text Animation")
                 , Element.el
@@ -78,12 +78,12 @@ view theme =
                 [ Element.spacing 10
                 , Element.width Element.fill
                 , Element.padding 20
-                , Background.color colors.surface
+                , Element.Background.color colors.surface
                 ]
                 [ Element.el
-                    [ Font.size 20
-                    , Font.bold
-                    , Font.color colors.text
+                    [ Element.Font.size 20
+                    , Element.Font.bold
+                    , Element.Font.color colors.text
                     ]
                     (Element.text "Marquee")
                 , Marquee.view
@@ -196,12 +196,12 @@ viewIconSection title colors icon =
         [ Element.spacing 10
         , Element.width Element.fill
         , Element.padding 20
-        , Background.color colors.surface
+        , Element.Background.color colors.surface
         ]
         [ Element.el
-            [ Font.size 20
-            , Font.bold
-            , Font.color colors.text
+            [ Element.Font.size 20
+            , Element.Font.bold
+            , Element.Font.color colors.text
             ]
             (Element.text title)
         , Element.el

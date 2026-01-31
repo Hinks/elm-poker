@@ -1,9 +1,9 @@
 module Page.Game exposing (Model, Msg, buyInPlayers, init, subscriptions, update, view)
 
 import Element
-import Element.Background as Background
-import Element.Font as Font
-import Element.Input as Input
+import Element.Background
+import Element.Font
+import Element.Input
 import Html
 import Html.Attributes
 import Html.Events
@@ -554,7 +554,7 @@ view model theme =
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.padding 20
-        , Font.color colors.text
+        , Element.Font.color colors.text
         ]
         [ Element.el
             [ Element.width Element.fill
@@ -634,7 +634,7 @@ view model theme =
             )
         , Element.el
             [ Element.width Element.fill
-            , Background.color colors.surface
+            , Element.Background.color colors.surface
             ]
             (viewFooterMarquee colors)
         ]
@@ -686,10 +686,10 @@ viewLeftControls model theme colors =
                         , Element.alignTop
                         , Element.alignLeft
                         ]
-                        [ Input.button
+                        [ Element.Input.button
                             [ Element.padding 10
-                            , Background.color colors.primary
-                            , Font.color colors.buttonText
+                            , Element.Background.color colors.primary
+                            , Element.Font.color colors.buttonText
                             ]
                             { onPress = Just StartPauseTimer
                             , label =
@@ -708,10 +708,10 @@ viewLeftControls model theme colors =
                                             "Start"
                                     )
                             }
-                        , Input.button
+                        , Element.Input.button
                             [ Element.padding 10
-                            , Background.color colors.primary
-                            , Font.color colors.buttonText
+                            , Element.Background.color colors.primary
+                            , Element.Font.color colors.buttonText
                             ]
                             { onPress = Just ResetTimer
                             , label = Element.text "Reset"
@@ -739,15 +739,15 @@ viewLeftControls model theme colors =
                     , Element.alignLeft
                     ]
                     [ Element.el
-                        [ Font.size 16
+                        [ Element.Font.size 16
                         ]
                         (Element.text "Blind Duration:")
-                    , Input.text
+                    , Element.Input.text
                         [ Element.width (Element.px 80)
                         , Element.alignLeft
                         , Element.padding 8
-                        , Background.color colors.background
-                        , Font.color colors.text
+                        , Element.Background.color colors.background
+                        , Element.Font.color colors.text
                         , Element.htmlAttribute
                             (if isInputDisabled then
                                 Html.Attributes.disabled True
@@ -759,7 +759,7 @@ viewLeftControls model theme colors =
                         { onChange = BlindDurationChanged
                         , text = model.blindDurationInput
                         , placeholder = Nothing
-                        , label = Input.labelHidden "Blind duration in minutes"
+                        , label = Element.Input.labelHidden "Blind duration in minutes"
                         }
                     ]
                 ]
@@ -827,10 +827,10 @@ viewManualBlindsAdvance model colors =
             [ Element.spacing 10
             , Element.alignLeft
             ]
-            [ Input.button
+            [ Element.Input.button
                 [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.buttonText
+                , Element.Background.color colors.primary
+                , Element.Font.color colors.buttonText
                 ]
                 { onPress =
                     if blindLevelsHasNext model.blindLevels then
@@ -840,10 +840,10 @@ viewManualBlindsAdvance model colors =
                         Nothing
                 , label = Element.text "↑"
                 }
-            , Input.button
+            , Element.Input.button
                 [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.buttonText
+                , Element.Background.color colors.primary
+                , Element.Font.color colors.buttonText
                 ]
                 { onPress =
                     if blindLevelsHasPrevious model.blindLevels then
@@ -881,10 +881,10 @@ viewBlinkingStartNextBlindButton model colors =
     Element.column
         [ Element.spacing 0 ]
         [ Element.html blinkKeyframes
-        , Input.button
+        , Element.Input.button
             [ Element.padding 10
-            , Background.color colors.primary
-            , Font.color colors.buttonText
+            , Element.Background.color colors.primary
+            , Element.Font.color colors.buttonText
             , Element.htmlAttribute blinkAnimationStyle
             ]
             { onPress =
@@ -917,8 +917,8 @@ viewRightLevels model =
             , Element.width Element.fill
             ]
             [ Element.el
-                [ Font.size 14
-                , Font.bold
+                [ Element.Font.size 14
+                , Element.Font.bold
                 ]
                 (Element.text "Upcoming Levels:")
             , Element.column
@@ -926,9 +926,9 @@ viewRightLevels model =
                 (List.indexedMap
                     (\idx upcomingBlind ->
                         Element.el
-                            [ Font.size 18
-                            , Font.bold
-                            , Font.family [ Font.monospace ]
+                            [ Element.Font.size 18
+                            , Element.Font.bold
+                            , Element.Font.family [ Element.Font.monospace ]
                             , Element.width Element.fill
                             ]
                             (Element.text
@@ -1023,10 +1023,10 @@ viewPriceMoney amount colors =
         , Element.centerY
         ]
         [ Element.el
-            [ Font.size 48
-            , Font.bold
-            , Font.color colors.text
-            , Font.family [ Font.monospace ]
+            [ Element.Font.size 48
+            , Element.Font.bold
+            , Element.Font.color colors.text
+            , Element.Font.family [ Element.Font.monospace ]
             , Element.paddingEach { top = 0, right = 20, bottom = 0, left = 0 }
             ]
             (Element.text (String.fromInt amount))
@@ -1047,8 +1047,8 @@ viewBuyInSection model _ colors =
         , Element.padding 12
         ]
         [ Element.el
-            [ Font.size 16
-            , Font.bold
+            [ Element.Font.size 16
+            , Element.Font.bold
             ]
             (Element.text "Buy-In Registration")
         , viewBuyInTimerControls model colors
@@ -1069,15 +1069,15 @@ viewBuyInTimerControls model colors =
         , Element.alignLeft
         ]
         [ Element.el
-            [ Font.size 14
+            [ Element.Font.size 14
             ]
             (Element.text "Buy-In Timer Duration:")
-        , Input.text
+        , Element.Input.text
             [ Element.width (Element.px 80)
             , Element.alignLeft
             , Element.padding 8
-            , Background.color colors.background
-            , Font.color colors.text
+            , Element.Background.color colors.background
+            , Element.Font.color colors.text
             , Element.htmlAttribute
                 (if isInputDisabled then
                     Html.Attributes.disabled True
@@ -1089,16 +1089,16 @@ viewBuyInTimerControls model colors =
             { onChange = BuyInDurationChanged
             , text = model.buyInTimerDurationInput
             , placeholder = Nothing
-            , label = Input.labelHidden "Buy-in timer duration in minutes"
+            , label = Element.Input.labelHidden "Buy-in timer duration in minutes"
             }
         , Element.row
             [ Element.spacing 10
             , Element.alignLeft
             ]
-            [ Input.button
+            [ Element.Input.button
                 [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.buttonText
+                , Element.Background.color colors.primary
+                , Element.Font.color colors.buttonText
                 ]
                 { onPress = Just StartPauseBuyInTimer
                 , label =
@@ -1117,18 +1117,18 @@ viewBuyInTimerControls model colors =
                                 "Start"
                         )
                 }
-            , Input.button
+            , Element.Input.button
                 [ Element.padding 10
-                , Background.color colors.primary
-                , Font.color colors.buttonText
+                , Element.Background.color colors.primary
+                , Element.Font.color colors.buttonText
                 ]
                 { onPress = Just ResetBuyInTimer
                 , label = Element.text "Reset"
                 }
             , Element.el
-                [ Font.size 24
-                , Font.bold
-                , Font.family [ Font.monospace ]
+                [ Element.Font.size 24
+                , Element.Font.bold
+                , Element.Font.family [ Element.Font.monospace ]
                 , Element.paddingXY 10 0
                 ]
                 (Element.text (formatTime model.buyInRemainingTime))
@@ -1215,17 +1215,17 @@ viewBuyInPlayerSelector model colors =
             [ Element.width (Element.fillPortion 3)
             ]
             (Element.html selectHtml)
-        , Input.button
+        , Element.Input.button
             [ Element.padding 8
             , Element.width (Element.fillPortion 1)
-            , Background.color
+            , Element.Background.color
                 (if canAdd then
                     colors.primary
 
                  else
                     colors.surface
                 )
-            , Font.color
+            , Element.Font.color
                 (if canAdd then
                     colors.text
 
@@ -1255,23 +1255,23 @@ viewBuyInList model colors =
             , Element.spacing 10
             ]
             [ Element.el
-                [ Font.size 16
-                , Font.bold
+                [ Element.Font.size 16
+                , Element.Font.bold
                 ]
                 (Element.text "Registered Buy-Ins:")
             , viewBuyInCollapseExpandButton model colors
             ]
         , if List.isEmpty model.buyIns then
             Element.el
-                [ Font.color colors.textSecondary
-                , Font.italic
+                [ Element.Font.color colors.textSecondary
+                , Element.Font.italic
                 ]
                 (Element.text "No buy-ins registered yet.")
 
           else if model.buyInListCollapsed then
             Element.el
-                [ Font.color colors.textSecondary
-                , Font.italic
+                [ Element.Font.color colors.textSecondary
+                , Element.Font.italic
                 ]
                 (Element.text (String.fromInt (List.length model.buyIns) ++ " buy-ins"))
 
@@ -1303,10 +1303,10 @@ viewBuyInRow index buyIn colors =
             [ Element.width Element.fill
             ]
             (Element.text ("- " ++ playerName))
-        , Input.button
+        , Element.Input.button
             [ Element.padding 8
-            , Background.color colors.accent
-            , Font.color colors.buttonText
+            , Element.Background.color colors.accent
+            , Element.Font.color colors.buttonText
             ]
             { onPress = Just (RemoveBuyIn index)
             , label = Element.text "Remove"
@@ -1317,12 +1317,12 @@ viewBuyInRow index buyIn colors =
 viewBuyInCollapseExpandButton : Model -> Theme.ColorPalette -> Element.Element Msg
 viewBuyInCollapseExpandButton model colors =
     if not (List.isEmpty model.buyIns) then
-        Input.button
+        Element.Input.button
             [ Element.padding 4
             , Element.width (Element.px 40)
             , Element.height (Element.px 40)
-            , Background.color colors.primary
-            , Font.color colors.buttonText
+            , Element.Background.color colors.primary
+            , Element.Font.color colors.buttonText
             ]
             { onPress = Just ToggleBuyInList
             , label =
