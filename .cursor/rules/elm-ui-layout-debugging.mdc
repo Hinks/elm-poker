@@ -1,7 +1,7 @@
 ---
 description: How to use Element.explain for visual layout debugging in elm-ui
 globs: **/*.elm
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Visual Layout Debugging with Element.explain in elm-ui

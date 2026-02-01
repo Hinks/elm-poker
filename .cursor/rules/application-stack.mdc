@@ -1,6 +1,6 @@
 ---
 description: Application stack and technology choices for elm-poker
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Application Stack

@@ -1,6 +1,5 @@
 ---
 description: Commit workflow - show preview and ask for confirmation before committing
-globs:
 alwaysApply: true
 ---
 

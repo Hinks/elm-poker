@@ -1,7 +1,7 @@
 ---
 description: How to layer elements on top of SVG icons using Element.inFront in elm-ui
 globs: **/*.elm
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Layering Elements Over SVG Icons in elm-ui
