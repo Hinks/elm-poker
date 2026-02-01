@@ -15880,613 +15880,122 @@ var $author$project$Page$Champion$view = F2(
 						A2($author$project$Page$Champion$viewPaymentCalculations, model, colors)
 					])));
 	});
-var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
-	return {$: 5, a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$Bottom = 2;
-var $mdgriffith$elm_ui$Element$alignBottom = $mdgriffith$elm_ui$Internal$Model$AlignY(2);
-var $mdgriffith$elm_ui$Internal$Model$Top = 0;
-var $mdgriffith$elm_ui$Element$alignTop = $mdgriffith$elm_ui$Internal$Model$AlignY(0);
-var $author$project$Page$Game$calculateTotalPot = F3(
-	function (players, buyIn, buyIns) {
-		return ($elm$core$List$length(players) + $elm$core$List$length(buyIns)) * buyIn;
-	});
-var $mdgriffith$elm_ui$Internal$Model$CenterX = 1;
-var $mdgriffith$elm_ui$Element$centerX = $mdgriffith$elm_ui$Internal$Model$AlignX(1);
-var $mdgriffith$elm_ui$Internal$Model$CenterY = 1;
-var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY(1);
-var $mdgriffith$elm_ui$Element$moveDown = function (y) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$TransformComponent,
-		$mdgriffith$elm_ui$Internal$Flag$moveY,
-		$mdgriffith$elm_ui$Internal$Model$MoveY(y));
-};
-var $author$project$Icons$Club = 3;
-var $author$project$Icons$Diamond = 0;
-var $author$project$Icons$Heart = 1;
-var $author$project$Icons$Spade = 2;
-var $author$project$PokerHandRanking$handRankings = _List_fromArray(
-	[
-		{
-		u: _List_fromArray(
-			[
-				{bs: 'A', bz: 0},
-				{bs: 'K', bz: 0},
-				{bs: 'Q', bz: 0},
-				{bs: 'J', bz: 0},
-				{bs: '10', bz: 0}
-			]),
-		y: 'Royal Flush',
-		z: 1
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: 'J', bz: 2},
-				{bs: '10', bz: 2},
-				{bs: '9', bz: 2},
-				{bs: '8', bz: 2},
-				{bs: '7', bz: 2}
-			]),
-		y: 'Straight Flush',
-		z: 2
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: '9', bz: 1},
-				{bs: '9', bz: 3},
-				{bs: '9', bz: 0},
-				{bs: '9', bz: 2}
-			]),
-		y: 'Four of a Kind',
-		z: 3
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: 'A', bz: 1},
-				{bs: 'A', bz: 3},
-				{bs: 'A', bz: 0},
-				{bs: '3', bz: 2},
-				{bs: '3', bz: 1}
-			]),
-		y: 'Full House',
-		z: 4
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: 'K', bz: 3},
-				{bs: '10', bz: 3},
-				{bs: '8', bz: 3},
-				{bs: '7', bz: 3},
-				{bs: '5', bz: 3}
-			]),
-		y: 'Flush',
-		z: 5
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: '10', bz: 1},
-				{bs: '9', bz: 3},
-				{bs: '8', bz: 0},
-				{bs: '7', bz: 2},
-				{bs: '6', bz: 1}
-			]),
-		y: 'Straight',
-		z: 6
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: '7', bz: 1},
-				{bs: '7', bz: 0},
-				{bs: '7', bz: 3}
-			]),
-		y: 'Three of a Kind',
-		z: 7
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: 'J', bz: 1},
-				{bs: 'J', bz: 3},
-				{bs: '7', bz: 0},
-				{bs: '7', bz: 2}
-			]),
-		y: 'Two Pair',
-		z: 8
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: 'A', bz: 1},
-				{bs: 'A', bz: 3}
-			]),
-		y: 'Pair',
-		z: 9
-	},
-		{
-		u: _List_fromArray(
-			[
-				{bs: 'K', bz: 1}
-			]),
-		y: 'High Card',
-		z: 10
-	}
-	]);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
-var $author$project$PokerHandRanking$getPlaceholderCards = function (rankingNumber) {
-	switch (rankingNumber) {
-		case 3:
-			return _List_fromArray(
-				[
-					{bs: 'K', bz: 1}
-				]);
-		case 7:
-			return _List_fromArray(
-				[
-					{bs: 'Q', bz: 2},
-					{bs: '3', bz: 1}
-				]);
-		case 8:
-			return _List_fromArray(
-				[
-					{bs: '7', bz: 1}
-				]);
-		case 9:
-			return _List_fromArray(
-				[
-					{bs: 'K', bz: 0},
-					{bs: 'J', bz: 2},
-					{bs: '7', bz: 1}
-				]);
-		case 10:
-			return _List_fromArray(
-				[
-					{bs: '8', bz: 3},
-					{bs: 'Q', bz: 0},
-					{bs: '2', bz: 2},
-					{bs: '7', bz: 1}
-				]);
-		default:
-			return _List_fromArray(
-				[
-					{bs: 'K', bz: 1}
-				]);
-	}
+var $mdgriffith$elm_ui$Internal$Model$NoStaticStyleSheet = 1;
+var $mdgriffith$elm_ui$Internal$Model$RenderModeOption = function (a) {
+	return {$: 2, a: a};
 };
-var $author$project$PokerHandRanking$padCardsToFive = F2(
-	function (rankingNumber, cards) {
-		var placeholderOpacity = 0.5;
-		var placeholderCards = $author$project$PokerHandRanking$getPlaceholderCards(rankingNumber);
-		var numPlaceholders = 5 - $elm$core$List$length(cards);
-		var placeholders = A2(
-			$elm$core$List$map,
-			function (card) {
-				return _Utils_Tuple2(card, placeholderOpacity);
-			},
-			A2($elm$core$List$take, numPlaceholders, placeholderCards));
-		var actualCards = A2(
-			$elm$core$List$map,
-			function (card) {
-				return _Utils_Tuple2(card, 1.0);
-			},
-			cards);
-		return _Utils_ap(actualCards, placeholders);
-	});
-var $author$project$TextAnimation$keyframesCss = '@keyframes marquee-left {\n' + ('    0% {\n' + ('        left: 100%;\n' + ('        transform: translateX(0);\n' + ('    }\n' + ('    100% {\n' + ('        left: 0;\n' + ('        transform: translateX(-100%);\n' + ('    }\n' + '}'))))))));
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $elm$core$List$repeatHelp = F3(
-	function (result, n, value) {
-		repeatHelp:
-		while (true) {
-			if (n <= 0) {
-				return result;
-			} else {
-				var $temp$result = A2($elm$core$List$cons, value, result),
-					$temp$n = n - 1,
-					$temp$value = value;
-				result = $temp$result;
-				n = $temp$n;
-				value = $temp$value;
-				continue repeatHelp;
-			}
-		}
-	});
-var $elm$core$List$repeat = F2(
-	function (n, value) {
-		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
-	});
-var $author$project$TextAnimation$fontSizeClampString = function (config) {
-	return 'clamp(' + ($elm$core$String$fromFloat(config.dq) + ('rem, ' + (config.dr + (', ' + ($elm$core$String$fromFloat(config.dp) + 'rem)')))));
-};
-var $author$project$TextAnimation$gradientBackground = 'linear-gradient(90deg, #ffffff, #f5f5f5, #ffffff, #fafafa, #ffffff, #f0f0f0)';
-var $author$project$TextAnimation$textStyles = function (config) {
+var $mdgriffith$elm_ui$Element$noStaticStyleSheet = $mdgriffith$elm_ui$Internal$Model$RenderModeOption(1);
+var $author$project$Marquee$containerStyles = _List_fromArray(
+	[
+		A2($elm$html$Html$Attributes$style, 'width', '100%'),
+		A2($elm$html$Html$Attributes$style, 'height', '40px'),
+		A2($elm$html$Html$Attributes$style, 'background-color', 'transparent'),
+		A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'),
+		A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
+		A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+		A2($elm$html$Html$Attributes$style, 'position', 'relative')
+	]);
+var $author$project$Marquee$itemStyles = function (animationDuration) {
 	return _List_fromArray(
 		[
-			A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+			A2($elm$html$Html$Attributes$style, 'animation', 'marquee-content ' + (animationDuration + ' linear infinite')),
+			A2($elm$html$Html$Attributes$style, 'padding', '5px 15px'),
+			A2($elm$html$Html$Attributes$style, 'line-height', '40px'),
+			A2($elm$html$Html$Attributes$style, 'font-size', '16px'),
+			A2($elm$html$Html$Attributes$style, 'color', 'rgb(255, 255, 255)'),
+			A2($elm$html$Html$Attributes$style, 'font-weight', '500'),
 			A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
-			A2($elm$html$Html$Attributes$style, 'display', 'inline-block'),
-			A2(
-			$elm$html$Html$Attributes$style,
-			'font-size',
-			$author$project$TextAnimation$fontSizeClampString(config)),
-			A2($elm$html$Html$Attributes$style, 'font-weight', '900'),
-			A2($elm$html$Html$Attributes$style, 'background', $author$project$TextAnimation$gradientBackground),
-			A2($elm$html$Html$Attributes$style, '-webkit-background-clip', 'text'),
-			A2($elm$html$Html$Attributes$style, 'background-clip', 'text'),
-			A2($elm$html$Html$Attributes$style, '-webkit-text-fill-color', 'transparent'),
-			A2($elm$html$Html$Attributes$style, 'color', 'transparent'),
-			A2($elm$html$Html$Attributes$style, 'filter', 'drop-shadow(0 0 3px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 6px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 9px rgba(0, 0, 0, 0.5))'),
-			A2($elm$html$Html$Attributes$style, 'font-family', 'Arial, sans-serif'),
-			A2($elm$html$Html$Attributes$style, 'letter-spacing', '0.05em'),
-			A2(
-			$elm$html$Html$Attributes$style,
-			'animation',
-			'marquee-left ' + ($elm$core$String$fromFloat(config.ef) + 's linear infinite'))
+			A2($elm$html$Html$Attributes$style, 'flex-shrink', '0')
 		]);
 };
-var $author$project$TextAnimation$view = function (config) {
-	var repeatedText = A2(
-		$elm$core$String$join,
-		' ',
-		A2($elm$core$List$repeat, config.d0, config.dK));
-	var textLength = $elm$core$String$length(repeatedText);
-	var referenceLength = 20.0;
-	var containerStyles = _List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'position', 'relative'),
-			A2($elm$html$Html$Attributes$style, 'width', '100%'),
-			A2($elm$html$Html$Attributes$style, 'height', '100%'),
-			A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'),
-			A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-			A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-			A2($elm$html$Html$Attributes$style, 'background-color', 'transparent')
-		]);
-	var adjustedSpeed = config.ef * (textLength / referenceLength);
-	return A2(
-		$elm$html$Html$div,
-		containerStyles,
-		_List_fromArray(
-			[
-				A3(
-				$elm$html$Html$node,
-				'style',
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text($author$project$TextAnimation$keyframesCss)
-					])),
-				A2(
-				$elm$html$Html$div,
-				$author$project$TextAnimation$textStyles(
-					_Utils_update(
-						config,
-						{ef: adjustedSpeed})),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(repeatedText)
-					]))
-			]));
-};
-var $author$project$PokerHandRanking$getSuitColor = F2(
-	function (suit, colors) {
-		switch (suit) {
-			case 0:
-				return colors.aW;
-			case 1:
-				return colors.aW;
-			case 2:
-				return colors.bM;
-			default:
-				return colors.bM;
-		}
-	});
-var $author$project$Icons$PokerCard$cardHeight = 350.0;
-var $author$project$Icons$PokerCard$cardWidth = 250.0;
-var $mdgriffith$elm_ui$Element$toRgb = function (_v0) {
-	var r = _v0.a;
-	var g = _v0.b;
-	var b = _v0.c;
-	var a = _v0.d;
-	return {ba: a, cR: b, dt: g, d_: r};
-};
-var $author$project$Icons$Internal$colorToRgbString = function (color) {
-	var rgb = $mdgriffith$elm_ui$Element$toRgb(color);
-	return 'rgb(' + ($elm$core$String$fromInt(
-		$elm$core$Basics$round(rgb.d_ * 255)) + (',' + ($elm$core$String$fromInt(
-		$elm$core$Basics$round(rgb.dt * 255)) + (',' + ($elm$core$String$fromInt(
-		$elm$core$Basics$round(rgb.cR * 255)) + ')')))));
-};
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $author$project$Icons$PokerCard$heightRatio = 1.4;
-var $author$project$Icons$PokerCard$rankYRatio = 0.28;
-var $author$project$Icons$PokerCard$suitYRatio = 0.68;
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $author$project$Icons$PokerCard$viewBoxStr = '0 0 250 350';
-var $author$project$Icons$PokerCard$cornerRadius = 15.0;
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
-var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
-var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $author$project$Icons$PokerCard$viewCardBackground = function (backgroundColorStr) {
-	return A2(
-		$elm$svg$Svg$rect,
-		_List_fromArray(
-			[
-				$elm$svg$Svg$Attributes$x('0'),
-				$elm$svg$Svg$Attributes$y('0'),
-				$elm$svg$Svg$Attributes$width(
-				$elm$core$String$fromFloat($author$project$Icons$PokerCard$cardWidth)),
-				$elm$svg$Svg$Attributes$height(
-				$elm$core$String$fromFloat($author$project$Icons$PokerCard$cardHeight)),
-				$elm$svg$Svg$Attributes$rx(
-				$elm$core$String$fromFloat($author$project$Icons$PokerCard$cornerRadius)),
-				$elm$svg$Svg$Attributes$ry(
-				$elm$core$String$fromFloat($author$project$Icons$PokerCard$cornerRadius)),
-				$elm$svg$Svg$Attributes$fill(backgroundColorStr)
-			]),
-		_List_Nil);
-};
-var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
-var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
-var $elm$svg$Svg$Attributes$fontWeight = _VirtualDom_attribute('font-weight');
-var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
-var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
-var $author$project$Icons$PokerCard$viewRankText = F5(
-	function (rankX, rankY, rankFontSize, rankText, rankColorStr) {
-		return A2(
-			$elm$svg$Svg$text_,
+var $author$project$Marquee$keyframesCss = '@keyframes marquee-content {\n' + ('    0% {\n' + ('        transform: translateX(0%);\n' + ('    }\n' + ('    100% {\n' + ('        transform: translateX(-100%);\n' + ('    }\n' + '}'))))));
+var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
+var $author$project$Marquee$view = function (strings) {
+	var minDurationSeconds = 20.0;
+	var marqueeText = A2($elm$core$String$join, '   •   ', strings);
+	var textLength = $elm$core$String$length(marqueeText);
+	var baseSpeedCharsPerSecond = 10.0;
+	var calculatedDurationSeconds = textLength / baseSpeedCharsPerSecond;
+	var finalDurationSeconds = A2($elm$core$Basics$max, minDurationSeconds, calculatedDurationSeconds);
+	var animationDuration = $elm$core$String$fromFloat(finalDurationSeconds) + 's';
+	return $mdgriffith$elm_ui$Element$html(
+		A2(
+			$elm$html$Html$div,
+			_List_Nil,
 			_List_fromArray(
 				[
-					$elm$svg$Svg$Attributes$x(
-					$elm$core$String$fromFloat(rankX)),
-					$elm$svg$Svg$Attributes$y(
-					$elm$core$String$fromFloat(rankY)),
-					$elm$svg$Svg$Attributes$textAnchor('middle'),
-					$elm$svg$Svg$Attributes$dominantBaseline('middle'),
-					$elm$svg$Svg$Attributes$fontSize(rankFontSize),
-					$elm$svg$Svg$Attributes$fontWeight('bold'),
-					$elm$svg$Svg$Attributes$fill(rankColorStr)
-				]),
-			_List_fromArray(
-				[
-					$elm$svg$Svg$text(rankText)
-				]));
-	});
-var $author$project$Icons$PokerCard$clubPath = 'M282.482,370.759c0,21.91,6.047,43.82,8.13,50.732c0.344,1.139-0.521,2.233-1.704,2.233h-65.827c-1.183,0-2.039-1.095-1.704-2.225c2.074-6.947,8.139-29.096,8.139-50.741c-8.722,6.321-18.803,9.578-29.917,9.578c-32.274,0-60.275-27.101-58.253-59.78c1.13-18.379,12.835-34.145,28.425-43.926c15.651-9.825,30.164-10.611,43.14-7.459c-8.298-9.825-13.312-22.502-13.312-36.361c0-34.834,31.576-62.296,67.663-55.314c22.59,4.361,40.545,22.925,44.332,45.612c2.948,17.602-2.304,33.986-12.5,46.062c13.065-3.169,27.692-2.348,43.467,7.662c15.519,9.852,27.18,25.582,28.248,43.926c1.889,32.591-26.2,59.577-58.403,59.577C301.444,380.337,291.045,376.947,282.482,370.759';
-var $author$project$Icons$PokerCard$diamondPath = 'M256,176.552 L361.931,308.966 L256,441.379 L150.069,308.966 Z';
-var $author$project$Icons$PokerCard$heartPath = 'M256,238.345c9.507-24.214,29.625-44.138,54.881-44.138c21.257,0,40.201,9.993,52.966,26.483c16.013,20.692,27.33,66.754-7.715,101.8C338.353,340.268,256,423.724,256,423.724s-82.353-83.456-100.131-101.235c-35.046-35.046-23.729-81.108-7.715-101.8c12.765-16.49,31.709-26.483,52.966-26.483C226.375,194.207,246.493,214.131,256,238.345';
-var $author$project$Icons$PokerCard$spadePath = 'M282.483,361.931L282.483,361.931c0,0,44.323,44.323,79.448-8.828c18.282-27.666,5.888-54.616-13.603-73.242l-83.906-82.635c-4.723-4.025-11.979-4.025-16.711,0l-85.124,82.635c-16.746,17.523-31.011,45.506-12.518,73.242c35.31,52.966,79.448,8.828,79.448,8.828c0,22.625-6.444,51.703-8.324,59.683c-0.256,1.112,0.6,2.11,1.739,2.11h66.145c1.139,0,1.986-0.997,1.73-2.101C288.936,413.617,282.483,384.415,282.483,361.931';
-var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
-var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
-var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
-var $author$project$Icons$PokerCard$pathSuitOriginX = 256.0;
-var $author$project$Icons$PokerCard$pathSuitOriginY = 256.0;
-var $author$project$Icons$PokerCard$pathSuitScale = 0.5;
-var $author$project$Icons$PokerCard$pathSuitVerticalOffset = 0.0;
-var $author$project$Icons$PokerCard$pathSuitTransform = F2(
-	function (centerX, centerY) {
-		return 'translate(' + ($elm$core$String$fromFloat(centerX) + (',' + ($elm$core$String$fromFloat(centerY + $author$project$Icons$PokerCard$pathSuitVerticalOffset) + (') scale(' + ($elm$core$String$fromFloat($author$project$Icons$PokerCard$pathSuitScale) + (') translate(-' + ($elm$core$String$fromFloat($author$project$Icons$PokerCard$pathSuitOriginX) + (',-' + ($elm$core$String$fromFloat($author$project$Icons$PokerCard$pathSuitOriginY) + ')')))))))));
-	});
-var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
-var $author$project$Icons$PokerCard$viewPathSuit = F4(
-	function (suitX, suitY, pathData, colorStr) {
-		return A2(
-			$elm$svg$Svg$g,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$transform(
-					A2($author$project$Icons$PokerCard$pathSuitTransform, suitX, suitY))
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$path,
+					A3(
+					$elm$html$Html$node,
+					'style',
+					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$svg$Svg$Attributes$d(pathData),
-							$elm$svg$Svg$Attributes$fill(colorStr)
-						]),
-					_List_Nil)
-				]));
-	});
-var $author$project$Icons$PokerCard$viewSuit = F4(
-	function (suit, suitX, suitY, suitColorStr) {
-		switch (suit) {
-			case 0:
-				return A4($author$project$Icons$PokerCard$viewPathSuit, suitX, suitY, $author$project$Icons$PokerCard$diamondPath, suitColorStr);
-			case 1:
-				return A4($author$project$Icons$PokerCard$viewPathSuit, suitX, suitY, $author$project$Icons$PokerCard$heartPath, suitColorStr);
-			case 2:
-				return A4($author$project$Icons$PokerCard$viewPathSuit, suitX, suitY, $author$project$Icons$PokerCard$spadePath, suitColorStr);
-			default:
-				return A4($author$project$Icons$PokerCard$viewPathSuit, suitX, suitY, $author$project$Icons$PokerCard$clubPath, suitColorStr);
-		}
-	});
-var $author$project$Icons$PokerCard$pokerCard = function (options) {
-	var suitY = $author$project$Icons$PokerCard$cardHeight * $author$project$Icons$PokerCard$suitYRatio;
-	var suitX = $author$project$Icons$PokerCard$cardWidth / 2;
-	var suitColorStr = $author$project$Icons$Internal$colorToRgbString(options.bA);
-	var sizeStr = $elm$core$String$fromFloat(options.b);
-	var rankY = $author$project$Icons$PokerCard$cardHeight * $author$project$Icons$PokerCard$rankYRatio;
-	var rankX = $author$project$Icons$PokerCard$cardWidth / 2;
-	var rankFontSize = $elm$core$String$fromFloat($author$project$Icons$PokerCard$cardHeight * 0.3);
-	var rankColorStr = $author$project$Icons$Internal$colorToRgbString(options.bt);
-	var heightStr = $elm$core$String$fromFloat(options.b * $author$project$Icons$PokerCard$heightRatio);
-	var backgroundColorStr = $author$project$Icons$Internal$colorToRgbString(options.D);
-	return A2(
-		$elm$svg$Svg$svg,
-		_List_fromArray(
-			[
-				$elm$svg$Svg$Attributes$width(sizeStr),
-				$elm$svg$Svg$Attributes$height(heightStr),
-				$elm$svg$Svg$Attributes$viewBox($author$project$Icons$PokerCard$viewBoxStr),
-				A2($elm$html$Html$Attributes$style, 'display', 'block')
-			]),
-		_List_fromArray(
-			[
-				$author$project$Icons$PokerCard$viewCardBackground(backgroundColorStr),
-				A5($author$project$Icons$PokerCard$viewRankText, rankX, rankY, rankFontSize, options.bs, rankColorStr),
-				A4($author$project$Icons$PokerCard$viewSuit, options.bz, suitX, suitY, suitColorStr)
-			]));
-};
-var $author$project$Icons$PokerCard$Club = 3;
-var $author$project$Icons$PokerCard$Diamond = 0;
-var $author$project$Icons$PokerCard$Heart = 1;
-var $author$project$Icons$PokerCard$Spade = 2;
-var $author$project$Icons$suitToPokerCardSuit = function (suit) {
-	switch (suit) {
-		case 0:
-			return 0;
-		case 1:
-			return 1;
-		case 2:
-			return 2;
-		default:
-			return 3;
-	}
-};
-var $author$project$Icons$pokerCard = function (options) {
-	return $author$project$Icons$PokerCard$pokerCard(
-		{
-			D: options.D,
-			bs: options.bs,
-			bt: options.bt,
-			b: options.b,
-			bz: $author$project$Icons$suitToPokerCardSuit(options.bz),
-			bA: options.bA
-		});
-};
-var $author$project$PokerHandRanking$viewCard = F5(
-	function (cardSize, opacity, isLastCard, card, colors) {
-		return A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$paddingEach(
-					{
-						cZ: 0,
-						dI: 0,
-						d2: isLastCard ? 0 : 10,
-						eD: 0
-					})
-				]),
-			$mdgriffith$elm_ui$Element$html(
-				A2(
+							$elm$html$Html$text($author$project$Marquee$keyframesCss)
+						])),
+					A2(
 					$elm$html$Html$div,
+					$author$project$Marquee$containerStyles,
 					_List_fromArray(
 						[
 							A2(
-							$elm$html$Html$Attributes$style,
-							'opacity',
-							$elm$core$String$fromFloat(opacity))
-						]),
-					_List_fromArray(
-						[
-							$author$project$Icons$pokerCard(
-							{
-								D: colors.bL,
-								bs: card.bs,
-								bt: A2($author$project$PokerHandRanking$getSuitColor, card.bz, colors),
-								b: cardSize,
-								bz: card.bz,
-								bA: A2($author$project$PokerHandRanking$getSuitColor, card.bz, colors)
-							})
-						]))));
-	});
-var $author$project$PokerHandRanking$viewHandRanking = F4(
-	function (cardSize, colors, shouldAnimate, ranking) {
-		var textDisplay = function () {
-			if (shouldAnimate) {
-				var animatedTextConfig = {dp: 1.0, dq: 0.3, dr: '4vh', dK: ranking.y, d0: 1, ef: 10.0, bC: colors.co};
-				return $mdgriffith$elm_ui$Element$html(
-					$author$project$TextAnimation$view(animatedTextConfig));
-			} else {
-				return $mdgriffith$elm_ui$Element$none;
-			}
-		}();
-		var containerWidth = $elm$core$Basics$round((5 * cardSize) + 40);
-		var containerHeight = $elm$core$Basics$round(cardSize);
-		var cardRow = function () {
-			var paddedCards = A2($author$project$PokerHandRanking$padCardsToFive, ranking.z, ranking.u);
-			return A2(
-				$mdgriffith$elm_ui$Element$row,
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$spacing(0),
-						$mdgriffith$elm_ui$Element$padding(0)
-					]),
-				A2(
-					$elm$core$List$indexedMap,
-					F2(
-						function (index, _v0) {
-							var card = _v0.a;
-							var opacity = _v0.b;
-							var isLastCard = _Utils_eq(
-								index,
-								$elm$core$List$length(paddedCards) - 1);
-							return A5($author$project$PokerHandRanking$viewCard, cardSize, opacity, isLastCard, card, colors);
-						}),
-					paddedCards));
-		}();
-		return A2(
-			$mdgriffith$elm_ui$Element$el,
+							$elm$html$Html$div,
+							$author$project$Marquee$itemStyles(animationDuration),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(marqueeText)
+								])),
+							A2(
+							$elm$html$Html$div,
+							$author$project$Marquee$itemStyles(animationDuration),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(marqueeText)
+								]))
+						]))
+				])));
+};
+var $author$project$Page$Game$viewFooterMarquee = function (_v0) {
+	return $mdgriffith$elm_ui$Element$html(
+		A2(
+			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$mdgriffith$elm_ui$Element$width(
-					$mdgriffith$elm_ui$Element$px(containerWidth)),
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(containerHeight)),
-					$mdgriffith$elm_ui$Element$inFront(
-					A2(
-						$mdgriffith$elm_ui$Element$el,
+					A2($elm$html$Html$Attributes$style, 'position', 'fixed'),
+					A2($elm$html$Html$Attributes$style, 'bottom', '4px'),
+					A2($elm$html$Html$Attributes$style, 'left', '0'),
+					A2($elm$html$Html$Attributes$style, 'width', '100%'),
+					A2($elm$html$Html$Attributes$style, 'z-index', '2')
+				]),
+			_List_fromArray(
+				[
+					A3(
+					$mdgriffith$elm_ui$Element$layoutWith,
+					{
+						dT: _List_fromArray(
+							[$mdgriffith$elm_ui$Element$noStaticStyleSheet])
+					},
+					_List_Nil,
+					$author$project$Marquee$view(
 						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$centerX,
-								$mdgriffith$elm_ui$Element$alignBottom,
-								$mdgriffith$elm_ui$Element$moveDown(cardSize * 0.6)
-							]),
-						textDisplay))
-				]),
-			cardRow);
-	});
-var $author$project$PokerHandRanking$view = F3(
-	function (cardSize, colors, maybeActiveIndex) {
-		return A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$spacing(40),
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-				]),
-			A2(
-				$elm$core$List$indexedMap,
-				F2(
-					function (index, ranking) {
-						var shouldAnimate = function () {
-							if (!maybeActiveIndex.$) {
-								var activeIndex = maybeActiveIndex.a;
-								return _Utils_eq(index, activeIndex);
-							} else {
-								return false;
-							}
-						}();
-						return A4($author$project$PokerHandRanking$viewHandRanking, cardSize, colors, shouldAnimate, ranking);
-					}),
-				$author$project$PokerHandRanking$handRankings));
-	});
+							['Blinds move clockwise', 'You must at least match the big blind to play', 'A raise must be at least as big as the last raise', 'Only use the chips in front of you for betting', 'Place chips clearly in the pot', 'Don’t say what you folded', 'Don’t show your cards before showdown', 'Don’t act before your turn', 'Don’t talk about someone else’s hand', 'Don’t touch other players’ chips or cards', 'Keep your cards on the table while playing'])))
+				])));
+};
+var $author$project$Page$Game$viewFooter = function (colors) {
+	return A2(
+		$mdgriffith$elm_ui$Element$el,
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+				$mdgriffith$elm_ui$Element$Background$color(colors.bB)
+			]),
+		$author$project$Page$Game$viewFooterMarquee(colors));
+};
+var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
+	return {$: 5, a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$Top = 0;
+var $mdgriffith$elm_ui$Element$alignTop = $mdgriffith$elm_ui$Internal$Model$AlignY(0);
 var $author$project$Page$Game$BlindDurationChanged = function (a) {
 	return {$: 1, a: a};
 };
@@ -16502,10 +16011,29 @@ var $author$project$Page$Game$getTimerBackgroundColor = F2(
 			return colors.bB;
 		}
 	});
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $mdgriffith$elm_ui$Element$toRgb = function (_v0) {
+	var r = _v0.a;
+	var g = _v0.b;
+	var b = _v0.c;
+	var a = _v0.d;
+	return {ba: a, cR: b, dt: g, d_: r};
+};
+var $author$project$Icons$Internal$colorToRgbString = function (color) {
+	var rgb = $mdgriffith$elm_ui$Element$toRgb(color);
+	return 'rgb(' + ($elm$core$String$fromInt(
+		$elm$core$Basics$round(rgb.d_ * 255)) + (',' + ($elm$core$String$fromInt(
+		$elm$core$Basics$round(rgb.dt * 255)) + (',' + ($elm$core$String$fromInt(
+		$elm$core$Basics$round(rgb.cR * 255)) + ')')))));
+};
 var $elm$core$Basics$cos = _Basics_cos;
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
@@ -16513,8 +16041,16 @@ var $elm$core$Basics$sin = _Basics_sin;
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
+var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Icons$Timer$timer = function (options) {
@@ -17208,7 +16744,30 @@ var $author$project$Page$Game$viewBlindsSection = F3(
 				]),
 			A3($author$project$Page$Game$viewLeftControls, model, theme, colors));
 	});
+var $author$project$Page$Game$viewBlindsOverlay = F3(
+	function (model, theme, colors) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+					$mdgriffith$elm_ui$Element$alignTop,
+					$mdgriffith$elm_ui$Element$paddingEach(
+					{cZ: 0, dI: 0, d2: 0, eD: 30})
+				]),
+			A3($author$project$Page$Game$viewBlindsSection, model, theme, colors));
+	});
+var $mdgriffith$elm_ui$Element$moveDown = function (y) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$TransformComponent,
+		$mdgriffith$elm_ui$Internal$Flag$moveY,
+		$mdgriffith$elm_ui$Internal$Model$MoveY(y));
+};
 var $author$project$Page$Game$ToggleBuyInList = {$: 17};
+var $mdgriffith$elm_ui$Internal$Model$CenterX = 1;
+var $mdgriffith$elm_ui$Element$centerX = $mdgriffith$elm_ui$Internal$Model$AlignX(1);
+var $mdgriffith$elm_ui$Internal$Model$CenterY = 1;
+var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY(1);
 var $author$project$Page$Game$viewBuyInCollapseExpandButton = F2(
 	function (model, colors) {
 		return (!$elm$core$List$isEmpty(model.c1)) ? A2(
@@ -17604,6 +17163,593 @@ var $author$project$Page$Game$viewBuyInSection = F3(
 					A2($author$project$Page$Game$viewBuyInList, model, colors)
 				]));
 	});
+var $author$project$Page$Game$viewBuyInOverlay = F3(
+	function (model, theme, colors) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+					$mdgriffith$elm_ui$Element$alignTop,
+					$mdgriffith$elm_ui$Element$moveDown(550),
+					$mdgriffith$elm_ui$Element$paddingEach(
+					{cZ: 0, dI: 10, d2: 0, eD: 0})
+				]),
+			A3($author$project$Page$Game$viewBuyInSection, model, theme, colors));
+	});
+var $author$project$Icons$Club = 3;
+var $author$project$Icons$Diamond = 0;
+var $author$project$Icons$Heart = 1;
+var $author$project$Icons$Spade = 2;
+var $author$project$PokerHandRanking$handRankings = _List_fromArray(
+	[
+		{
+		u: _List_fromArray(
+			[
+				{bs: 'A', bz: 0},
+				{bs: 'K', bz: 0},
+				{bs: 'Q', bz: 0},
+				{bs: 'J', bz: 0},
+				{bs: '10', bz: 0}
+			]),
+		y: 'Royal Flush',
+		z: 1
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: 'J', bz: 2},
+				{bs: '10', bz: 2},
+				{bs: '9', bz: 2},
+				{bs: '8', bz: 2},
+				{bs: '7', bz: 2}
+			]),
+		y: 'Straight Flush',
+		z: 2
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: '9', bz: 1},
+				{bs: '9', bz: 3},
+				{bs: '9', bz: 0},
+				{bs: '9', bz: 2}
+			]),
+		y: 'Four of a Kind',
+		z: 3
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: 'A', bz: 1},
+				{bs: 'A', bz: 3},
+				{bs: 'A', bz: 0},
+				{bs: '3', bz: 2},
+				{bs: '3', bz: 1}
+			]),
+		y: 'Full House',
+		z: 4
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: 'K', bz: 3},
+				{bs: '10', bz: 3},
+				{bs: '8', bz: 3},
+				{bs: '7', bz: 3},
+				{bs: '5', bz: 3}
+			]),
+		y: 'Flush',
+		z: 5
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: '10', bz: 1},
+				{bs: '9', bz: 3},
+				{bs: '8', bz: 0},
+				{bs: '7', bz: 2},
+				{bs: '6', bz: 1}
+			]),
+		y: 'Straight',
+		z: 6
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: '7', bz: 1},
+				{bs: '7', bz: 0},
+				{bs: '7', bz: 3}
+			]),
+		y: 'Three of a Kind',
+		z: 7
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: 'J', bz: 1},
+				{bs: 'J', bz: 3},
+				{bs: '7', bz: 0},
+				{bs: '7', bz: 2}
+			]),
+		y: 'Two Pair',
+		z: 8
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: 'A', bz: 1},
+				{bs: 'A', bz: 3}
+			]),
+		y: 'Pair',
+		z: 9
+	},
+		{
+		u: _List_fromArray(
+			[
+				{bs: 'K', bz: 1}
+			]),
+		y: 'High Card',
+		z: 10
+	}
+	]);
+var $mdgriffith$elm_ui$Internal$Model$Bottom = 2;
+var $mdgriffith$elm_ui$Element$alignBottom = $mdgriffith$elm_ui$Internal$Model$AlignY(2);
+var $author$project$PokerHandRanking$getPlaceholderCards = function (rankingNumber) {
+	switch (rankingNumber) {
+		case 3:
+			return _List_fromArray(
+				[
+					{bs: 'K', bz: 1}
+				]);
+		case 7:
+			return _List_fromArray(
+				[
+					{bs: 'Q', bz: 2},
+					{bs: '3', bz: 1}
+				]);
+		case 8:
+			return _List_fromArray(
+				[
+					{bs: '7', bz: 1}
+				]);
+		case 9:
+			return _List_fromArray(
+				[
+					{bs: 'K', bz: 0},
+					{bs: 'J', bz: 2},
+					{bs: '7', bz: 1}
+				]);
+		case 10:
+			return _List_fromArray(
+				[
+					{bs: '8', bz: 3},
+					{bs: 'Q', bz: 0},
+					{bs: '2', bz: 2},
+					{bs: '7', bz: 1}
+				]);
+		default:
+			return _List_fromArray(
+				[
+					{bs: 'K', bz: 1}
+				]);
+	}
+};
+var $author$project$PokerHandRanking$padCardsToFive = F2(
+	function (rankingNumber, cards) {
+		var placeholderOpacity = 0.5;
+		var placeholderCards = $author$project$PokerHandRanking$getPlaceholderCards(rankingNumber);
+		var numPlaceholders = 5 - $elm$core$List$length(cards);
+		var placeholders = A2(
+			$elm$core$List$map,
+			function (card) {
+				return _Utils_Tuple2(card, placeholderOpacity);
+			},
+			A2($elm$core$List$take, numPlaceholders, placeholderCards));
+		var actualCards = A2(
+			$elm$core$List$map,
+			function (card) {
+				return _Utils_Tuple2(card, 1.0);
+			},
+			cards);
+		return _Utils_ap(actualCards, placeholders);
+	});
+var $author$project$TextAnimation$keyframesCss = '@keyframes marquee-left {\n' + ('    0% {\n' + ('        left: 100%;\n' + ('        transform: translateX(0);\n' + ('    }\n' + ('    100% {\n' + ('        left: 0;\n' + ('        transform: translateX(-100%);\n' + ('    }\n' + '}'))))))));
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $author$project$TextAnimation$fontSizeClampString = function (config) {
+	return 'clamp(' + ($elm$core$String$fromFloat(config.dq) + ('rem, ' + (config.dr + (', ' + ($elm$core$String$fromFloat(config.dp) + 'rem)')))));
+};
+var $author$project$TextAnimation$gradientBackground = 'linear-gradient(90deg, #ffffff, #f5f5f5, #ffffff, #fafafa, #ffffff, #f0f0f0)';
+var $author$project$TextAnimation$textStyles = function (config) {
+	return _List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+			A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
+			A2($elm$html$Html$Attributes$style, 'display', 'inline-block'),
+			A2(
+			$elm$html$Html$Attributes$style,
+			'font-size',
+			$author$project$TextAnimation$fontSizeClampString(config)),
+			A2($elm$html$Html$Attributes$style, 'font-weight', '900'),
+			A2($elm$html$Html$Attributes$style, 'background', $author$project$TextAnimation$gradientBackground),
+			A2($elm$html$Html$Attributes$style, '-webkit-background-clip', 'text'),
+			A2($elm$html$Html$Attributes$style, 'background-clip', 'text'),
+			A2($elm$html$Html$Attributes$style, '-webkit-text-fill-color', 'transparent'),
+			A2($elm$html$Html$Attributes$style, 'color', 'transparent'),
+			A2($elm$html$Html$Attributes$style, 'filter', 'drop-shadow(0 0 3px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 6px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 9px rgba(0, 0, 0, 0.5))'),
+			A2($elm$html$Html$Attributes$style, 'font-family', 'Arial, sans-serif'),
+			A2($elm$html$Html$Attributes$style, 'letter-spacing', '0.05em'),
+			A2(
+			$elm$html$Html$Attributes$style,
+			'animation',
+			'marquee-left ' + ($elm$core$String$fromFloat(config.ef) + 's linear infinite'))
+		]);
+};
+var $author$project$TextAnimation$view = function (config) {
+	var repeatedText = A2(
+		$elm$core$String$join,
+		' ',
+		A2($elm$core$List$repeat, config.d0, config.dK));
+	var textLength = $elm$core$String$length(repeatedText);
+	var referenceLength = 20.0;
+	var containerStyles = _List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'position', 'relative'),
+			A2($elm$html$Html$Attributes$style, 'width', '100%'),
+			A2($elm$html$Html$Attributes$style, 'height', '100%'),
+			A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'),
+			A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+			A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+			A2($elm$html$Html$Attributes$style, 'background-color', 'transparent')
+		]);
+	var adjustedSpeed = config.ef * (textLength / referenceLength);
+	return A2(
+		$elm$html$Html$div,
+		containerStyles,
+		_List_fromArray(
+			[
+				A3(
+				$elm$html$Html$node,
+				'style',
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text($author$project$TextAnimation$keyframesCss)
+					])),
+				A2(
+				$elm$html$Html$div,
+				$author$project$TextAnimation$textStyles(
+					_Utils_update(
+						config,
+						{ef: adjustedSpeed})),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(repeatedText)
+					]))
+			]));
+};
+var $author$project$PokerHandRanking$getSuitColor = F2(
+	function (suit, colors) {
+		switch (suit) {
+			case 0:
+				return colors.aW;
+			case 1:
+				return colors.aW;
+			case 2:
+				return colors.bM;
+			default:
+				return colors.bM;
+		}
+	});
+var $author$project$Icons$PokerCard$cardHeight = 350.0;
+var $author$project$Icons$PokerCard$cardWidth = 250.0;
+var $author$project$Icons$PokerCard$heightRatio = 1.4;
+var $author$project$Icons$PokerCard$rankYRatio = 0.28;
+var $author$project$Icons$PokerCard$suitYRatio = 0.68;
+var $author$project$Icons$PokerCard$viewBoxStr = '0 0 250 350';
+var $author$project$Icons$PokerCard$cornerRadius = 15.0;
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
+var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
+var $author$project$Icons$PokerCard$viewCardBackground = function (backgroundColorStr) {
+	return A2(
+		$elm$svg$Svg$rect,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$x('0'),
+				$elm$svg$Svg$Attributes$y('0'),
+				$elm$svg$Svg$Attributes$width(
+				$elm$core$String$fromFloat($author$project$Icons$PokerCard$cardWidth)),
+				$elm$svg$Svg$Attributes$height(
+				$elm$core$String$fromFloat($author$project$Icons$PokerCard$cardHeight)),
+				$elm$svg$Svg$Attributes$rx(
+				$elm$core$String$fromFloat($author$project$Icons$PokerCard$cornerRadius)),
+				$elm$svg$Svg$Attributes$ry(
+				$elm$core$String$fromFloat($author$project$Icons$PokerCard$cornerRadius)),
+				$elm$svg$Svg$Attributes$fill(backgroundColorStr)
+			]),
+		_List_Nil);
+};
+var $elm$svg$Svg$Attributes$fontWeight = _VirtualDom_attribute('font-weight');
+var $author$project$Icons$PokerCard$viewRankText = F5(
+	function (rankX, rankY, rankFontSize, rankText, rankColorStr) {
+		return A2(
+			$elm$svg$Svg$text_,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$x(
+					$elm$core$String$fromFloat(rankX)),
+					$elm$svg$Svg$Attributes$y(
+					$elm$core$String$fromFloat(rankY)),
+					$elm$svg$Svg$Attributes$textAnchor('middle'),
+					$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+					$elm$svg$Svg$Attributes$fontSize(rankFontSize),
+					$elm$svg$Svg$Attributes$fontWeight('bold'),
+					$elm$svg$Svg$Attributes$fill(rankColorStr)
+				]),
+			_List_fromArray(
+				[
+					$elm$svg$Svg$text(rankText)
+				]));
+	});
+var $author$project$Icons$PokerCard$clubPath = 'M282.482,370.759c0,21.91,6.047,43.82,8.13,50.732c0.344,1.139-0.521,2.233-1.704,2.233h-65.827c-1.183,0-2.039-1.095-1.704-2.225c2.074-6.947,8.139-29.096,8.139-50.741c-8.722,6.321-18.803,9.578-29.917,9.578c-32.274,0-60.275-27.101-58.253-59.78c1.13-18.379,12.835-34.145,28.425-43.926c15.651-9.825,30.164-10.611,43.14-7.459c-8.298-9.825-13.312-22.502-13.312-36.361c0-34.834,31.576-62.296,67.663-55.314c22.59,4.361,40.545,22.925,44.332,45.612c2.948,17.602-2.304,33.986-12.5,46.062c13.065-3.169,27.692-2.348,43.467,7.662c15.519,9.852,27.18,25.582,28.248,43.926c1.889,32.591-26.2,59.577-58.403,59.577C301.444,380.337,291.045,376.947,282.482,370.759';
+var $author$project$Icons$PokerCard$diamondPath = 'M256,176.552 L361.931,308.966 L256,441.379 L150.069,308.966 Z';
+var $author$project$Icons$PokerCard$heartPath = 'M256,238.345c9.507-24.214,29.625-44.138,54.881-44.138c21.257,0,40.201,9.993,52.966,26.483c16.013,20.692,27.33,66.754-7.715,101.8C338.353,340.268,256,423.724,256,423.724s-82.353-83.456-100.131-101.235c-35.046-35.046-23.729-81.108-7.715-101.8c12.765-16.49,31.709-26.483,52.966-26.483C226.375,194.207,246.493,214.131,256,238.345';
+var $author$project$Icons$PokerCard$spadePath = 'M282.483,361.931L282.483,361.931c0,0,44.323,44.323,79.448-8.828c18.282-27.666,5.888-54.616-13.603-73.242l-83.906-82.635c-4.723-4.025-11.979-4.025-16.711,0l-85.124,82.635c-16.746,17.523-31.011,45.506-12.518,73.242c35.31,52.966,79.448,8.828,79.448,8.828c0,22.625-6.444,51.703-8.324,59.683c-0.256,1.112,0.6,2.11,1.739,2.11h66.145c1.139,0,1.986-0.997,1.73-2.101C288.936,413.617,282.483,384.415,282.483,361.931';
+var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
+var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
+var $author$project$Icons$PokerCard$pathSuitOriginX = 256.0;
+var $author$project$Icons$PokerCard$pathSuitOriginY = 256.0;
+var $author$project$Icons$PokerCard$pathSuitScale = 0.5;
+var $author$project$Icons$PokerCard$pathSuitVerticalOffset = 0.0;
+var $author$project$Icons$PokerCard$pathSuitTransform = F2(
+	function (centerX, centerY) {
+		return 'translate(' + ($elm$core$String$fromFloat(centerX) + (',' + ($elm$core$String$fromFloat(centerY + $author$project$Icons$PokerCard$pathSuitVerticalOffset) + (') scale(' + ($elm$core$String$fromFloat($author$project$Icons$PokerCard$pathSuitScale) + (') translate(-' + ($elm$core$String$fromFloat($author$project$Icons$PokerCard$pathSuitOriginX) + (',-' + ($elm$core$String$fromFloat($author$project$Icons$PokerCard$pathSuitOriginY) + ')')))))))));
+	});
+var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var $author$project$Icons$PokerCard$viewPathSuit = F4(
+	function (suitX, suitY, pathData, colorStr) {
+		return A2(
+			$elm$svg$Svg$g,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$transform(
+					A2($author$project$Icons$PokerCard$pathSuitTransform, suitX, suitY))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$path,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$d(pathData),
+							$elm$svg$Svg$Attributes$fill(colorStr)
+						]),
+					_List_Nil)
+				]));
+	});
+var $author$project$Icons$PokerCard$viewSuit = F4(
+	function (suit, suitX, suitY, suitColorStr) {
+		switch (suit) {
+			case 0:
+				return A4($author$project$Icons$PokerCard$viewPathSuit, suitX, suitY, $author$project$Icons$PokerCard$diamondPath, suitColorStr);
+			case 1:
+				return A4($author$project$Icons$PokerCard$viewPathSuit, suitX, suitY, $author$project$Icons$PokerCard$heartPath, suitColorStr);
+			case 2:
+				return A4($author$project$Icons$PokerCard$viewPathSuit, suitX, suitY, $author$project$Icons$PokerCard$spadePath, suitColorStr);
+			default:
+				return A4($author$project$Icons$PokerCard$viewPathSuit, suitX, suitY, $author$project$Icons$PokerCard$clubPath, suitColorStr);
+		}
+	});
+var $author$project$Icons$PokerCard$pokerCard = function (options) {
+	var suitY = $author$project$Icons$PokerCard$cardHeight * $author$project$Icons$PokerCard$suitYRatio;
+	var suitX = $author$project$Icons$PokerCard$cardWidth / 2;
+	var suitColorStr = $author$project$Icons$Internal$colorToRgbString(options.bA);
+	var sizeStr = $elm$core$String$fromFloat(options.b);
+	var rankY = $author$project$Icons$PokerCard$cardHeight * $author$project$Icons$PokerCard$rankYRatio;
+	var rankX = $author$project$Icons$PokerCard$cardWidth / 2;
+	var rankFontSize = $elm$core$String$fromFloat($author$project$Icons$PokerCard$cardHeight * 0.3);
+	var rankColorStr = $author$project$Icons$Internal$colorToRgbString(options.bt);
+	var heightStr = $elm$core$String$fromFloat(options.b * $author$project$Icons$PokerCard$heightRatio);
+	var backgroundColorStr = $author$project$Icons$Internal$colorToRgbString(options.D);
+	return A2(
+		$elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$width(sizeStr),
+				$elm$svg$Svg$Attributes$height(heightStr),
+				$elm$svg$Svg$Attributes$viewBox($author$project$Icons$PokerCard$viewBoxStr),
+				A2($elm$html$Html$Attributes$style, 'display', 'block')
+			]),
+		_List_fromArray(
+			[
+				$author$project$Icons$PokerCard$viewCardBackground(backgroundColorStr),
+				A5($author$project$Icons$PokerCard$viewRankText, rankX, rankY, rankFontSize, options.bs, rankColorStr),
+				A4($author$project$Icons$PokerCard$viewSuit, options.bz, suitX, suitY, suitColorStr)
+			]));
+};
+var $author$project$Icons$PokerCard$Club = 3;
+var $author$project$Icons$PokerCard$Diamond = 0;
+var $author$project$Icons$PokerCard$Heart = 1;
+var $author$project$Icons$PokerCard$Spade = 2;
+var $author$project$Icons$suitToPokerCardSuit = function (suit) {
+	switch (suit) {
+		case 0:
+			return 0;
+		case 1:
+			return 1;
+		case 2:
+			return 2;
+		default:
+			return 3;
+	}
+};
+var $author$project$Icons$pokerCard = function (options) {
+	return $author$project$Icons$PokerCard$pokerCard(
+		{
+			D: options.D,
+			bs: options.bs,
+			bt: options.bt,
+			b: options.b,
+			bz: $author$project$Icons$suitToPokerCardSuit(options.bz),
+			bA: options.bA
+		});
+};
+var $author$project$PokerHandRanking$viewCard = F5(
+	function (cardSize, opacity, isLastCard, card, colors) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$paddingEach(
+					{
+						cZ: 0,
+						dI: 0,
+						d2: isLastCard ? 0 : 10,
+						eD: 0
+					})
+				]),
+			$mdgriffith$elm_ui$Element$html(
+				A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$Attributes$style,
+							'opacity',
+							$elm$core$String$fromFloat(opacity))
+						]),
+					_List_fromArray(
+						[
+							$author$project$Icons$pokerCard(
+							{
+								D: colors.bL,
+								bs: card.bs,
+								bt: A2($author$project$PokerHandRanking$getSuitColor, card.bz, colors),
+								b: cardSize,
+								bz: card.bz,
+								bA: A2($author$project$PokerHandRanking$getSuitColor, card.bz, colors)
+							})
+						]))));
+	});
+var $author$project$PokerHandRanking$viewHandRanking = F4(
+	function (cardSize, colors, shouldAnimate, ranking) {
+		var textDisplay = function () {
+			if (shouldAnimate) {
+				var animatedTextConfig = {dp: 1.0, dq: 0.3, dr: '4vh', dK: ranking.y, d0: 1, ef: 10.0, bC: colors.co};
+				return $mdgriffith$elm_ui$Element$html(
+					$author$project$TextAnimation$view(animatedTextConfig));
+			} else {
+				return $mdgriffith$elm_ui$Element$none;
+			}
+		}();
+		var containerWidth = $elm$core$Basics$round((5 * cardSize) + 40);
+		var containerHeight = $elm$core$Basics$round(cardSize);
+		var cardRow = function () {
+			var paddedCards = A2($author$project$PokerHandRanking$padCardsToFive, ranking.z, ranking.u);
+			return A2(
+				$mdgriffith$elm_ui$Element$row,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$spacing(0),
+						$mdgriffith$elm_ui$Element$padding(0)
+					]),
+				A2(
+					$elm$core$List$indexedMap,
+					F2(
+						function (index, _v0) {
+							var card = _v0.a;
+							var opacity = _v0.b;
+							var isLastCard = _Utils_eq(
+								index,
+								$elm$core$List$length(paddedCards) - 1);
+							return A5($author$project$PokerHandRanking$viewCard, cardSize, opacity, isLastCard, card, colors);
+						}),
+					paddedCards));
+		}();
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width(
+					$mdgriffith$elm_ui$Element$px(containerWidth)),
+					$mdgriffith$elm_ui$Element$height(
+					$mdgriffith$elm_ui$Element$px(containerHeight)),
+					$mdgriffith$elm_ui$Element$inFront(
+					A2(
+						$mdgriffith$elm_ui$Element$el,
+						_List_fromArray(
+							[
+								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+								$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+								$mdgriffith$elm_ui$Element$centerX,
+								$mdgriffith$elm_ui$Element$alignBottom,
+								$mdgriffith$elm_ui$Element$moveDown(cardSize * 0.6)
+							]),
+						textDisplay))
+				]),
+			cardRow);
+	});
+var $author$project$PokerHandRanking$view = F3(
+	function (cardSize, colors, maybeActiveIndex) {
+		return A2(
+			$mdgriffith$elm_ui$Element$column,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$spacing(40),
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+				]),
+			A2(
+				$elm$core$List$indexedMap,
+				F2(
+					function (index, ranking) {
+						var shouldAnimate = function () {
+							if (!maybeActiveIndex.$) {
+								var activeIndex = maybeActiveIndex.a;
+								return _Utils_eq(index, activeIndex);
+							} else {
+								return false;
+							}
+						}();
+						return A4($author$project$PokerHandRanking$viewHandRanking, cardSize, colors, shouldAnimate, ranking);
+					}),
+				$author$project$PokerHandRanking$handRankings));
+	});
+var $author$project$Page$Game$viewRankingOverlay = F3(
+	function (cardSize, colors, activeRankingIndex) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+					$mdgriffith$elm_ui$Element$alignTop,
+					$mdgriffith$elm_ui$Element$alignRight,
+					$mdgriffith$elm_ui$Element$paddingEach(
+					{cZ: 0, dI: 0, d2: 20, eD: 30})
+				]),
+			A3($author$project$PokerHandRanking$view, cardSize, colors, activeRankingIndex));
+	});
 var $author$project$Icons$BigBlind$bigBlind = function (options) {
 	var valueTextColorStr = $author$project$Icons$Internal$colorToRgbString(options.aS);
 	var valueFontSize = $elm$core$String$fromFloat(options.b * 0.25);
@@ -17849,6 +17995,19 @@ var $author$project$Page$Game$viewCenterBlinds = F3(
 						}))
 				]));
 	});
+var $author$project$Page$Game$viewCenterBlindsOverlay = F3(
+	function (model, theme, colors) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$centerX,
+					$mdgriffith$elm_ui$Element$centerY
+				]),
+			A3($author$project$Page$Game$viewCenterBlinds, model, theme, colors));
+	});
 var $author$project$Page$Game$chipColorToElementColor = F2(
 	function (chipColor, colors) {
 		switch (chipColor) {
@@ -18039,105 +18198,17 @@ var $author$project$Page$Game$viewChips = F2(
 					},
 					chips)));
 	});
-var $mdgriffith$elm_ui$Internal$Model$NoStaticStyleSheet = 1;
-var $mdgriffith$elm_ui$Internal$Model$RenderModeOption = function (a) {
-	return {$: 2, a: a};
-};
-var $mdgriffith$elm_ui$Element$noStaticStyleSheet = $mdgriffith$elm_ui$Internal$Model$RenderModeOption(1);
-var $author$project$Marquee$containerStyles = _List_fromArray(
-	[
-		A2($elm$html$Html$Attributes$style, 'width', '100%'),
-		A2($elm$html$Html$Attributes$style, 'height', '40px'),
-		A2($elm$html$Html$Attributes$style, 'background-color', 'transparent'),
-		A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'),
-		A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
-		A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-		A2($elm$html$Html$Attributes$style, 'position', 'relative')
-	]);
-var $author$project$Marquee$itemStyles = function (animationDuration) {
-	return _List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'animation', 'marquee-content ' + (animationDuration + ' linear infinite')),
-			A2($elm$html$Html$Attributes$style, 'padding', '5px 15px'),
-			A2($elm$html$Html$Attributes$style, 'line-height', '40px'),
-			A2($elm$html$Html$Attributes$style, 'font-size', '16px'),
-			A2($elm$html$Html$Attributes$style, 'color', 'rgb(255, 255, 255)'),
-			A2($elm$html$Html$Attributes$style, 'font-weight', '500'),
-			A2($elm$html$Html$Attributes$style, 'white-space', 'nowrap'),
-			A2($elm$html$Html$Attributes$style, 'flex-shrink', '0')
-		]);
-};
-var $author$project$Marquee$keyframesCss = '@keyframes marquee-content {\n' + ('    0% {\n' + ('        transform: translateX(0%);\n' + ('    }\n' + ('    100% {\n' + ('        transform: translateX(-100%);\n' + ('    }\n' + '}'))))));
-var $author$project$Marquee$view = function (strings) {
-	var minDurationSeconds = 20.0;
-	var marqueeText = A2($elm$core$String$join, '   •   ', strings);
-	var textLength = $elm$core$String$length(marqueeText);
-	var baseSpeedCharsPerSecond = 10.0;
-	var calculatedDurationSeconds = textLength / baseSpeedCharsPerSecond;
-	var finalDurationSeconds = A2($elm$core$Basics$max, minDurationSeconds, calculatedDurationSeconds);
-	var animationDuration = $elm$core$String$fromFloat(finalDurationSeconds) + 's';
-	return $mdgriffith$elm_ui$Element$html(
-		A2(
-			$elm$html$Html$div,
-			_List_Nil,
+var $author$project$Page$Game$viewChipsOverlay = F2(
+	function (model, colors) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
 				[
-					A3(
-					$elm$html$Html$node,
-					'style',
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text($author$project$Marquee$keyframesCss)
-						])),
-					A2(
-					$elm$html$Html$div,
-					$author$project$Marquee$containerStyles,
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							$author$project$Marquee$itemStyles(animationDuration),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(marqueeText)
-								])),
-							A2(
-							$elm$html$Html$div,
-							$author$project$Marquee$itemStyles(animationDuration),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(marqueeText)
-								]))
-						]))
-				])));
-};
-var $author$project$Page$Game$viewFooterMarquee = function (_v0) {
-	return $mdgriffith$elm_ui$Element$html(
-		A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'position', 'fixed'),
-					A2($elm$html$Html$Attributes$style, 'bottom', '4px'),
-					A2($elm$html$Html$Attributes$style, 'left', '0'),
-					A2($elm$html$Html$Attributes$style, 'width', '100%'),
-					A2($elm$html$Html$Attributes$style, 'z-index', '2')
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$alignBottom
 				]),
-			_List_fromArray(
-				[
-					A3(
-					$mdgriffith$elm_ui$Element$layoutWith,
-					{
-						dT: _List_fromArray(
-							[$mdgriffith$elm_ui$Element$noStaticStyleSheet])
-					},
-					_List_Nil,
-					$author$project$Marquee$view(
-						_List_fromArray(
-							['Blinds move clockwise', 'You must at least match the big blind to play', 'A raise must be at least as big as the last raise', 'Only use the chips in front of you for betting', 'Place chips clearly in the pot', 'Don’t say what you folded', 'Don’t show your cards before showdown', 'Don’t act before your turn', 'Don’t talk about someone else’s hand', 'Don’t touch other players’ chips or cards', 'Keep your cards on the table while playing'])))
-				])));
-};
+			A2($author$project$Page$Game$viewChips, model.bf, colors));
+	});
 var $author$project$Icons$PokerTable$pokerTable = function (options) {
 	var sizeStr = $elm$core$String$fromFloat(options.b);
 	var colorStr = $author$project$Icons$Internal$colorToRgbString(options.r);
@@ -18182,6 +18253,10 @@ var $author$project$Page$Game$viewPokerTable = function (colors) {
 		$author$project$Icons$pokerTable(
 			{r: tableColor, b: tableSize}));
 };
+var $author$project$Page$Game$calculateTotalPot = F3(
+	function (players, buyIn, buyIns) {
+		return ($elm$core$List$length(players) + $elm$core$List$length(buyIns)) * buyIn;
+	});
 var $author$project$Icons$Dollar$dollar = function (options) {
 	var sizeStr = $elm$core$String$fromFloat(options.b);
 	var colorStr = $author$project$Icons$Internal$colorToRgbString(options.r);
@@ -18240,11 +18315,76 @@ var $author$project$Page$Game$viewPriceMoney = F2(
 						{r: dollarColor, b: dollarSize}))
 				]));
 	});
-var $author$project$Page$Game$view = F2(
-	function (model, theme) {
-		var tableSize = 800.0;
-		var colors = $author$project$Theme$getColors(theme);
-		var cardSize = 50.0;
+var $author$project$Page$Game$viewPotOverlay = F2(
+	function (model, colors) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$centerX,
+					$mdgriffith$elm_ui$Element$centerY
+				]),
+			A2(
+				$author$project$Page$Game$viewPriceMoney,
+				A3($author$project$Page$Game$calculateTotalPot, model.T, model.a1, model.c1),
+				colors));
+	});
+var $author$project$Page$Game$viewTableWithOverlays = F4(
+	function (model, theme, colors, tableSize) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width(
+					$mdgriffith$elm_ui$Element$px(
+						$elm$core$Basics$round(tableSize))),
+					$mdgriffith$elm_ui$Element$height(
+					$mdgriffith$elm_ui$Element$px(
+						$elm$core$Basics$round(tableSize))),
+					$mdgriffith$elm_ui$Element$centerX,
+					$mdgriffith$elm_ui$Element$inFront(
+					A2($author$project$Page$Game$viewPotOverlay, model, colors)),
+					$mdgriffith$elm_ui$Element$inFront(
+					A3($author$project$Page$Game$viewCenterBlindsOverlay, model, theme, colors)),
+					$mdgriffith$elm_ui$Element$inFront(
+					A2($author$project$Page$Game$viewChipsOverlay, model, colors))
+				]),
+			$author$project$Page$Game$viewPokerTable(colors));
+	});
+var $author$project$Page$Game$viewTableArea = F4(
+	function (model, theme, colors, tableSize) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$centerX,
+					$mdgriffith$elm_ui$Element$centerY
+				]),
+			A4($author$project$Page$Game$viewTableWithOverlays, model, theme, colors, tableSize));
+	});
+var $author$project$Page$Game$viewMainArea = F5(
+	function (model, theme, colors, tableSize, cardSize) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$inFront(
+					A3($author$project$Page$Game$viewBlindsOverlay, model, theme, colors)),
+					$mdgriffith$elm_ui$Element$inFront(
+					A3($author$project$Page$Game$viewRankingOverlay, cardSize, colors, model.aT)),
+					$mdgriffith$elm_ui$Element$inFront(
+					A3($author$project$Page$Game$viewBuyInOverlay, model, theme, colors))
+				]),
+			A4($author$project$Page$Game$viewTableArea, model, theme, colors, tableSize));
+	});
+var $author$project$Page$Game$viewGameLayout = F5(
+	function (model, theme, colors, tableSize, cardSize) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -18256,125 +18396,16 @@ var $author$project$Page$Game$view = F2(
 				]),
 			_List_fromArray(
 				[
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-							$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-							$mdgriffith$elm_ui$Element$inFront(
-							A2(
-								$mdgriffith$elm_ui$Element$el,
-								_List_fromArray(
-									[
-										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-										$mdgriffith$elm_ui$Element$alignTop,
-										$mdgriffith$elm_ui$Element$paddingEach(
-										{cZ: 0, dI: 0, d2: 0, eD: 30})
-									]),
-								A3($author$project$Page$Game$viewBlindsSection, model, theme, colors))),
-							$mdgriffith$elm_ui$Element$inFront(
-							A2(
-								$mdgriffith$elm_ui$Element$el,
-								_List_fromArray(
-									[
-										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-										$mdgriffith$elm_ui$Element$alignTop,
-										$mdgriffith$elm_ui$Element$alignRight,
-										$mdgriffith$elm_ui$Element$paddingEach(
-										{cZ: 0, dI: 0, d2: 20, eD: 30})
-									]),
-								A3($author$project$PokerHandRanking$view, cardSize, colors, model.aT))),
-							$mdgriffith$elm_ui$Element$inFront(
-							A2(
-								$mdgriffith$elm_ui$Element$el,
-								_List_fromArray(
-									[
-										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-										$mdgriffith$elm_ui$Element$alignTop,
-										$mdgriffith$elm_ui$Element$moveDown(550),
-										$mdgriffith$elm_ui$Element$paddingEach(
-										{cZ: 0, dI: 10, d2: 0, eD: 0})
-									]),
-								A3($author$project$Page$Game$viewBuyInSection, model, theme, colors)))
-						]),
-					A2(
-						$mdgriffith$elm_ui$Element$column,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$spacing(20),
-								$mdgriffith$elm_ui$Element$centerX
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$mdgriffith$elm_ui$Element$el,
-								_List_fromArray(
-									[
-										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-										$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-										$mdgriffith$elm_ui$Element$centerX,
-										$mdgriffith$elm_ui$Element$centerY
-									]),
-								A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$width(
-											$mdgriffith$elm_ui$Element$px(
-												$elm$core$Basics$round(tableSize))),
-											$mdgriffith$elm_ui$Element$height(
-											$mdgriffith$elm_ui$Element$px(
-												$elm$core$Basics$round(tableSize))),
-											$mdgriffith$elm_ui$Element$centerX,
-											$mdgriffith$elm_ui$Element$inFront(
-											A2(
-												$mdgriffith$elm_ui$Element$el,
-												_List_fromArray(
-													[
-														$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-														$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-														$mdgriffith$elm_ui$Element$centerX,
-														$mdgriffith$elm_ui$Element$centerY
-													]),
-												A2(
-													$author$project$Page$Game$viewPriceMoney,
-													A3($author$project$Page$Game$calculateTotalPot, model.T, model.a1, model.c1),
-													colors))),
-											$mdgriffith$elm_ui$Element$inFront(
-											A2(
-												$mdgriffith$elm_ui$Element$el,
-												_List_fromArray(
-													[
-														$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-														$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-														$mdgriffith$elm_ui$Element$centerX,
-														$mdgriffith$elm_ui$Element$centerY
-													]),
-												A3($author$project$Page$Game$viewCenterBlinds, model, theme, colors))),
-											$mdgriffith$elm_ui$Element$inFront(
-											A2(
-												$mdgriffith$elm_ui$Element$el,
-												_List_fromArray(
-													[
-														$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-														$mdgriffith$elm_ui$Element$alignBottom
-													]),
-												A2($author$project$Page$Game$viewChips, model.bf, colors)))
-										]),
-									$author$project$Page$Game$viewPokerTable(colors)))
-							]))),
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-							$mdgriffith$elm_ui$Element$Background$color(colors.bB)
-						]),
-					$author$project$Page$Game$viewFooterMarquee(colors))
+					A5($author$project$Page$Game$viewMainArea, model, theme, colors, tableSize, cardSize),
+					$author$project$Page$Game$viewFooter(colors)
 				]));
+	});
+var $author$project$Page$Game$view = F2(
+	function (model, theme) {
+		var tableSize = 800.0;
+		var colors = $author$project$Theme$getColors(theme);
+		var cardSize = 50.0;
+		return A5($author$project$Page$Game$viewGameLayout, model, theme, colors, tableSize, cardSize);
 	});
 var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 9};
 var $mdgriffith$elm_ui$Element$paragraph = F2(
