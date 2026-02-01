@@ -550,94 +550,128 @@ view model theme =
         cardSize =
             50.0
     in
+    viewGameLayout model theme colors tableSize cardSize
+
+
+viewGameLayout : Model -> Theme -> Theme.ColorPalette -> Float -> Float -> Element.Element Msg
+viewGameLayout model theme colors tableSize cardSize =
     Element.column
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.padding 20
         , Element.Font.color colors.text
         ]
-        [ Element.el
-            [ Element.width Element.fill
-            , Element.height Element.fill
-            , Element.inFront
-                (Element.el
-                    [ Element.width Element.shrink
-                    , Element.alignTop
-                    , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
-                    ]
-                    (viewBlindsSection model theme colors)
-                )
-            , Element.inFront
-                (Element.el
-                    [ Element.width Element.shrink
-                    , Element.alignTop
-                    , Element.alignRight
-                    , Element.paddingEach { top = 30, right = 20, bottom = 0, left = 0 }
-                    ]
-                    (PokerHandRanking.view cardSize colors model.activeRankingIndex)
-                )
-            , Element.inFront
-                (Element.el
-                    [ Element.width Element.shrink
-                    , Element.alignTop
-                    , Element.moveDown 550
-                    , Element.paddingEach { top = 0, right = 0, bottom = 0, left = 10 }
-                    ]
-                    (viewBuyInSection model theme colors)
-                )
-            ]
-            (Element.column
-                [ Element.width Element.fill
-                , Element.height Element.fill
-                , Element.spacing 20
-                , Element.centerX
-                ]
-                [ Element.el
-                    [ Element.width Element.fill
-                    , Element.height Element.fill
-                    , Element.centerX
-                    , Element.centerY
-                    ]
-                    (Element.el
-                        [ Element.width (Element.px (round tableSize))
-                        , Element.height (Element.px (round tableSize))
-                        , Element.centerX
-                        , Element.inFront
-                            (Element.el
-                                [ Element.width Element.fill
-                                , Element.height Element.fill
-                                , Element.centerX
-                                , Element.centerY
-                                ]
-                                (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn model.buyIns) colors)
-                            )
-                        , Element.inFront
-                            (Element.el
-                                [ Element.width Element.fill
-                                , Element.height Element.fill
-                                , Element.centerX
-                                , Element.centerY
-                                ]
-                                (viewCenterBlinds model theme colors)
-                            )
-                        , Element.inFront
-                            (Element.el
-                                [ Element.width Element.fill
-                                , Element.alignBottom
-                                ]
-                                (viewChips model.chips colors)
-                            )
-                        ]
-                        (viewPokerTable colors)
-                    )
-                ]
-            )
-        , Element.el
-            [ Element.width Element.fill
-            , Element.Background.color colors.surface
-            ]
-            (viewFooterMarquee colors)
+        [ viewMainArea model theme colors tableSize cardSize
+        , viewFooter colors
         ]
+
+
+viewMainArea : Model -> Theme -> Theme.ColorPalette -> Float -> Float -> Element.Element Msg
+viewMainArea model theme colors tableSize cardSize =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        , Element.inFront (viewBlindsOverlay model theme colors)
+        , Element.inFront (viewRankingOverlay cardSize colors model.activeRankingIndex)
+        , Element.inFront (viewBuyInOverlay model theme colors)
+        ]
+        (viewTableArea model theme colors tableSize)
+
+
+viewTableArea : Model -> Theme -> Theme.ColorPalette -> Float -> Element.Element Msg
+viewTableArea model theme colors tableSize =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        , Element.centerX
+        , Element.centerY
+        ]
+        (viewTableWithOverlays model theme colors tableSize)
+
+
+viewTableWithOverlays : Model -> Theme -> Theme.ColorPalette -> Float -> Element.Element Msg
+viewTableWithOverlays model theme colors tableSize =
+    Element.el
+        [ Element.width (Element.px (round tableSize))
+        , Element.height (Element.px (round tableSize))
+        , Element.centerX
+        , Element.inFront (viewPotOverlay model colors)
+        , Element.inFront (viewCenterBlindsOverlay model theme colors)
+        , Element.inFront (viewChipsOverlay model colors)
+        ]
+        (viewPokerTable colors)
+
+
+viewBlindsOverlay : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewBlindsOverlay model theme colors =
+    Element.el
+        [ Element.width Element.shrink
+        , Element.alignTop
+        , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
+        ]
+        (viewBlindsSection model theme colors)
+
+
+viewRankingOverlay : Float -> Theme.ColorPalette -> Maybe Int -> Element.Element Msg
+viewRankingOverlay cardSize colors activeRankingIndex =
+    Element.el
+        [ Element.width Element.shrink
+        , Element.alignTop
+        , Element.alignRight
+        , Element.paddingEach { top = 30, right = 20, bottom = 0, left = 0 }
+        ]
+        (PokerHandRanking.view cardSize colors activeRankingIndex)
+
+
+viewBuyInOverlay : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInOverlay model theme colors =
+    Element.el
+        [ Element.width Element.shrink
+        , Element.alignTop
+        , Element.moveDown 550
+        , Element.paddingEach { top = 0, right = 0, bottom = 0, left = 10 }
+        ]
+        (viewBuyInSection model theme colors)
+
+
+viewPotOverlay : Model -> Theme.ColorPalette -> Element.Element Msg
+viewPotOverlay model colors =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        , Element.centerX
+        , Element.centerY
+        ]
+        (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn model.buyIns) colors)
+
+
+viewCenterBlindsOverlay : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewCenterBlindsOverlay model theme colors =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        , Element.centerX
+        , Element.centerY
+        ]
+        (viewCenterBlinds model theme colors)
+
+
+viewChipsOverlay : Model -> Theme.ColorPalette -> Element.Element Msg
+viewChipsOverlay model colors =
+    Element.el
+        [ Element.width Element.fill
+        , Element.alignBottom
+        ]
+        (viewChips model.chips colors)
+
+
+viewFooter : Theme.ColorPalette -> Element.Element Msg
+viewFooter colors =
+    Element.el
+        [ Element.width Element.fill
+        , Element.Background.color colors.surface
+        ]
+        (viewFooterMarquee colors)
 
 
 viewBlindsSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
