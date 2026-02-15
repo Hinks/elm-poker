@@ -1,4 +1,4 @@
-module Page.Players exposing (Model, Msg, Player, getPlayerName, init, roster, update, view)
+module Page.Players exposing (Intent(..), PlayerEntry, ViewData, assignSeats, clearSeats, distributeIntoTables, hasSeatingEntries, seatsFromTables, shufflePlayers, view)
 
 import Element
 import Element.Background
@@ -8,25 +8,13 @@ import Html.Attributes
 import Html.Events
 import Icons
 import Json.Decode as Decode
+import Player exposing (Player(..))
 import Random
 import Theme exposing (Theme)
 
 
 
 -- MODEL
-
-
-type alias Model =
-    { pageName : String
-    , players : List PlayerEntry
-    , newPlayerName : String
-    , initialBuyIn : Int
-    , playerListCollapsed : Bool
-    }
-
-
-type Player
-    = Player String
 
 
 type alias PlayerEntry =
@@ -45,26 +33,19 @@ type alias TablePosition =
     }
 
 
-init : Maybe Model -> Model
-init maybeExistingModel =
-    case maybeExistingModel of
-        Just existingModel ->
-            existingModel
-
-        Nothing ->
-            { pageName = "Players"
-            , players = []
-            , newPlayerName = ""
-            , initialBuyIn = 0
-            , playerListCollapsed = False
-            }
+type alias ViewData =
+    { players : List PlayerEntry
+    , initialBuyIn : Int
+    , newPlayerName : String
+    , playerListCollapsed : Bool
+    }
 
 
 
 -- UPDATE
 
 
-type Msg
+type Intent
     = PlayerNameChanged String
     | InitialBuyInChanged String
     | AddPlayer
@@ -75,225 +56,16 @@ type Msg
     | TogglePlayerList
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        PlayerNameChanged name ->
-            ( { model | newPlayerName = name }, Cmd.none )
-
-        InitialBuyInChanged buyInStr ->
-            ( { model
-                | initialBuyIn =
-                    case String.toInt buyInStr of
-                        Just buyIn ->
-                            buyIn
-
-                        Nothing ->
-                            0
-              }
-            , Cmd.none
-            )
-
-        AddPlayer ->
-            if not (canAddPlayer model) then
-                ( model, Cmd.none )
-
-            else
-                let
-                    newPlayer =
-                        Player (String.trim model.newPlayerName)
-
-                    newEntry =
-                        { player = newPlayer
-                        , seat = Nothing
-                        }
-                in
-                ( { model
-                    | players = model.players ++ [ newEntry ]
-                    , newPlayerName = ""
-                  }
-                , Cmd.none
-                )
-
-        RemovePlayer index ->
-            let
-                updatedPlayers =
-                    model.players
-                        |> List.indexedMap Tuple.pair
-                        |> List.filter (\( i, _ ) -> i /= index)
-                        |> List.map Tuple.second
-            in
-            ( { model
-                | players = updatedPlayers
-              }
-            , Cmd.none
-            )
-
-        RandomizeSeating ->
-            if List.isEmpty model.players || hasSeating model then
-                ( model, Cmd.none )
-
-            else
-                ( model
-                , Random.generate GotRandomSeed (Random.int 0 2147483647)
-                )
-
-        GotRandomSeed seed ->
-            let
-                shuffledPlayers =
-                    shufflePlayers seed (roster model)
-
-                tables =
-                    distributeIntoTables shuffledPlayers
-
-                assignments =
-                    seatsFromTables tables
-
-                updatedPlayers =
-                    assignSeats model.players assignments
-            in
-            ( { model
-                | players = updatedPlayers
-                , playerListCollapsed = True
-              }
-            , Cmd.none
-            )
-
-        TogglePlayerList ->
-            ( { model | playerListCollapsed = not model.playerListCollapsed }, Cmd.none )
-
-        ClearSeating ->
-            ( { model
-                | players = clearSeats model.players
-                , playerListCollapsed = False
-              }
-            , Cmd.none
-            )
-
-
-isPlayerNameUnique : String -> List PlayerEntry -> Bool
-isPlayerNameUnique name players =
-    let
-        trimmedName =
-            String.trim name
-
-        existingNames =
-            List.map (\entry -> getPlayerName entry.player) players
-    in
-    not (List.member trimmedName existingNames)
-
-
-canAddPlayer : Model -> Bool
-canAddPlayer model =
-    let
-        trimmedName =
-            String.trim model.newPlayerName
-    in
-    trimmedName /= "" && isPlayerNameUnique trimmedName model.players
-
-
-shufflePlayers : Int -> List Player -> List Player
-shufflePlayers seed players =
-    let
-        randomSeed =
-            Random.initialSeed seed
-
-        generateRandomNumbers : List Player -> Random.Seed -> ( List ( Float, Player ), Random.Seed )
-        generateRandomNumbers remaining currentSeed =
-            case remaining of
-                [] ->
-                    ( [], currentSeed )
-
-                first :: rest ->
-                    let
-                        ( randomValue, newSeed ) =
-                            Random.step (Random.float 0 1) currentSeed
-
-                        ( restWithRandoms, finalSeed ) =
-                            generateRandomNumbers rest newSeed
-                    in
-                    ( ( randomValue, first ) :: restWithRandoms, finalSeed )
-
-        ( playersWithRandoms, _ ) =
-            generateRandomNumbers players randomSeed
-    in
-    playersWithRandoms
-        |> List.sortBy Tuple.first
-        |> List.map Tuple.second
-
-
-distributeIntoTables : List Player -> List Table
-distributeIntoTables players =
-    let
-        playerCount =
-            List.length players
-
-        tablesNeeded =
-            if playerCount < 6 then
-                1
-
-            else
-                ceiling (toFloat playerCount / 8)
-
-        playersPerTable =
-            if playerCount < 6 then
-                playerCount
-
-            else
-                playerCount // tablesNeeded
-
-        remainder =
-            if playerCount < 6 then
-                0
-
-            else
-                modBy tablesNeeded playerCount
-
-        distribute : List Player -> Int -> Int -> List Table -> List Table
-        distribute remainingPlayers tableIndex remainingCount acc =
-            case remainingPlayers of
-                [] ->
-                    List.reverse acc
-
-                _ ->
-                    let
-                        playersToTake =
-                            if tableIndex < remainder then
-                                playersPerTable + 1
-
-                            else
-                                playersPerTable
-
-                        tablePlayers =
-                            List.take playersToTake remainingPlayers
-
-                        rest =
-                            List.drop playersToTake remainingPlayers
-
-                        newTable =
-                            Table tablePlayers
-
-                        newAcc =
-                            newTable :: acc
-                    in
-                    distribute rest (tableIndex + 1) (remainingCount - 1) newAcc
-    in
-    distribute players 0 tablesNeeded []
-
-
-getTablePlayerCount : Table -> Int
-getTablePlayerCount table =
-    case table of
-        Table players ->
-            List.length players
+type alias Msg =
+    Intent
 
 
 
 -- VIEW
 
 
-view : Model -> Theme -> Element.Element Msg
-view model theme =
+view : ViewData -> Theme -> Element.Element Intent
+view viewData theme =
     let
         colors =
             Theme.getColors theme
@@ -307,14 +79,14 @@ view model theme =
             [ Element.width Element.fill
             , Element.spacing 20
             ]
-            [ viewInitialBuyInSection model colors
+            [ viewInitialBuyInSection viewData colors
             , viewDivider colors
-            , viewAddPlayerSection model colors
+            , viewAddPlayerSection viewData colors
             , viewDivider colors
-            , viewCurrentPlayersSection model colors
-            , viewSeatingControls model colors
-            , if hasSeating model then
-                viewSeatingArrangement model colors
+            , viewCurrentPlayersSection viewData colors
+            , viewSeatingControls viewData colors
+            , if hasSeatingEntries viewData.players then
+                viewSeatingArrangement viewData.players colors
 
               else
                 Element.none
@@ -322,8 +94,8 @@ view model theme =
         )
 
 
-viewInitialBuyInSection : Model -> Theme.ColorPalette -> Element.Element Msg
-viewInitialBuyInSection model colors =
+viewInitialBuyInSection : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewInitialBuyInSection viewData colors =
     Element.column
         [ Element.width Element.fill
         , Element.spacing 10
@@ -341,7 +113,7 @@ viewInitialBuyInSection model colors =
                 , Element.Font.color colors.text
                 ]
                 { onChange = InitialBuyInChanged
-                , text = String.fromInt model.initialBuyIn
+                , text = String.fromInt viewData.initialBuyIn
                 , placeholder = Just (Element.Input.placeholder [] (Element.text "Enter initial buy-in amount"))
                 , label = Element.Input.labelHidden "Initial buy-in amount"
                 }
@@ -355,11 +127,11 @@ viewInitialBuyInSection model colors =
         ]
 
 
-viewAddPlayerSection : Model -> Theme.ColorPalette -> Element.Element Msg
-viewAddPlayerSection model colors =
+viewAddPlayerSection : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewAddPlayerSection viewData colors =
     let
         canAdd =
-            canAddPlayer model
+            canAddPlayer viewData
     in
     Element.column
         [ Element.width Element.fill
@@ -378,11 +150,11 @@ viewAddPlayerSection model colors =
                 , onEnterPressIf canAdd AddPlayer
                 ]
                 { onChange = PlayerNameChanged
-                , text = model.newPlayerName
+                , text = viewData.newPlayerName
                 , placeholder = Just (Element.Input.placeholder [] (Element.text "Enter player name"))
                 , label = Element.Input.labelHidden "Player name"
                 }
-            , viewCollapseExpandButton model colors
+            , viewCollapseExpandButton viewData colors
             , Element.Input.button
                 [ Element.padding 8
                 , Element.width (Element.fillPortion 1)
@@ -423,33 +195,33 @@ viewDivider colors =
         Element.none
 
 
-viewCurrentPlayersSection : Model -> Theme.ColorPalette -> Element.Element Msg
-viewCurrentPlayersSection model colors =
+viewCurrentPlayersSection : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewCurrentPlayersSection viewData colors =
     Element.column
         [ Element.width Element.fill
         , Element.spacing 10
         ]
         [ Element.text "Current Players:"
-        , if List.isEmpty model.players then
+        , if List.isEmpty viewData.players then
             Element.el
                 [ Element.Font.color colors.textSecondary
                 , Element.Font.italic
                 ]
                 (Element.text "No players added yet.")
 
-          else if model.playerListCollapsed then
+          else if viewData.playerListCollapsed then
             Element.el
                 [ Element.Font.color colors.textSecondary
                 , Element.Font.italic
                 ]
-                (Element.text (String.fromInt (List.length model.players) ++ " players"))
+                (Element.text (String.fromInt (List.length viewData.players) ++ " players"))
 
           else
             Element.column
                 [ Element.width Element.fill
                 , Element.spacing 8
                 ]
-                (List.indexedMap (\index player -> viewPlayerRow index player colors) model.players)
+                (List.indexedMap (\index player -> viewPlayerRow index player colors) viewData.players)
         ]
 
 
@@ -457,7 +229,7 @@ viewPlayerRow : Int -> PlayerEntry -> Theme.ColorPalette -> Element.Element Msg
 viewPlayerRow index entry colors =
     let
         playerName =
-            getPlayerName entry.player
+            Player.getName entry.player
     in
     Element.row
         [ Element.width Element.fill
@@ -478,8 +250,8 @@ viewPlayerRow index entry colors =
         ]
 
 
-viewSeatingControls : Model -> Theme.ColorPalette -> Element.Element Msg
-viewSeatingControls model colors =
+viewSeatingControls : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewSeatingControls viewData colors =
     Element.row
         [ Element.width Element.fill
         , Element.spacing 10
@@ -490,7 +262,7 @@ viewSeatingControls model colors =
             , Element.Font.color colors.buttonText
             ]
             { onPress =
-                if List.isEmpty model.players || hasSeating model then
+                if List.isEmpty viewData.players || hasSeatingEntries viewData.players then
                     Nothing
 
                 else
@@ -503,7 +275,7 @@ viewSeatingControls model colors =
             , Element.Font.color colors.buttonText
             ]
             { onPress =
-                if hasSeating model then
+                if hasSeatingEntries viewData.players then
                     Just ClearSeating
 
                 else
@@ -513,11 +285,11 @@ viewSeatingControls model colors =
         ]
 
 
-viewSeatingArrangement : Model -> Theme.ColorPalette -> Element.Element Msg
-viewSeatingArrangement model colors =
+viewSeatingArrangement : List PlayerEntry -> Theme.ColorPalette -> Element.Element Msg
+viewSeatingArrangement players colors =
     let
         tables =
-            seatingTables model.players
+            seatingTables players
     in
     case tables of
         [] ->
@@ -534,7 +306,7 @@ viewSeatingArrangement model colors =
                     , Element.spacing 20
                     , Element.alignTop
                     ]
-                    (List.map (\( tableNumber, players ) -> viewTable tableNumber players colors) tables)
+                    (List.map (\( tableNumber, tablePlayers ) -> viewTable tableNumber tablePlayers colors) tables)
                 ]
 
 
@@ -564,7 +336,7 @@ viewSeatedPlayer : Player -> Theme.ColorPalette -> Element.Element Msg
 viewSeatedPlayer player colors =
     let
         playerName =
-            getPlayerName player
+            Player.getName player
     in
     Element.el
         [ Element.paddingXY 8 4
@@ -573,9 +345,9 @@ viewSeatedPlayer player colors =
         (Element.text ("• " ++ playerName))
 
 
-viewCollapseExpandButton : Model -> Theme.ColorPalette -> Element.Element Msg
-viewCollapseExpandButton model colors =
-    if not (List.isEmpty model.players) then
+viewCollapseExpandButton : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewCollapseExpandButton viewData colors =
+    if not (List.isEmpty viewData.players) then
         Element.Input.button
             [ Element.padding 4
             , Element.width (Element.px 40)
@@ -590,7 +362,7 @@ viewCollapseExpandButton model colors =
                     , Element.centerY
                     ]
                     (Element.text
-                        (if model.playerListCollapsed then
+                        (if viewData.playerListCollapsed then
                             "↓"
 
                          else
@@ -607,14 +379,9 @@ viewCollapseExpandButton model colors =
 -- Helper functions (general utilities)
 
 
-hasSeating : Model -> Bool
-hasSeating model =
-    List.any (\entry -> entry.seat /= Nothing) model.players
-
-
-roster : Model -> List Player
-roster model =
-    List.map (\entry -> entry.player) model.players
+hasSeatingEntries : List PlayerEntry -> Bool
+hasSeatingEntries players =
+    List.any (\entry -> entry.seat /= Nothing) players
 
 
 clearSeats : List PlayerEntry -> List PlayerEntry
@@ -677,9 +444,9 @@ seatingTables entries =
                     [] ->
                         [ ( seat.table, [ player ] ) ]
 
-                    ( tableNumber, tablePlayers ) :: rest ->
+                    ( tableNumber, tablePlayers ) :: rest_ ->
                         if tableNumber == seat.table then
-                            ( tableNumber, tablePlayers ++ [ player ] ) :: rest
+                            ( tableNumber, tablePlayers ++ [ player ] ) :: rest_
 
                         else
                             ( seat.table, [ player ] ) :: acc
@@ -688,7 +455,117 @@ seatingTables entries =
         |> List.reverse
 
 
-onEnterPress : Msg -> Element.Attribute Msg
+isPlayerNameUnique : String -> List PlayerEntry -> Bool
+isPlayerNameUnique name players =
+    let
+        trimmedName =
+            String.trim name
+
+        existingNames =
+            List.map (\entry -> Player.getName entry.player) players
+    in
+    not (List.member trimmedName existingNames)
+
+
+canAddPlayer : ViewData -> Bool
+canAddPlayer viewData =
+    let
+        trimmedName =
+            String.trim viewData.newPlayerName
+    in
+    trimmedName /= "" && isPlayerNameUnique trimmedName viewData.players
+
+
+shufflePlayers : Int -> List Player -> List Player
+shufflePlayers seed players =
+    let
+        randomSeed =
+            Random.initialSeed seed
+
+        generateRandomNumbers : List Player -> Random.Seed -> ( List ( Float, Player ), Random.Seed )
+        generateRandomNumbers remaining currentSeed =
+            case remaining of
+                [] ->
+                    ( [], currentSeed )
+
+                first :: rest_ ->
+                    let
+                        ( randomValue, newSeed ) =
+                            Random.step (Random.float 0 1) currentSeed
+
+                        ( restWithRandoms, finalSeed ) =
+                            generateRandomNumbers rest_ newSeed
+                    in
+                    ( ( randomValue, first ) :: restWithRandoms, finalSeed )
+
+        ( playersWithRandoms, _ ) =
+            generateRandomNumbers players randomSeed
+    in
+    playersWithRandoms
+        |> List.sortBy Tuple.first
+        |> List.map Tuple.second
+
+
+distributeIntoTables : List Player -> List Table
+distributeIntoTables players =
+    let
+        playerCount =
+            List.length players
+
+        tablesNeeded =
+            if playerCount < 6 then
+                1
+
+            else
+                ceiling (toFloat playerCount / 8)
+
+        playersPerTable =
+            if playerCount < 6 then
+                playerCount
+
+            else
+                playerCount // tablesNeeded
+
+        remainder =
+            if playerCount < 6 then
+                0
+
+            else
+                modBy tablesNeeded playerCount
+
+        distribute : List Player -> Int -> Int -> List Table -> List Table
+        distribute remainingPlayers tableIndex remainingCount acc =
+            case remainingPlayers of
+                [] ->
+                    List.reverse acc
+
+                _ ->
+                    let
+                        playersToTake =
+                            if tableIndex < remainder then
+                                playersPerTable + 1
+
+                            else
+                                playersPerTable
+
+                        tablePlayers =
+                            List.take playersToTake remainingPlayers
+
+                        rest_ =
+                            List.drop playersToTake remainingPlayers
+
+                        newTable =
+                            Table tablePlayers
+
+                        newAcc =
+                            newTable :: acc
+                    in
+                    distribute rest_ (tableIndex + 1) (remainingCount - 1) newAcc
+    in
+    distribute players 0 tablesNeeded []
+
+
+onEnterPress : Intent -> Element.Attribute Intent
 onEnterPress msg =
     Element.htmlAttribute
         (Html.Events.on "keydown"
@@ -705,17 +582,10 @@ onEnterPress msg =
         )
 
 
-onEnterPressIf : Bool -> Msg -> Element.Attribute Msg
+onEnterPressIf : Bool -> Intent -> Element.Attribute Intent
 onEnterPressIf condition msg =
     if condition then
         onEnterPress msg
 
     else
         Element.htmlAttribute (Html.Attributes.class "")
-
-
-getPlayerName : Player -> String
-getPlayerName player =
-    case player of
-        Player name ->
-            name

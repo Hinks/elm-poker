@@ -1,4 +1,4 @@
-module Page.Game exposing (Model, Msg, buyInPlayers, init, subscriptions, update, view)
+module Page.Game exposing (Blind, BlindLevels, Chip(..), ChipColor(..), Intent(..), Seconds, TimerState(..), ViewData, advanceBlindLevels, blindLevelsCurrent, blindLevelsHasNext, blindLevelsHasPrevious, canAddBuyIn, currentBlindNumber, defaultBlindLevels, isPlayerInBuyIns, rewindBlindLevels, subscriptions, upcomingBlinds, view)
 
 import Element
 import Element.Background
@@ -9,10 +9,8 @@ import Html.Attributes
 import Html.Events
 import Icons
 import Marquee
-import Page.Players exposing (Player)
+import Player exposing (Player)
 import PokerHandRanking
-import Ports
-import Random
 import Theme exposing (Theme)
 import Time
 
@@ -21,18 +19,18 @@ import Time
 -- MODEL
 
 
-type alias Model =
+type alias ViewData =
     { chips : List Chip
     , blindLevels : BlindLevels
     , blindDuration : Seconds
     , blindDurationInput : String
     , remainingTime : Seconds
     , timerState : TimerState
-    , players : List Player
-    , initialBuyIn : Int
     , activeRankingIndex : Maybe Int
-    , buyIns : List BuyIn
     , selectedPlayerForBuyIn : Maybe Player
+    , roster : List Player
+    , initialBuyIn : Int
+    , buyIns : List Player
     , buyInTimerDuration : Seconds
     , buyInTimerDurationInput : String
     , buyInRemainingTime : Seconds
@@ -168,39 +166,6 @@ type Chip
     = Chip ChipColor Int
 
 
-type BuyIn
-    = BuyIn Player
-
-
-init : Maybe Model -> List Player -> Int -> Model
-init maybeExistingModel players buyIn =
-    case maybeExistingModel of
-        Just existingModel ->
-            { existingModel
-                | players = players
-                , initialBuyIn = buyIn
-            }
-
-        Nothing ->
-            { chips = [ Chip White 50, Chip Red 100, Chip Blue 200, Chip Green 250, Chip Black 500 ]
-            , blindLevels = defaultBlindLevels
-            , blindDuration = 12 * 60
-            , blindDurationInput = "12"
-            , remainingTime = 12 * 60
-            , timerState = Stopped
-            , players = players
-            , initialBuyIn = buyIn
-            , activeRankingIndex = Just 0
-            , buyIns = []
-            , selectedPlayerForBuyIn = Nothing
-            , buyInTimerDuration = 30 * 60
-            , buyInTimerDurationInput = "30"
-            , buyInRemainingTime = 30 * 60
-            , buyInTimerState = Stopped
-            , buyInListCollapsed = True
-            }
-
-
 chipColorToElementColor : ChipColor -> Theme.ColorPalette -> Element.Color
 chipColorToElementColor chipColor colors =
     case chipColor of
@@ -267,33 +232,27 @@ getSmallBlindBackgroundColor theme colors =
 -- UPDATE
 
 
-isPlayerInBuyIns : Player -> List BuyIn -> Bool
+isPlayerInBuyIns : Player -> List Player -> Bool
 isPlayerInBuyIns player buyIns =
-    List.any
-        (\buyIn ->
-            case buyIn of
-                BuyIn buyInPlayer ->
-                    buyInPlayer == player
-        )
-        buyIns
+    List.member player buyIns
 
 
-canAddBuyIn : Model -> Bool
-canAddBuyIn model =
-    model.buyInTimerState
+canAddBuyIn : ViewData -> Bool
+canAddBuyIn vd =
+    vd.buyInTimerState
         /= Expired
-        && model.selectedPlayerForBuyIn
+        && vd.selectedPlayerForBuyIn
         /= Nothing
-        && (case model.selectedPlayerForBuyIn of
+        && (case vd.selectedPlayerForBuyIn of
                 Just player ->
-                    not (isPlayerInBuyIns player model.buyIns)
+                    not (isPlayerInBuyIns player vd.buyIns)
 
                 Nothing ->
                     False
            )
 
 
-type Msg
+type Intent
     = NoOp
     | BlindDurationChanged String
     | TimerTick Time.Posix
@@ -314,232 +273,16 @@ type Msg
     | ToggleBuyInList
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
-        BlindDurationChanged str ->
-            if model.timerState == Stopped then
-                case String.toInt str of
-                    Just minutes ->
-                        if minutes > 0 then
-                            let
-                                durationInSeconds =
-                                    minutes * 60
-                            in
-                            ( { model
-                                | blindDurationInput = str
-                                , blindDuration = durationInSeconds
-                                , remainingTime = durationInSeconds
-                              }
-                            , Cmd.none
-                            )
-
-                        else
-                            ( { model | blindDurationInput = str }, Cmd.none )
-
-                    Nothing ->
-                        ( { model | blindDurationInput = str }, Cmd.none )
-
-            else
-                ( model, Cmd.none )
-
-        TimerTick _ ->
-            if model.timerState == Running then
-                if model.remainingTime > 0 then
-                    ( { model | remainingTime = model.remainingTime - 1 }
-                    , Cmd.none
-                    )
-
-                else
-                    ( { model | timerState = Expired }, Ports.send Ports.BlindTimerAlert )
-
-            else
-                ( model, Cmd.none )
-
-        StartPauseTimer ->
-            case model.timerState of
-                Stopped ->
-                    ( { model | timerState = Running }, Cmd.none )
-
-                Paused ->
-                    ( { model | timerState = Running }, Cmd.none )
-
-                Running ->
-                    ( { model | timerState = Paused }, Cmd.none )
-
-                Expired ->
-                    ( model, Cmd.none )
-
-        ResetTimer ->
-            ( { model
-                | blindLevels = defaultBlindLevels
-                , remainingTime = model.blindDuration
-                , timerState = Stopped
-                , blindDurationInput = String.fromInt (model.blindDuration // 60)
-              }
-            , Cmd.none
-            )
-
-        BlindIndexUp ->
-            if blindLevelsHasNext model.blindLevels then
-                ( { model
-                    | blindLevels = advanceBlindLevels model.blindLevels
-                    , remainingTime = model.blindDuration
-                  }
-                , Cmd.none
-                )
-
-            else
-                ( model, Cmd.none )
-
-        BlindIndexDown ->
-            if blindLevelsHasPrevious model.blindLevels then
-                ( { model
-                    | blindLevels = rewindBlindLevels model.blindLevels
-                    , remainingTime = model.blindDuration
-                  }
-                , Cmd.none
-                )
-
-            else
-                ( model, Cmd.none )
-
-        RankingTimerTick _ ->
-            ( model, Random.generate GenerateRandomRanking (Random.int 0 9) )
-
-        GenerateRandomRanking index ->
-            ( { model | activeRankingIndex = Just index }, Cmd.none )
-
-        StartNextBlind ->
-            if blindLevelsHasNext model.blindLevels then
-                let
-                    advancedModel =
-                        advanceToNextBlind model
-                in
-                ( { advancedModel | timerState = Running }
-                , Cmd.none
-                )
-
-            else
-                ( model, Cmd.none )
-
-        BuyInPlayerSelected maybePlayer ->
-            ( { model | selectedPlayerForBuyIn = maybePlayer }, Cmd.none )
-
-        BuyInDurationChanged str ->
-            if model.buyInTimerState == Stopped then
-                case String.toInt str of
-                    Just minutes ->
-                        if minutes > 0 then
-                            let
-                                durationInSeconds =
-                                    minutes * 60
-                            in
-                            ( { model
-                                | buyInTimerDurationInput = str
-                                , buyInTimerDuration = durationInSeconds
-                                , buyInRemainingTime = durationInSeconds
-                              }
-                            , Cmd.none
-                            )
-
-                        else
-                            ( { model | buyInTimerDurationInput = str }, Cmd.none )
-
-                    Nothing ->
-                        ( { model | buyInTimerDurationInput = str }, Cmd.none )
-
-            else
-                ( model, Cmd.none )
-
-        AddBuyIn ->
-            if canAddBuyIn model then
-                case model.selectedPlayerForBuyIn of
-                    Just player ->
-                        ( { model
-                            | buyIns = model.buyIns ++ [ BuyIn player ]
-                            , selectedPlayerForBuyIn = Nothing
-                          }
-                        , Cmd.none
-                        )
-
-                    Nothing ->
-                        ( model, Cmd.none )
-
-            else
-                ( model, Cmd.none )
-
-        RemoveBuyIn index ->
-            let
-                updatedBuyIns =
-                    model.buyIns
-                        |> List.indexedMap Tuple.pair
-                        |> List.filter (\( i, _ ) -> i /= index)
-                        |> List.map Tuple.second
-            in
-            ( { model | buyIns = updatedBuyIns }, Cmd.none )
-
-        BuyInTimerTick _ ->
-            if model.buyInTimerState == Running then
-                if model.buyInRemainingTime > 0 then
-                    ( { model | buyInRemainingTime = model.buyInRemainingTime - 1 }
-                    , Cmd.none
-                    )
-
-                else
-                    ( { model | buyInTimerState = Expired }, Cmd.none )
-
-            else
-                ( model, Cmd.none )
-
-        StartPauseBuyInTimer ->
-            case model.buyInTimerState of
-                Stopped ->
-                    ( { model | buyInTimerState = Running }, Cmd.none )
-
-                Paused ->
-                    ( { model | buyInTimerState = Running }, Cmd.none )
-
-                Running ->
-                    ( { model | buyInTimerState = Paused }, Cmd.none )
-
-                Expired ->
-                    ( model, Cmd.none )
-
-        ResetBuyInTimer ->
-            ( { model
-                | buyInRemainingTime = model.buyInTimerDuration
-                , buyInTimerState = Stopped
-                , buyInTimerDurationInput = String.fromInt (model.buyInTimerDuration // 60)
-              }
-            , Cmd.none
-            )
-
-        ToggleBuyInList ->
-            ( { model | buyInListCollapsed = not model.buyInListCollapsed }, Cmd.none )
-
-
-advanceToNextBlind : Model -> Model
-advanceToNextBlind model =
-    if blindLevelsHasNext model.blindLevels then
-        { model
-            | blindLevels = advanceBlindLevels model.blindLevels
-            , remainingTime = model.blindDuration
-        }
-
-    else
-        { model | remainingTime = 0 }
+type alias Msg =
+    Intent
 
 
 
 -- VIEW
 
 
-view : Model -> Theme -> Element.Element Msg
-view model theme =
+view : ViewData -> Theme -> Element.Element Intent
+view vd theme =
     let
         colors =
             Theme.getColors theme
@@ -550,66 +293,66 @@ view model theme =
         cardSize =
             50.0
     in
-    viewGameLayout model theme colors tableSize cardSize
+    viewGameLayout vd theme colors tableSize cardSize
 
 
-viewGameLayout : Model -> Theme -> Theme.ColorPalette -> Float -> Float -> Element.Element Msg
-viewGameLayout model theme colors tableSize cardSize =
+viewGameLayout : ViewData -> Theme -> Theme.ColorPalette -> Float -> Float -> Element.Element Msg
+viewGameLayout vd theme colors tableSize cardSize =
     Element.column
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.padding 20
         , Element.Font.color colors.text
         ]
-        [ viewMainArea model theme colors tableSize cardSize
+        [ viewMainArea vd theme colors tableSize cardSize
         , viewFooter colors
         ]
 
 
-viewMainArea : Model -> Theme -> Theme.ColorPalette -> Float -> Float -> Element.Element Msg
-viewMainArea model theme colors tableSize cardSize =
+viewMainArea : ViewData -> Theme -> Theme.ColorPalette -> Float -> Float -> Element.Element Msg
+viewMainArea vd theme colors tableSize cardSize =
     Element.el
         [ Element.width Element.fill
         , Element.height Element.fill
-        , Element.inFront (viewBlindsOverlay model theme colors)
-        , Element.inFront (viewRankingOverlay cardSize colors model.activeRankingIndex)
-        , Element.inFront (viewBuyInOverlay model theme colors)
+        , Element.inFront (viewBlindsOverlay vd theme colors)
+        , Element.inFront (viewRankingOverlay cardSize colors vd.activeRankingIndex)
+        , Element.inFront (viewBuyInOverlay vd theme colors)
         ]
-        (viewTableArea model theme colors tableSize)
+        (viewTableArea vd theme colors tableSize)
 
 
-viewTableArea : Model -> Theme -> Theme.ColorPalette -> Float -> Element.Element Msg
-viewTableArea model theme colors tableSize =
+viewTableArea : ViewData -> Theme -> Theme.ColorPalette -> Float -> Element.Element Msg
+viewTableArea vd theme colors tableSize =
     Element.el
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.centerX
         , Element.centerY
         ]
-        (viewTableWithOverlays model theme colors tableSize)
+        (viewTableWithOverlays vd theme colors tableSize)
 
 
-viewTableWithOverlays : Model -> Theme -> Theme.ColorPalette -> Float -> Element.Element Msg
-viewTableWithOverlays model theme colors tableSize =
+viewTableWithOverlays : ViewData -> Theme -> Theme.ColorPalette -> Float -> Element.Element Msg
+viewTableWithOverlays vd theme colors tableSize =
     Element.el
         [ Element.width (Element.px (round tableSize))
         , Element.height (Element.px (round tableSize))
         , Element.centerX
-        , Element.inFront (viewPotOverlay model colors)
-        , Element.inFront (viewCenterBlindsOverlay model theme colors)
-        , Element.inFront (viewChipsOverlay model colors)
+        , Element.inFront (viewPotOverlay vd colors)
+        , Element.inFront (viewCenterBlindsOverlay vd theme colors)
+        , Element.inFront (viewChipsOverlay vd.chips colors)
         ]
         (viewPokerTable colors)
 
 
-viewBlindsOverlay : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
-viewBlindsOverlay model theme colors =
+viewBlindsOverlay : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewBlindsOverlay vd theme colors =
     Element.el
         [ Element.width Element.shrink
         , Element.alignTop
         , Element.paddingEach { top = 30, right = 0, bottom = 0, left = 0 }
         ]
-        (viewBlindsSection model theme colors)
+        (viewBlindsSection vd theme colors)
 
 
 viewRankingOverlay : Float -> Theme.ColorPalette -> Maybe Int -> Element.Element Msg
@@ -623,46 +366,46 @@ viewRankingOverlay cardSize colors activeRankingIndex =
         (PokerHandRanking.view cardSize colors activeRankingIndex)
 
 
-viewBuyInOverlay : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
-viewBuyInOverlay model theme colors =
+viewBuyInOverlay : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInOverlay vd theme colors =
     Element.el
         [ Element.width Element.shrink
         , Element.alignTop
         , Element.moveDown 550
         , Element.paddingEach { top = 0, right = 0, bottom = 0, left = 10 }
         ]
-        (viewBuyInSection model theme colors)
+        (viewBuyInSection vd theme colors)
 
 
-viewPotOverlay : Model -> Theme.ColorPalette -> Element.Element Msg
-viewPotOverlay model colors =
+viewPotOverlay : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewPotOverlay vd colors =
     Element.el
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.centerX
         , Element.centerY
         ]
-        (viewPriceMoney (calculateTotalPot model.players model.initialBuyIn model.buyIns) colors)
+        (viewPriceMoney (calculateTotalPot vd.roster vd.initialBuyIn vd.buyIns) colors)
 
 
-viewCenterBlindsOverlay : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
-viewCenterBlindsOverlay model theme colors =
+viewCenterBlindsOverlay : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewCenterBlindsOverlay vd theme colors =
     Element.el
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.centerX
         , Element.centerY
         ]
-        (viewCenterBlinds model theme colors)
+        (viewCenterBlinds vd theme colors)
 
 
-viewChipsOverlay : Model -> Theme.ColorPalette -> Element.Element Msg
-viewChipsOverlay model colors =
+viewChipsOverlay : List Chip -> Theme.ColorPalette -> Element.Element Msg
+viewChipsOverlay chips colors =
     Element.el
         [ Element.width Element.fill
         , Element.alignBottom
         ]
-        (viewChips model.chips colors)
+        (viewChips chips colors)
 
 
 viewFooter : Theme.ColorPalette -> Element.Element Msg
@@ -674,25 +417,25 @@ viewFooter colors =
         (viewFooterMarquee colors)
 
 
-viewBlindsSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
-viewBlindsSection model theme colors =
+viewBlindsSection : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewBlindsSection vd theme colors =
     Element.el
         [ Element.width Element.shrink
         , Element.padding 20
         , Element.alignTop
         ]
-        (viewLeftControls model theme colors)
+        (viewLeftControls vd theme colors)
 
 
-viewLeftControls : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
-viewLeftControls model theme colors =
+viewLeftControls : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewLeftControls vd theme colors =
     let
         isInputDisabled =
-            model.timerState /= Stopped
+            vd.timerState /= Stopped
 
         progress =
-            if model.blindDuration > 0 then
-                toFloat model.remainingTime / toFloat model.blindDuration
+            if vd.blindDuration > 0 then
+                toFloat vd.remainingTime / toFloat vd.blindDuration
 
             else
                 0.0
@@ -707,12 +450,12 @@ viewLeftControls model theme colors =
             colors.primary
 
         timerDurationMinutes =
-            toFloat model.blindDuration / 60.0
+            toFloat vd.blindDuration / 60.0
 
         controlButtons =
-            case model.timerState of
+            case vd.timerState of
                 Expired ->
-                    viewBlinkingStartNextBlindButton model colors
+                    viewBlinkingStartNextBlindButton vd colors
 
                 _ ->
                     Element.row
@@ -728,7 +471,7 @@ viewLeftControls model theme colors =
                             { onPress = Just StartPauseTimer
                             , label =
                                 Element.text
-                                    (case model.timerState of
+                                    (case vd.timerState of
                                         Running ->
                                             "Pause"
 
@@ -757,8 +500,7 @@ viewLeftControls model theme colors =
         , Element.height Element.fill
         , Element.spacing 20
         ]
-        [ -- Timer controls and timer icon
-          Element.wrappedRow
+        [ Element.wrappedRow
             [ Element.width Element.fill
             , Element.spacing 20
             ]
@@ -791,7 +533,7 @@ viewLeftControls model theme colors =
                             )
                         ]
                         { onChange = BlindDurationChanged
-                        , text = model.blindDurationInput
+                        , text = vd.blindDurationInput
                         , placeholder = Nothing
                         , label = Element.Input.labelHidden "Blind duration in minutes"
                         }
@@ -811,18 +553,16 @@ viewLeftControls model theme colors =
                     )
                 )
             ]
-        , -- Manual blind advance buttons
-          viewManualBlindsAdvance model colors
-        , -- Upcoming levels
-          viewRightLevels model
+        , viewManualBlindsAdvance vd colors
+        , viewRightLevels vd
         ]
 
 
-viewCenterBlinds : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
-viewCenterBlinds model theme colors =
+viewCenterBlinds : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewCenterBlinds vd theme colors =
     let
         blind =
-            getCurrentBlind model
+            blindLevelsCurrent vd.blindLevels
 
         iconSize =
             140.0
@@ -851,8 +591,8 @@ viewCenterBlinds model theme colors =
         ]
 
 
-viewManualBlindsAdvance : Model -> Theme.ColorPalette -> Element.Element Msg
-viewManualBlindsAdvance model colors =
+viewManualBlindsAdvance : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewManualBlindsAdvance vd colors =
     Element.column
         [ Element.spacing 10
         , Element.alignLeft
@@ -867,7 +607,7 @@ viewManualBlindsAdvance model colors =
                 , Element.Font.color colors.buttonText
                 ]
                 { onPress =
-                    if blindLevelsHasNext model.blindLevels then
+                    if blindLevelsHasNext vd.blindLevels then
                         Just BlindIndexUp
 
                     else
@@ -880,7 +620,7 @@ viewManualBlindsAdvance model colors =
                 , Element.Font.color colors.buttonText
                 ]
                 { onPress =
-                    if blindLevelsHasPrevious model.blindLevels then
+                    if blindLevelsHasPrevious vd.blindLevels then
                         Just BlindIndexDown
 
                     else
@@ -891,11 +631,11 @@ viewManualBlindsAdvance model colors =
         ]
 
 
-viewBlinkingStartNextBlindButton : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBlinkingStartNextBlindButton model colors =
+viewBlinkingStartNextBlindButton : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewBlinkingStartNextBlindButton vd colors =
     let
         canAdvance =
-            blindLevelsHasNext model.blindLevels
+            blindLevelsHasNext vd.blindLevels
 
         blinkAnimationStyle =
             Html.Attributes.style "animation" "blink 1s infinite"
@@ -932,14 +672,16 @@ viewBlinkingStartNextBlindButton model colors =
         ]
 
 
-viewRightLevels : Model -> Element.Element Msg
-viewRightLevels model =
+viewRightLevels : ViewData -> Element.Element Msg
+viewRightLevels vd =
     let
         upcomingBlindsList =
-            getUpcomingBlinds model
+            vd.blindLevels
+                |> upcomingBlinds
+                |> List.take 3
 
         currentLevelNumberIndex =
-            currentBlindNumber model.blindLevels
+            currentBlindNumber vd.blindLevels
     in
     Element.column
         [ Element.width Element.fill
@@ -1073,8 +815,8 @@ viewPriceMoney amount colors =
         ]
 
 
-viewBuyInSection : Model -> Theme -> Theme.ColorPalette -> Element.Element Msg
-viewBuyInSection model _ colors =
+viewBuyInSection : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInSection vd _ colors =
     Element.column
         [ Element.width Element.fill
         , Element.spacing 10
@@ -1085,17 +827,17 @@ viewBuyInSection model _ colors =
             , Element.Font.bold
             ]
             (Element.text "Buy-In Registration")
-        , viewBuyInTimerControls model colors
-        , viewBuyInPlayerSelector model colors
-        , viewBuyInList model colors
+        , viewBuyInTimerControls vd colors
+        , viewBuyInPlayerSelector vd colors
+        , viewBuyInList vd colors
         ]
 
 
-viewBuyInTimerControls : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBuyInTimerControls model colors =
+viewBuyInTimerControls : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInTimerControls vd colors =
     let
         isInputDisabled =
-            model.buyInTimerState /= Stopped
+            vd.buyInTimerState /= Stopped
     in
     Element.column
         [ Element.width Element.fill
@@ -1121,7 +863,7 @@ viewBuyInTimerControls model colors =
                 )
             ]
             { onChange = BuyInDurationChanged
-            , text = model.buyInTimerDurationInput
+            , text = vd.buyInTimerDurationInput
             , placeholder = Nothing
             , label = Element.Input.labelHidden "Buy-in timer duration in minutes"
             }
@@ -1137,7 +879,7 @@ viewBuyInTimerControls model colors =
                 { onPress = Just StartPauseBuyInTimer
                 , label =
                     Element.text
-                        (case model.buyInTimerState of
+                        (case vd.buyInTimerState of
                             Running ->
                                 "Pause"
 
@@ -1165,24 +907,24 @@ viewBuyInTimerControls model colors =
                 , Element.Font.family [ Element.Font.monospace ]
                 , Element.paddingXY 10 0
                 ]
-                (Element.text (formatTime model.buyInRemainingTime))
+                (Element.text (formatTime vd.buyInRemainingTime))
             ]
         ]
 
 
-viewBuyInPlayerSelector : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBuyInPlayerSelector model colors =
+viewBuyInPlayerSelector : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInPlayerSelector vd colors =
     let
         availablePlayers =
-            model.players
-                |> List.filter (\player -> not (isPlayerInBuyIns player model.buyIns))
+            vd.roster
+                |> List.filter (\player -> not (isPlayerInBuyIns player vd.buyIns))
 
         canAdd =
-            canAddBuyIn model
+            canAddBuyIn vd
 
         isSelected : Player -> Bool
         isSelected player =
-            case model.selectedPlayerForBuyIn of
+            case vd.selectedPlayerForBuyIn of
                 Just selectedPlayer ->
                     selectedPlayer == player
 
@@ -1194,20 +936,20 @@ viewBuyInPlayerSelector model colors =
                 [ Html.Attributes.style "width" "100%"
                 , Html.Attributes.style "padding" "8px"
                 , Html.Attributes.style "background-color"
-                    (if model.buyInTimerState == Expired then
+                    (if vd.buyInTimerState == Expired then
                         "#cccccc"
 
                      else
                         "transparent"
                     )
                 , Html.Attributes.style "color"
-                    (if model.buyInTimerState == Expired then
+                    (if vd.buyInTimerState == Expired then
                         "#666666"
 
                      else
                         "inherit"
                     )
-                , Html.Attributes.disabled (model.buyInTimerState == Expired)
+                , Html.Attributes.disabled (vd.buyInTimerState == Expired)
                 , Html.Events.onInput
                     (\val ->
                         if val == "" then
@@ -1215,7 +957,7 @@ viewBuyInPlayerSelector model colors =
 
                         else
                             availablePlayers
-                                |> List.filter (\p -> Page.Players.getPlayerName p == val)
+                                |> List.filter (\p -> Player.getName p == val)
                                 |> List.head
                                 |> Maybe.map (\p -> BuyInPlayerSelected (Just p))
                                 |> Maybe.withDefault (BuyInPlayerSelected Nothing)
@@ -1223,14 +965,14 @@ viewBuyInPlayerSelector model colors =
                 ]
                 (Html.option
                     [ Html.Attributes.value ""
-                    , Html.Attributes.selected (model.selectedPlayerForBuyIn == Nothing)
+                    , Html.Attributes.selected (vd.selectedPlayerForBuyIn == Nothing)
                     ]
                     [ Html.text "Select a player..." ]
                     :: List.map
                         (\player ->
                             let
                                 playerName =
-                                    Page.Players.getPlayerName player
+                                    Player.getName player
                             in
                             Html.option
                                 [ Html.Attributes.value playerName
@@ -1278,8 +1020,8 @@ viewBuyInPlayerSelector model colors =
         ]
 
 
-viewBuyInList : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBuyInList model colors =
+viewBuyInList : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInList vd colors =
     Element.column
         [ Element.width Element.fill
         , Element.spacing 10
@@ -1293,41 +1035,36 @@ viewBuyInList model colors =
                 , Element.Font.bold
                 ]
                 (Element.text "Registered Buy-Ins:")
-            , viewBuyInCollapseExpandButton model colors
+            , viewBuyInCollapseExpandButton vd colors
             ]
-        , if List.isEmpty model.buyIns then
+        , if List.isEmpty vd.buyIns then
             Element.el
                 [ Element.Font.color colors.textSecondary
                 , Element.Font.italic
                 ]
                 (Element.text "No buy-ins registered yet.")
 
-          else if model.buyInListCollapsed then
+          else if vd.buyInListCollapsed then
             Element.el
                 [ Element.Font.color colors.textSecondary
                 , Element.Font.italic
                 ]
-                (Element.text (String.fromInt (List.length model.buyIns) ++ " buy-ins"))
+                (Element.text (String.fromInt (List.length vd.buyIns) ++ " buy-ins"))
 
           else
             Element.column
                 [ Element.width Element.fill
                 , Element.spacing 8
                 ]
-                (List.indexedMap (\index buyIn -> viewBuyInRow index buyIn colors) model.buyIns)
+                (List.indexedMap (\index buyIn -> viewBuyInRow index buyIn colors) vd.buyIns)
         ]
 
 
-viewBuyInRow : Int -> BuyIn -> Theme.ColorPalette -> Element.Element Msg
-viewBuyInRow index buyIn colors =
+viewBuyInRow : Int -> Player -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInRow index buyInPlayer colors =
     let
-        player =
-            case buyIn of
-                BuyIn buyInPlayer ->
-                    buyInPlayer
-
         playerName =
-            Page.Players.getPlayerName player
+            Player.getName buyInPlayer
     in
     Element.row
         [ Element.width Element.fill
@@ -1348,9 +1085,9 @@ viewBuyInRow index buyIn colors =
         ]
 
 
-viewBuyInCollapseExpandButton : Model -> Theme.ColorPalette -> Element.Element Msg
-viewBuyInCollapseExpandButton model colors =
-    if not (List.isEmpty model.buyIns) then
+viewBuyInCollapseExpandButton : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewBuyInCollapseExpandButton vd colors =
+    if not (List.isEmpty vd.buyIns) then
         Element.Input.button
             [ Element.padding 4
             , Element.width (Element.px 40)
@@ -1365,7 +1102,7 @@ viewBuyInCollapseExpandButton model colors =
                     , Element.centerY
                     ]
                     (Element.text
-                        (if model.buyInListCollapsed then
+                        (if vd.buyInListCollapsed then
                             "↓"
 
                          else
@@ -1397,11 +1134,11 @@ viewFooterMarquee _ =
                     , "A raise must be at least as big as the last raise"
                     , "Only use the chips in front of you for betting"
                     , "Place chips clearly in the pot"
-                    , "Don’t say what you folded"
-                    , "Don’t show your cards before showdown"
-                    , "Don’t act before your turn"
-                    , "Don’t talk about someone else’s hand"
-                    , "Don’t touch other players’ chips or cards"
+                    , "Don't say what you folded"
+                    , "Don't show your cards before showdown"
+                    , "Don't act before your turn"
+                    , "Don't talk about someone else's hand"
+                    , "Don't touch other players' chips or cards"
                     , "Keep your cards on the table while playing"
                     ]
                 )
@@ -1413,20 +1150,9 @@ viewFooterMarquee _ =
 -- Helper functions
 
 
-calculateTotalPot : List Player -> Int -> List BuyIn -> Int
+calculateTotalPot : List Player -> Int -> List Player -> Int
 calculateTotalPot players buyIn buyIns =
     (List.length players + List.length buyIns) * buyIn
-
-
-buyInPlayers : List BuyIn -> List Player
-buyInPlayers buyIns =
-    List.map
-        (\buyIn ->
-            case buyIn of
-                BuyIn player ->
-                    player
-        )
-        buyIns
 
 
 formatTime : Int -> String
@@ -1478,26 +1204,14 @@ formatBlindValue value =
         |> String.join " "
 
 
-getCurrentBlind : Model -> Blind
-getCurrentBlind model =
-    blindLevelsCurrent model.blindLevels
-
-
-getUpcomingBlinds : Model -> List Blind
-getUpcomingBlinds model =
-    model.blindLevels
-        |> upcomingBlinds
-        |> List.take 3
-
-
 
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : ViewData -> Sub Msg
+subscriptions vd =
     Sub.batch
-        [ case model.timerState of
+        [ case vd.timerState of
             Running ->
                 Time.every 1000 TimerTick
 
@@ -1509,7 +1223,7 @@ subscriptions model =
 
             Expired ->
                 Sub.none
-        , case model.buyInTimerState of
+        , case vd.buyInTimerState of
             Running ->
                 Time.every 1000 BuyInTimerTick
 

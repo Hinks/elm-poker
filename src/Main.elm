@@ -11,7 +11,9 @@ import Page.Game
 import Page.Home
 import Page.Players
 import Page.Playground
+import Player exposing (Player(..))
 import Ports
+import Random
 import Theme exposing (Theme(..))
 import Url exposing (Url)
 import Url.Parser exposing ((</>), Parser, s, top)
@@ -22,29 +24,43 @@ import Url.Parser exposing ((</>), Parser, s, top)
 
 
 type alias Model =
-    { -- Persistent page models (data shared across pages)
-      players : Page.Players.Model
-    , game : Page.Game.Model
-
-    -- Global state
-    , theme : Theme
-    , navigationKey : Navigation.Key
+    { navigationKey : Navigation.Key
     , basePath : String
-
-    -- Active page (eliminates impossible page/model mismatch)
     , activePage : Page
+    , theme : Theme
+
+    -- Players
+    , players : List Page.Players.PlayerEntry
+    , initialBuyIn : Int
+    , newPlayerName : String
+    , playerListCollapsed : Bool
+
+    -- Game
+    , chips : List Page.Game.Chip
+    , blindLevels : Page.Game.BlindLevels
+    , blindDuration : Page.Game.Seconds
+    , blindDurationInput : String
+    , remainingTime : Page.Game.Seconds
+    , timerState : Page.Game.TimerState
+    , activeRankingIndex : Maybe Int
+    , selectedPlayerForBuyIn : Maybe Player
+    , buyIns : List Player
+    , buyInTimerDuration : Page.Game.Seconds
+    , buyInTimerDurationInput : String
+    , buyInRemainingTime : Page.Game.Seconds
+    , buyInTimerState : Page.Game.TimerState
+    , buyInListCollapsed : Bool
+
+    -- Champion
+    , winnerFlow : Page.Champion.WinnerFlow
     }
 
 
-{-| Page combines the page indicator with any page-specific transient state.
-Champion model is transient (rebuilt on each navigation), while Players and Game
-models persist in the top-level Model.
--}
 type Page
     = HomePage
     | PlayersPage
     | GamePage
-    | ChampionPage Page.Champion.Model
+    | ChampionPage
     | PlaygroundPage
     | NotFoundPage
 
@@ -64,10 +80,9 @@ type Route
 type Msg
     = ClickedLink Browser.UrlRequest
     | ChangedUrl Url
-    | GotHomeMsg Page.Home.Msg
-    | GotPlayersMsg Page.Players.Msg
-    | GotGameMsg Page.Game.Msg
-    | GotChampionMsg Page.Champion.Msg
+    | GotPlayersIntent Page.Players.Intent
+    | GotGameIntent Page.Game.Intent
+    | GotChampionIntent Page.Champion.Intent
     | ThemeToggled
     | PortsMsg Ports.Incoming
 
@@ -86,57 +101,26 @@ update msg model =
         ChangedUrl url ->
             updateUrl url model
 
-        GotHomeMsg _ ->
-            -- Home page has no real state to update
-            ( model, Cmd.none )
-
-        GotPlayersMsg playersMsg ->
+        GotPlayersIntent playersIntent ->
             case model.activePage of
                 PlayersPage ->
-                    let
-                        ( updatedPlayers, cmd ) =
-                            Page.Players.update playersMsg model.players
-
-                        syncedGame =
-                            Page.Game.init
-                                (Just model.game)
-                                (playersRoster updatedPlayers)
-                                updatedPlayers.initialBuyIn
-                    in
-                    ( { model
-                        | players = updatedPlayers
-                        , game = syncedGame
-                      }
-                    , Cmd.map GotPlayersMsg cmd
-                    )
+                    updatePlayers playersIntent model
 
                 _ ->
                     ( model, Cmd.none )
 
-        GotGameMsg gameMsg ->
+        GotGameIntent gameIntent ->
             case model.activePage of
                 GamePage ->
-                    let
-                        ( updatedGame, cmd ) =
-                            Page.Game.update gameMsg model.game
-                    in
-                    ( { model | game = updatedGame }
-                    , Cmd.map GotGameMsg cmd
-                    )
+                    updateGame gameIntent model
 
                 _ ->
                     ( model, Cmd.none )
 
-        GotChampionMsg championMsg ->
+        GotChampionIntent championIntent ->
             case model.activePage of
-                ChampionPage championModel ->
-                    let
-                        ( updatedChampion, cmd ) =
-                            Page.Champion.update championMsg championModel
-                    in
-                    ( { model | activePage = ChampionPage updatedChampion }
-                    , Cmd.map GotChampionMsg cmd
-                    )
+                ChampionPage ->
+                    updateChampion championIntent model
 
                 _ ->
                     ( model, Cmd.none )
@@ -170,17 +154,10 @@ updateUrl url model =
             ( { model | activePage = PlayersPage }, Cmd.none )
 
         Just Game ->
-            let
-                syncedGame =
-                    Page.Game.init
-                        (Just model.game)
-                        (playersRoster model.players)
-                        model.players.initialBuyIn
-            in
-            ( { model | activePage = GamePage, game = syncedGame }, Cmd.none )
+            ( { model | activePage = GamePage }, Cmd.none )
 
         Just Champion ->
-            ( { model | activePage = ChampionPage (buildChampionModel model) }
+            ( { model | activePage = ChampionPage }
             , Cmd.none
             )
 
@@ -197,22 +174,480 @@ init _ url key =
         basePath =
             detectBasePath url
 
-        initialPlayers =
-            Page.Players.init Nothing
+        initialBlindDuration =
+            12 * 60
 
-        initialGame =
-            Page.Game.init Nothing (playersRoster initialPlayers) initialPlayers.initialBuyIn
+        initialBuyInTimerDuration =
+            30 * 60
 
         initialModel =
-            { players = initialPlayers
-            , game = initialGame
-            , theme = Theme.defaultTheme
-            , navigationKey = key
+            { navigationKey = key
             , basePath = basePath
             , activePage = NotFoundPage
+            , theme = Theme.defaultTheme
+
+            -- Players
+            , players = []
+            , initialBuyIn = 0
+            , newPlayerName = ""
+            , playerListCollapsed = False
+
+            -- Game
+            , chips =
+                [ Page.Game.Chip Page.Game.White 50
+                , Page.Game.Chip Page.Game.Red 100
+                , Page.Game.Chip Page.Game.Blue 200
+                , Page.Game.Chip Page.Game.Green 250
+                , Page.Game.Chip Page.Game.Black 500
+                ]
+            , blindLevels = Page.Game.defaultBlindLevels
+            , blindDuration = initialBlindDuration
+            , blindDurationInput = "12"
+            , remainingTime = initialBlindDuration
+            , timerState = Page.Game.Stopped
+            , activeRankingIndex = Just 0
+            , selectedPlayerForBuyIn = Nothing
+            , buyIns = []
+            , buyInTimerDuration = initialBuyInTimerDuration
+            , buyInTimerDurationInput = "30"
+            , buyInRemainingTime = initialBuyInTimerDuration
+            , buyInTimerState = Page.Game.Stopped
+            , buyInListCollapsed = True
+
+            -- Champion
+            , winnerFlow = Page.Champion.AwaitingDivision
             }
     in
     updateUrl url initialModel
+
+
+
+-- UPDATE: PLAYERS
+
+
+updatePlayers : Page.Players.Intent -> Model -> ( Model, Cmd Msg )
+updatePlayers intent model =
+    case intent of
+        Page.Players.PlayerNameChanged name ->
+            ( { model | newPlayerName = name }, Cmd.none )
+
+        Page.Players.InitialBuyInChanged buyInStr ->
+            case String.toInt buyInStr of
+                Just buyIn ->
+                    ( { model | initialBuyIn = buyIn }, Cmd.none )
+
+                Nothing ->
+                    ( { model | initialBuyIn = 0 }, Cmd.none )
+
+        Page.Players.AddPlayer ->
+            let
+                trimmedName =
+                    String.trim model.newPlayerName
+
+                isUnique =
+                    not (List.any (\entry -> Player.getName entry.player == trimmedName) model.players)
+            in
+            if trimmedName /= "" && isUnique then
+                let
+                    newEntry =
+                        { player = Player trimmedName
+                        , seat = Nothing
+                        }
+                in
+                ( { model
+                    | players = model.players ++ [ newEntry ]
+                    , newPlayerName = ""
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Players.RemovePlayer index ->
+            let
+                removedPlayer =
+                    model.players
+                        |> List.drop index
+                        |> List.head
+                        |> Maybe.map .player
+
+                updatedPlayers =
+                    model.players
+                        |> List.indexedMap Tuple.pair
+                        |> List.filter (\( i, _ ) -> i /= index)
+                        |> List.map Tuple.second
+
+                updatedBuyIns =
+                    case removedPlayer of
+                        Just player ->
+                            List.filter (\p -> p /= player) model.buyIns
+
+                        Nothing ->
+                            model.buyIns
+
+                currentRoster =
+                    List.map .player updatedPlayers
+
+                updatedWinnerFlow =
+                    cleanupWinnerFlow currentRoster model.winnerFlow
+            in
+            ( { model
+                | players = updatedPlayers
+                , buyIns = updatedBuyIns
+                , winnerFlow = updatedWinnerFlow
+              }
+            , Cmd.none
+            )
+
+        Page.Players.RandomizeSeating ->
+            if List.isEmpty model.players || Page.Players.hasSeatingEntries model.players then
+                ( model, Cmd.none )
+
+            else
+                ( model
+                , Random.generate (\seed -> GotPlayersIntent (Page.Players.GotRandomSeed seed)) (Random.int 0 2147483647)
+                )
+
+        Page.Players.GotRandomSeed seed ->
+            let
+                currentRoster =
+                    List.map .player model.players
+
+                shuffledPlayers =
+                    Page.Players.shufflePlayers seed currentRoster
+
+                tables =
+                    Page.Players.distributeIntoTables shuffledPlayers
+
+                assignments =
+                    Page.Players.seatsFromTables tables
+
+                updatedPlayers =
+                    Page.Players.assignSeats model.players assignments
+            in
+            ( { model
+                | players = updatedPlayers
+                , playerListCollapsed = True
+              }
+            , Cmd.none
+            )
+
+        Page.Players.TogglePlayerList ->
+            ( { model | playerListCollapsed = not model.playerListCollapsed }, Cmd.none )
+
+        Page.Players.ClearSeating ->
+            ( { model
+                | players = Page.Players.clearSeats model.players
+                , playerListCollapsed = False
+              }
+            , Cmd.none
+            )
+
+
+cleanupWinnerFlow : List Player -> Page.Champion.WinnerFlow -> Page.Champion.WinnerFlow
+cleanupWinnerFlow currentRoster winnerFlow =
+    case winnerFlow of
+        Page.Champion.AwaitingDivision ->
+            winnerFlow
+
+        Page.Champion.DivisionSelected selection ->
+            let
+                updatedWinners =
+                    selection.winners
+                        |> List.filter (\winner -> List.member winner.player currentRoster)
+                        |> List.indexedMap (\idx winner -> { winner | position = idx + 1 })
+            in
+            Page.Champion.DivisionSelected { selection | winners = updatedWinners }
+
+
+
+-- UPDATE: GAME
+
+
+updateGame : Page.Game.Intent -> Model -> ( Model, Cmd Msg )
+updateGame intent model =
+    case intent of
+        Page.Game.NoOp ->
+            ( model, Cmd.none )
+
+        Page.Game.BlindDurationChanged str ->
+            if model.timerState == Page.Game.Stopped then
+                case String.toInt str of
+                    Just minutes ->
+                        if minutes > 0 then
+                            let
+                                durationInSeconds =
+                                    minutes * 60
+                            in
+                            ( { model
+                                | blindDurationInput = str
+                                , blindDuration = durationInSeconds
+                                , remainingTime = durationInSeconds
+                              }
+                            , Cmd.none
+                            )
+
+                        else
+                            ( { model | blindDurationInput = str }, Cmd.none )
+
+                    Nothing ->
+                        ( { model | blindDurationInput = str }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.TimerTick _ ->
+            if model.timerState == Page.Game.Running then
+                if model.remainingTime > 0 then
+                    ( { model | remainingTime = model.remainingTime - 1 }
+                    , Cmd.none
+                    )
+
+                else
+                    ( { model | timerState = Page.Game.Expired }, Ports.send Ports.BlindTimerAlert )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.StartPauseTimer ->
+            case model.timerState of
+                Page.Game.Stopped ->
+                    ( { model | timerState = Page.Game.Running }, Cmd.none )
+
+                Page.Game.Paused ->
+                    ( { model | timerState = Page.Game.Running }, Cmd.none )
+
+                Page.Game.Running ->
+                    ( { model | timerState = Page.Game.Paused }, Cmd.none )
+
+                Page.Game.Expired ->
+                    ( model, Cmd.none )
+
+        Page.Game.ResetTimer ->
+            ( { model
+                | blindLevels = Page.Game.defaultBlindLevels
+                , remainingTime = model.blindDuration
+                , timerState = Page.Game.Stopped
+                , blindDurationInput = String.fromInt (model.blindDuration // 60)
+              }
+            , Cmd.none
+            )
+
+        Page.Game.BlindIndexUp ->
+            if Page.Game.blindLevelsHasNext model.blindLevels then
+                ( { model
+                    | blindLevels = Page.Game.advanceBlindLevels model.blindLevels
+                    , remainingTime = model.blindDuration
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.BlindIndexDown ->
+            if Page.Game.blindLevelsHasPrevious model.blindLevels then
+                ( { model
+                    | blindLevels = Page.Game.rewindBlindLevels model.blindLevels
+                    , remainingTime = model.blindDuration
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.RankingTimerTick _ ->
+            ( model, Cmd.map GotGameIntent (Random.generate Page.Game.GenerateRandomRanking (Random.int 0 9)) )
+
+        Page.Game.GenerateRandomRanking index ->
+            ( { model | activeRankingIndex = Just index }, Cmd.none )
+
+        Page.Game.StartNextBlind ->
+            if Page.Game.blindLevelsHasNext model.blindLevels then
+                ( { model
+                    | blindLevels = Page.Game.advanceBlindLevels model.blindLevels
+                    , remainingTime = model.blindDuration
+                    , timerState = Page.Game.Running
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.BuyInPlayerSelected maybePlayer ->
+            ( { model | selectedPlayerForBuyIn = maybePlayer }, Cmd.none )
+
+        Page.Game.BuyInDurationChanged str ->
+            if model.buyInTimerState == Page.Game.Stopped then
+                case String.toInt str of
+                    Just minutes ->
+                        if minutes > 0 then
+                            let
+                                durationInSeconds =
+                                    minutes * 60
+                            in
+                            ( { model
+                                | buyInTimerDurationInput = str
+                                , buyInTimerDuration = durationInSeconds
+                                , buyInRemainingTime = durationInSeconds
+                              }
+                            , Cmd.none
+                            )
+
+                        else
+                            ( { model | buyInTimerDurationInput = str }, Cmd.none )
+
+                    Nothing ->
+                        ( { model | buyInTimerDurationInput = str }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.AddBuyIn ->
+            let
+                vd =
+                    gameViewData model
+            in
+            if Page.Game.canAddBuyIn vd then
+                case model.selectedPlayerForBuyIn of
+                    Just player ->
+                        ( { model
+                            | selectedPlayerForBuyIn = Nothing
+                            , buyIns = model.buyIns ++ [ player ]
+                          }
+                        , Cmd.none
+                        )
+
+                    Nothing ->
+                        ( model, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.RemoveBuyIn index ->
+            if index >= 0 && index < List.length model.buyIns then
+                ( { model
+                    | buyIns =
+                        model.buyIns
+                            |> List.indexedMap Tuple.pair
+                            |> List.filter (\( i, _ ) -> i /= index)
+                            |> List.map Tuple.second
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.BuyInTimerTick _ ->
+            if model.buyInTimerState == Page.Game.Running then
+                if model.buyInRemainingTime > 0 then
+                    ( { model | buyInRemainingTime = model.buyInRemainingTime - 1 }
+                    , Cmd.none
+                    )
+
+                else
+                    ( { model | buyInTimerState = Page.Game.Expired }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        Page.Game.StartPauseBuyInTimer ->
+            case model.buyInTimerState of
+                Page.Game.Stopped ->
+                    ( { model | buyInTimerState = Page.Game.Running }, Cmd.none )
+
+                Page.Game.Paused ->
+                    ( { model | buyInTimerState = Page.Game.Running }, Cmd.none )
+
+                Page.Game.Running ->
+                    ( { model | buyInTimerState = Page.Game.Paused }, Cmd.none )
+
+                Page.Game.Expired ->
+                    ( model, Cmd.none )
+
+        Page.Game.ResetBuyInTimer ->
+            ( { model
+                | buyInRemainingTime = model.buyInTimerDuration
+                , buyInTimerState = Page.Game.Stopped
+                , buyInTimerDurationInput = String.fromInt (model.buyInTimerDuration // 60)
+              }
+            , Cmd.none
+            )
+
+        Page.Game.ToggleBuyInList ->
+            ( { model | buyInListCollapsed = not model.buyInListCollapsed }, Cmd.none )
+
+
+
+-- UPDATE: CHAMPION
+
+
+updateChampion : Page.Champion.Intent -> Model -> ( Model, Cmd Msg )
+updateChampion intent model =
+    let
+        winnerFlow =
+            model.winnerFlow
+
+        updatedWinnerFlow =
+            case intent of
+                Page.Champion.PotDivisionSelected division ->
+                    Page.Champion.selectDivision division winnerFlow
+
+                Page.Champion.WinnerSelected player position ->
+                    case winnerFlow of
+                        Page.Champion.DivisionSelected selection ->
+                            if Page.Champion.canAddWinner selection player position then
+                                Page.Champion.DivisionSelected (Page.Champion.addWinner selection player position)
+
+                            else
+                                winnerFlow
+
+                        Page.Champion.AwaitingDivision ->
+                            winnerFlow
+
+                Page.Champion.WinnerRemoved player ->
+                    case winnerFlow of
+                        Page.Champion.DivisionSelected selection ->
+                            Page.Champion.DivisionSelected (Page.Champion.removeWinner selection player)
+
+                        Page.Champion.AwaitingDivision ->
+                            winnerFlow
+
+                Page.Champion.PhoneNumberChanged player phoneNumber ->
+                    case winnerFlow of
+                        Page.Champion.DivisionSelected selection ->
+                            Page.Champion.DivisionSelected
+                                { selection
+                                    | winners =
+                                        List.map
+                                            (\winner ->
+                                                if winner.player == player then
+                                                    { winner | phoneNumber = phoneNumber }
+
+                                                else
+                                                    winner
+                                            )
+                                            selection.winners
+                                }
+
+                        Page.Champion.AwaitingDivision ->
+                            winnerFlow
+
+                Page.Champion.ClearWinners ->
+                    case winnerFlow of
+                        Page.Champion.DivisionSelected selection ->
+                            Page.Champion.DivisionSelected { selection | winners = [] }
+
+                        Page.Champion.AwaitingDivision ->
+                            winnerFlow
+    in
+    ( { model | winnerFlow = updatedWinnerFlow }
+    , Cmd.none
+    )
 
 
 
@@ -225,7 +660,7 @@ subscriptions model =
         pageSubscriptions =
             case model.activePage of
                 GamePage ->
-                    Sub.map GotGameMsg (Page.Game.subscriptions model.game)
+                    Sub.map GotGameIntent (Page.Game.subscriptions (gameViewData model))
 
                 _ ->
                     Sub.none
@@ -322,20 +757,25 @@ viewPageContent : Model -> Element.Element Msg
 viewPageContent model =
     case model.activePage of
         HomePage ->
-            Page.Home.view Page.Home.init model.theme
-                |> Element.map GotHomeMsg
+            Page.Home.view model.theme
 
         PlayersPage ->
-            Page.Players.view model.players model.theme
-                |> Element.map GotPlayersMsg
+            Page.Players.view
+                (playersViewData model)
+                model.theme
+                |> Element.map GotPlayersIntent
 
         GamePage ->
-            Page.Game.view model.game model.theme
-                |> Element.map GotGameMsg
+            Page.Game.view
+                (gameViewData model)
+                model.theme
+                |> Element.map GotGameIntent
 
-        ChampionPage championModel ->
-            Page.Champion.view championModel model.theme
-                |> Element.map GotChampionMsg
+        ChampionPage ->
+            Page.Champion.view
+                (championViewData model)
+                model.theme
+                |> Element.map GotChampionIntent
 
         PlaygroundPage ->
             Page.Playground.view model.theme
@@ -382,30 +822,51 @@ viewThemeToggle theme =
 -- Helper functions
 
 
-playersRoster : Page.Players.Model -> List Page.Players.Player
-playersRoster =
-    Page.Players.roster
+playersViewData : Model -> Page.Players.ViewData
+playersViewData model =
+    { players = model.players
+    , initialBuyIn = model.initialBuyIn
+    , newPlayerName = model.newPlayerName
+    , playerListCollapsed = model.playerListCollapsed
+    }
 
 
-buildChampionModel : Model -> Page.Champion.Model
-buildChampionModel model =
+gameViewData : Model -> Page.Game.ViewData
+gameViewData model =
+    { chips = model.chips
+    , blindLevels = model.blindLevels
+    , blindDuration = model.blindDuration
+    , blindDurationInput = model.blindDurationInput
+    , remainingTime = model.remainingTime
+    , timerState = model.timerState
+    , activeRankingIndex = model.activeRankingIndex
+    , selectedPlayerForBuyIn = model.selectedPlayerForBuyIn
+    , roster = List.map .player model.players
+    , initialBuyIn = model.initialBuyIn
+    , buyIns = model.buyIns
+    , buyInTimerDuration = model.buyInTimerDuration
+    , buyInTimerDurationInput = model.buyInTimerDurationInput
+    , buyInRemainingTime = model.buyInRemainingTime
+    , buyInTimerState = model.buyInTimerState
+    , buyInListCollapsed = model.buyInListCollapsed
+    }
+
+
+championViewData : Model -> Page.Champion.ViewData
+championViewData model =
     let
-        roster =
-            playersRoster model.players
-
-        buyIns =
-            model.game.buyIns
-
-        initialBuyIn =
-            model.players.initialBuyIn
+        currentRoster =
+            List.map .player model.players
 
         totalPot =
-            (List.length roster + List.length buyIns) * initialBuyIn
-
-        championBuyInPlayers =
-            Page.Game.buyInPlayers buyIns
+            (List.length currentRoster + List.length model.buyIns) * model.initialBuyIn
     in
-    Page.Champion.init roster totalPot championBuyInPlayers initialBuyIn
+    { winnerFlow = model.winnerFlow
+    , players = currentRoster
+    , totalPot = totalPot
+    , buyInPlayers = model.buyIns
+    , initialBuyIn = model.initialBuyIn
+    }
 
 
 detectBasePath : Url -> String
@@ -438,7 +899,7 @@ isActive { link, activePage } =
         ( Game, _ ) ->
             False
 
-        ( Champion, ChampionPage _ ) ->
+        ( Champion, ChampionPage ) ->
             True
 
         ( Champion, _ ) ->

@@ -1,10 +1,10 @@
-module Page.Champion exposing (Model, Msg, init, update, view)
+module Page.Champion exposing (Intent(..), ViewData, WinnerFlow(..), addWinner, canAddWinner, removeWinner, selectDivision, view)
 
 import Element
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
-import Page.Players exposing (Player)
+import Player exposing (Player)
 import Theme exposing (Theme)
 
 
@@ -33,6 +33,15 @@ type WinnerFlow
 type alias SelectionState =
     { division : PotDivision
     , winners : List Winner
+    }
+
+
+type alias ViewData =
+    { winnerFlow : WinnerFlow
+    , players : List Player
+    , totalPot : Int
+    , buyInPlayers : List Player
+    , initialBuyIn : Int
     }
 
 
@@ -72,26 +81,6 @@ selectDivision division flow =
         { division = division
         , winners = trimmedWinners
         }
-
-
-currentWinners : WinnerFlow -> List Winner
-currentWinners flow =
-    case flow of
-        DivisionSelected state ->
-            state.winners
-
-        AwaitingDivision ->
-            []
-
-
-currentDivision : WinnerFlow -> Maybe PotDivision
-currentDivision flow =
-    case flow of
-        DivisionSelected state ->
-            Just state.division
-
-        AwaitingDivision ->
-            Nothing
 
 
 availablePositions : SelectionState -> List Int
@@ -145,32 +134,11 @@ isDivisionSelected flow division =
             False
 
 
-type alias Model =
-    { pageName : String
-    , winnerFlow : WinnerFlow
-    , players : List Player
-    , totalPot : Int
-    , buyInPlayers : List Player
-    , initialBuyIn : Int
-    }
-
-
-init : List Player -> Int -> List Player -> Int -> Model
-init players totalPot buyInPlayers initialBuyIn =
-    { pageName = "Champion"
-    , winnerFlow = AwaitingDivision
-    , players = players
-    , totalPot = totalPot
-    , buyInPlayers = buyInPlayers
-    , initialBuyIn = initialBuyIn
-    }
-
-
 
 -- UPDATE
 
 
-type Msg
+type Intent
     = PotDivisionSelected PotDivision
     | WinnerSelected Player Int
     | WinnerRemoved Player
@@ -178,89 +146,16 @@ type Msg
     | ClearWinners
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        PotDivisionSelected division ->
-            ( { model | winnerFlow = selectDivision division model.winnerFlow }
-            , Cmd.none
-            )
-
-        WinnerSelected player position ->
-            case model.winnerFlow of
-                DivisionSelected selection ->
-                    if canAddWinner selection player position then
-                        ( { model
-                            | winnerFlow =
-                                DivisionSelected (addWinner selection player position)
-                          }
-                        , Cmd.none
-                        )
-
-                    else
-                        ( model, Cmd.none )
-
-                AwaitingDivision ->
-                    ( model, Cmd.none )
-
-        WinnerRemoved player ->
-            case model.winnerFlow of
-                DivisionSelected selection ->
-                    ( { model
-                        | winnerFlow =
-                            DivisionSelected (removeWinner selection player)
-                      }
-                    , Cmd.none
-                    )
-
-                AwaitingDivision ->
-                    ( model, Cmd.none )
-
-        PhoneNumberChanged player phoneNumber ->
-            case model.winnerFlow of
-                DivisionSelected selection ->
-                    let
-                        updatedWinners =
-                            List.map
-                                (\winner ->
-                                    if winner.player == player then
-                                        { winner | phoneNumber = phoneNumber }
-
-                                    else
-                                        winner
-                                )
-                                selection.winners
-                    in
-                    ( { model
-                        | winnerFlow =
-                            DivisionSelected { selection | winners = updatedWinners }
-                      }
-                    , Cmd.none
-                    )
-
-                AwaitingDivision ->
-                    ( model, Cmd.none )
-
-        ClearWinners ->
-            case model.winnerFlow of
-                DivisionSelected selection ->
-                    ( { model
-                        | winnerFlow =
-                            DivisionSelected { selection | winners = [] }
-                      }
-                    , Cmd.none
-                    )
-
-                AwaitingDivision ->
-                    ( model, Cmd.none )
+type alias Msg =
+    Intent
 
 
 
 -- VIEW
 
 
-view : Model -> Theme -> Element.Element Msg
-view model theme =
+view : ViewData -> Theme -> Element.Element Intent
+view viewData theme =
     let
         colors =
             Theme.getColors theme
@@ -274,11 +169,11 @@ view model theme =
             [ Element.width Element.fill
             , Element.spacing 20
             ]
-            [ viewPotDivisionSelector model colors
+            [ viewPotDivisionSelector viewData.winnerFlow colors
             , viewDivider colors
-            , viewWinnerSelection model colors
+            , viewWinnerSelection viewData colors
             , viewDivider colors
-            , viewPaymentCalculations model colors
+            , viewPaymentCalculations viewData colors
             ]
         )
 
@@ -293,8 +188,8 @@ viewDivider colors =
         Element.none
 
 
-viewPotDivisionSelector : Model -> Theme.ColorPalette -> Element.Element Msg
-viewPotDivisionSelector model colors =
+viewPotDivisionSelector : WinnerFlow -> Theme.ColorPalette -> Element.Element Msg
+viewPotDivisionSelector winnerFlow colors =
     Element.column
         [ Element.width Element.fill
         , Element.spacing 10
@@ -309,17 +204,17 @@ viewPotDivisionSelector model colors =
             , Element.spacing 10
             ]
             [ viewDivisionOption
-                model.winnerFlow
+                winnerFlow
                 colors
                 WinnerTakesAll
                 "Winner Takes All (100%)"
             , viewDivisionOption
-                model.winnerFlow
+                winnerFlow
                 colors
                 FirstSecond
                 "First Place 80% / Second Place 20%"
             , viewDivisionOption
-                model.winnerFlow
+                winnerFlow
                 colors
                 FirstSecondThird
                 "First Place 70% / Second Place 20% / Third Place 10%"
@@ -352,8 +247,8 @@ viewDivisionOption flow colors division label =
         }
 
 
-viewWinnerSelection : Model -> Theme.ColorPalette -> Element.Element Msg
-viewWinnerSelection model colors =
+viewWinnerSelection : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewWinnerSelection viewData colors =
     Element.column
         [ Element.width Element.fill
         , Element.spacing 15
@@ -363,7 +258,7 @@ viewWinnerSelection model colors =
             , Font.bold
             ]
             (Element.text "Select Winners:")
-        , case model.winnerFlow of
+        , case viewData.winnerFlow of
             AwaitingDivision ->
                 Element.el
                     [ Font.color colors.textSecondary
@@ -405,7 +300,7 @@ viewWinnerSelection model colors =
                                     player
                                     openSlots
                             )
-                            model.players
+                            viewData.players
                         )
                     , if List.isEmpty selection.winners then
                         Element.none
@@ -416,9 +311,7 @@ viewWinnerSelection model colors =
                             , Element.spacing 10
                             ]
                             (List.map
-                                (\winner ->
-                                    viewWinnerWithPhoneInput model colors winner
-                                )
+                                (\winner -> viewWinnerWithPhoneInput colors winner)
                                 (List.sortBy .position selection.winners)
                             )
                     ]
@@ -429,7 +322,7 @@ viewPlayerSelectionOption : SelectionState -> Theme.ColorPalette -> Player -> Li
 viewPlayerSelectionOption selection colors player remainingPositions =
     let
         playerName =
-            Page.Players.getPlayerName player
+            Player.getName player
 
         isWinner =
             List.any (\w -> w.player == player) selection.winners
@@ -497,11 +390,11 @@ viewPlayerSelectionOption selection colors player remainingPositions =
         ]
 
 
-viewWinnerWithPhoneInput : Model -> Theme.ColorPalette -> Winner -> Element.Element Msg
-viewWinnerWithPhoneInput model colors winner =
+viewWinnerWithPhoneInput : Theme.ColorPalette -> Winner -> Element.Element Msg
+viewWinnerWithPhoneInput colors winner =
     let
         playerName =
-            Page.Players.getPlayerName winner.player
+            Player.getName winner.player
 
         positionLabel =
             case winner.position of
@@ -565,11 +458,11 @@ viewWinnerWithPhoneInput model colors winner =
         ]
 
 
-viewPaymentCalculations : Model -> Theme.ColorPalette -> Element.Element Msg
-viewPaymentCalculations model colors =
+viewPaymentCalculations : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewPaymentCalculations viewData colors =
     let
         calculations =
-            calculatePayments model
+            calculatePayments viewData
     in
     Element.column
         [ Element.width Element.fill
@@ -584,8 +477,8 @@ viewPaymentCalculations model colors =
             [ Font.size 16
             , Font.color colors.textSecondary
             ]
-            (Element.text ("Total Pot: " ++ String.fromInt model.totalPot))
-        , case model.winnerFlow of
+            (Element.text ("Total Pot: " ++ String.fromInt viewData.totalPot))
+        , case viewData.winnerFlow of
             AwaitingDivision ->
                 Element.el
                     [ Font.color colors.textSecondary
@@ -714,7 +607,6 @@ assignPayersRoundRobin winnerPayouts nonWinners playerContributions =
         numWinners =
             List.length winnerPayouts
 
-        -- Assign each payer to a winner using round-robin
         payerAssignments =
             nonWinners
                 |> List.indexedMap
@@ -731,14 +623,13 @@ assignPayersRoundRobin winnerPayouts nonWinners playerContributions =
                                     |> Maybe.withDefault 0
 
                             payerInfo =
-                                { payerName = Page.Players.getPlayerName payer
+                                { payerName = Player.getName payer
                                 , amountOwed = payerContribution
                                 }
                         in
                         ( winnerIndex, payerInfo )
                     )
 
-        -- Group payers by their assigned winner index
         groupedPayers =
             payerAssignments
                 |> List.foldl
@@ -765,29 +656,27 @@ assignPayersRoundRobin winnerPayouts nonWinners playerContributions =
     groupedPayers
 
 
-calculatePayments : Model -> List PaymentCalculation
-calculatePayments model =
-    case model.winnerFlow of
+calculatePayments : ViewData -> List PaymentCalculation
+calculatePayments viewData =
+    case viewData.winnerFlow of
         AwaitingDivision ->
             []
 
         DivisionSelected selection ->
             let
                 winnerPayouts =
-                    calculateWinnerPayouts selection.division model.totalPot selection.winners model.players
+                    calculateWinnerPayouts selection.division viewData.totalPot selection.winners viewData.players
 
-                -- Calculate each player's contribution to the pot
                 playerContributions =
-                    calculatePlayerContributions model.players model.buyInPlayers model.initialBuyIn
+                    calculatePlayerContributions viewData.players viewData.buyInPlayers viewData.initialBuyIn
 
                 nonWinners =
-                    model.players
+                    viewData.players
                         |> List.filter
                             (\player ->
                                 not (List.any (\w -> w.player == player) selection.winners)
                             )
 
-                -- Assign payers to winners using round-robin
                 payerAssignments =
                     if List.isEmpty nonWinners || List.isEmpty winnerPayouts then
                         []
@@ -799,7 +688,6 @@ calculatePayments model =
                 |> List.indexedMap
                     (\index winnerPayout ->
                         let
-                            -- Find payers assigned to this winner (by index)
                             payers =
                                 payerAssignments
                                     |> List.filter (\( winnerIdx, _ ) -> winnerIdx == index)
@@ -820,13 +708,11 @@ calculatePayments model =
 calculatePlayerContributions : List Player -> List Player -> Int -> List ( Player, Int )
 calculatePlayerContributions players buyInPlayers initialBuyIn =
     let
-        -- Count buy-ins per player
         countBuyInsForPlayer : Player -> List Player -> Int
         countBuyInsForPlayer player buyInPlayerList =
             List.length
                 (List.filter (\p -> p == player) buyInPlayerList)
 
-        -- Calculate contribution for each player: initial buy-in + (buy-in count * initial buy-in)
         playerContributions =
             players
                 |> List.map
@@ -853,7 +739,7 @@ type alias WinnerPayout =
 
 
 calculateWinnerPayouts : PotDivision -> Int -> List Winner -> List Player -> List WinnerPayout
-calculateWinnerPayouts division totalPot winners players =
+calculateWinnerPayouts division totalPot winners _ =
     let
         percentages =
             case division of
@@ -873,7 +759,7 @@ calculateWinnerPayouts division totalPot winners players =
         (\winner percentage ->
             let
                 playerName =
-                    Page.Players.getPlayerName winner.player
+                    Player.getName winner.player
 
                 positionLabel =
                     case winner.position of
