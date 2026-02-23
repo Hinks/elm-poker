@@ -11,6 +11,7 @@ import Page.Game
 import Page.Home
 import Page.Players
 import Page.Playground
+import Page.Settings
 import Player exposing (Player(..))
 import Ports
 import Random
@@ -61,6 +62,7 @@ type Page
     | GamePage
     | ChampionPage
     | PlaygroundPage
+    | SettingsPage
     | NotFoundPage
 
 
@@ -70,6 +72,7 @@ type Route
     | Game
     | Champion
     | Playground
+    | Settings
 
 
 
@@ -162,6 +165,9 @@ updateUrl url model =
 
         Just Playground ->
             ( { model | activePage = PlaygroundPage }, Cmd.none )
+
+        Just Settings ->
+            ( { model | activePage = SettingsPage }, Cmd.none )
 
         Nothing ->
             ( { model | activePage = NotFoundPage }, Cmd.none )
@@ -719,6 +725,7 @@ viewNavigation colors activePage =
         , navButton colors Players activePage
         , navButton colors Game activePage
         , navButton colors Champion activePage
+        , navButton colors Settings activePage
         ]
 
 
@@ -774,6 +781,9 @@ viewPageContent model =
 
         PlaygroundPage ->
             Page.Playground.view model.theme
+
+        SettingsPage ->
+            Page.Settings.view model.theme
 
         NotFoundPage ->
             Element.el
@@ -897,6 +907,12 @@ isActive { link, activePage } =
         ( Playground, _ ) ->
             False
 
+        ( Settings, SettingsPage ) ->
+            True
+
+        ( Settings, _ ) ->
+            False
+
 
 routeParser : Parser (Route -> a) a
 routeParser =
@@ -906,6 +922,7 @@ routeParser =
         , Url.Parser.map Game (s "game")
         , Url.Parser.map Champion (s "champion")
         , Url.Parser.map Playground (s "playground")
+        , Url.Parser.map Settings (s "settings")
         ]
 
 
@@ -927,6 +944,9 @@ routeToPath route =
         Playground ->
             "/playground"
 
+        Settings ->
+            "/settings"
+
 
 routeToString : Route -> String
 routeToString route =
@@ -945,6 +965,9 @@ routeToString route =
 
         Playground ->
             "Playground"
+
+        Settings ->
+            "Settings"
 
 
 onUrlRequest : Browser.UrlRequest -> Msg
