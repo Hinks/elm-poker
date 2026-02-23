@@ -16,7 +16,7 @@ import Ports
 import Random
 import Theme exposing (Theme(..))
 import Url exposing (Url)
-import Url.Parser exposing ((</>), Parser, s, top)
+import Url.Parser exposing (Parser, s, top)
 
 
 
@@ -25,7 +25,6 @@ import Url.Parser exposing ((</>), Parser, s, top)
 
 type alias Model =
     { navigationKey : Navigation.Key
-    , basePath : String
     , activePage : Page
     , theme : Theme
 
@@ -171,9 +170,6 @@ updateUrl url model =
 init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init _ url key =
     let
-        basePath =
-            detectBasePath url
-
         initialBlindDuration =
             12 * 60
 
@@ -182,7 +178,6 @@ init _ url key =
 
         initialModel =
             { navigationKey = key
-            , basePath = basePath
             , activePage = NotFoundPage
             , theme = Theme.defaultTheme
 
@@ -700,7 +695,7 @@ view model =
                         [ Font.color colors.text
                         ]
                         (Element.text "PokerNight App")
-                    , viewNavigation colors model.activePage model.basePath
+                    , viewNavigation colors model.activePage
                     , Element.el
                         [ Element.alignRight
                         ]
@@ -715,20 +710,20 @@ view model =
     }
 
 
-viewNavigation : Theme.ColorPalette -> Page -> String -> Element.Element Msg
-viewNavigation colors activePage basePath =
+viewNavigation : Theme.ColorPalette -> Page -> Element.Element Msg
+viewNavigation colors activePage =
     Element.row
         [ Element.spacing 15
         ]
-        [ navButton colors Home activePage basePath
-        , navButton colors Players activePage basePath
-        , navButton colors Game activePage basePath
-        , navButton colors Champion activePage basePath
+        [ navButton colors Home activePage
+        , navButton colors Players activePage
+        , navButton colors Game activePage
+        , navButton colors Champion activePage
         ]
 
 
-navButton : Theme.ColorPalette -> Route -> Page -> String -> Element.Element Msg
-navButton colors route activePage basePath =
+navButton : Theme.ColorPalette -> Route -> Page -> Element.Element Msg
+navButton colors route activePage =
     let
         active =
             isActive { link = route, activePage = activePage }
@@ -748,7 +743,7 @@ navButton colors route activePage basePath =
     in
     Element.link
         attributes
-        { url = routeToPath basePath route
+        { url = routeToPath route
         , label = Element.text ("[ " ++ routeToString route ++ " ]")
         }
 
@@ -869,15 +864,6 @@ championViewData model =
     }
 
 
-detectBasePath : Url -> String
-detectBasePath url =
-    if String.startsWith "/elm-poker" url.path then
-        "/elm-poker"
-
-    else
-        ""
-
-
 isActive : { link : Route, activePage : Page } -> Bool
 isActive { link, activePage } =
     case ( link, activePage ) of
@@ -912,8 +898,8 @@ isActive { link, activePage } =
             False
 
 
-routeParserLocal : Parser (Route -> a) a
-routeParserLocal =
+routeParser : Parser (Route -> a) a
+routeParser =
     Url.Parser.oneOf
         [ Url.Parser.map Home top
         , Url.Parser.map Players (s "players")
@@ -923,46 +909,23 @@ routeParserLocal =
         ]
 
 
-routeParserWithBase : Parser (Route -> a) a
-routeParserWithBase =
-    Url.Parser.oneOf
-        [ Url.Parser.map Home (s "elm-poker" </> top)
-        , Url.Parser.map Players (s "elm-poker" </> s "players")
-        , Url.Parser.map Game (s "elm-poker" </> s "game")
-        , Url.Parser.map Champion (s "elm-poker" </> s "champion")
-        , Url.Parser.map Playground (s "elm-poker" </> s "playground")
-        ]
+routeToPath : Route -> String
+routeToPath route =
+    case route of
+        Home ->
+            "/"
 
+        Players ->
+            "/players"
 
-routeParser : Parser (Route -> a) a
-routeParser =
-    Url.Parser.oneOf
-        [ routeParserWithBase
-        , routeParserLocal
-        ]
+        Game ->
+            "/game"
 
+        Champion ->
+            "/champion"
 
-routeToPath : String -> Route -> String
-routeToPath basePath route =
-    let
-        path =
-            case route of
-                Home ->
-                    "/"
-
-                Players ->
-                    "/players"
-
-                Game ->
-                    "/game"
-
-                Champion ->
-                    "/champion"
-
-                Playground ->
-                    "/playground"
-    in
-    basePath ++ path
+        Playground ->
+            "/playground"
 
 
 routeToString : Route -> String
