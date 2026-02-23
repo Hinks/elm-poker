@@ -34,6 +34,7 @@ type alias ChipSetting =
 
 type alias AppSettings =
     { chipSettings : List ChipSetting
+    , blindLevelSettings : List Page.Settings.BlindLevelSetting
     }
 
 
@@ -216,6 +217,7 @@ init _ url key =
                     , { color = Page.Game.Green, value = 250, valueInput = "250", enabled = True }
                     , { color = Page.Game.Black, value = 500, valueInput = "500", enabled = True }
                     ]
+                , blindLevelSettings = defaultBlindLevelSettings
                 }
 
             -- Players
@@ -225,7 +227,7 @@ init _ url key =
             , playerListCollapsed = False
 
             -- Game
-            , blindLevels = Page.Game.defaultBlindLevels
+            , blindLevels = blindLevelsFromSettings defaultBlindLevelSettings
             , blindDuration = initialBlindDuration
             , blindDurationInput = "12"
             , remainingTime = initialBlindDuration
@@ -451,7 +453,7 @@ updateGame intent model =
 
         Page.Game.ResetTimer ->
             ( { model
-                | blindLevels = Page.Game.defaultBlindLevels
+                | blindLevels = blindLevelsFromSettings model.settings.blindLevelSettings
                 , remainingTime = model.blindDuration
                 , timerState = Page.Game.Stopped
                 , blindDurationInput = String.fromInt (model.blindDuration // 60)
@@ -728,6 +730,56 @@ updateSettings intent model =
             , Cmd.none
             )
 
+        Page.Settings.BlindSmallChanged targetIndex str ->
+            let
+                updatedBlindSettings =
+                    List.indexedMap
+                        (\i bl ->
+                            if i == targetIndex then
+                                case String.toInt str of
+                                    Just v ->
+                                        { bl | smallBlindInput = str, smallBlind = v }
+
+                                    Nothing ->
+                                        { bl | smallBlindInput = str }
+
+                            else
+                                bl
+                        )
+                        settings.blindLevelSettings
+            in
+            ( { model
+                | settings = { settings | blindLevelSettings = updatedBlindSettings }
+                , blindLevels = blindLevelsFromSettings updatedBlindSettings
+              }
+            , Cmd.none
+            )
+
+        Page.Settings.BlindBigChanged targetIndex str ->
+            let
+                updatedBlindSettings =
+                    List.indexedMap
+                        (\i bl ->
+                            if i == targetIndex then
+                                case String.toInt str of
+                                    Just v ->
+                                        { bl | bigBlindInput = str, bigBlind = v }
+
+                                    Nothing ->
+                                        { bl | bigBlindInput = str }
+
+                            else
+                                bl
+                        )
+                        settings.blindLevelSettings
+            in
+            ( { model
+                | settings = { settings | blindLevelSettings = updatedBlindSettings }
+                , blindLevels = blindLevelsFromSettings updatedBlindSettings
+              }
+            , Cmd.none
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -953,7 +1005,35 @@ settingsViewData model =
                 }
             )
             model.settings.chipSettings
+    , blindLevelSettings = model.settings.blindLevelSettings
     }
+
+
+defaultBlindLevelSettings : List Page.Settings.BlindLevelSetting
+defaultBlindLevelSettings =
+    [ { smallBlind = 100, bigBlind = 200, smallBlindInput = "100", bigBlindInput = "200" }
+    , { smallBlind = 200, bigBlind = 400, smallBlindInput = "200", bigBlindInput = "400" }
+    , { smallBlind = 300, bigBlind = 600, smallBlindInput = "300", bigBlindInput = "600" }
+    , { smallBlind = 400, bigBlind = 800, smallBlindInput = "400", bigBlindInput = "800" }
+    , { smallBlind = 500, bigBlind = 1000, smallBlindInput = "500", bigBlindInput = "1000" }
+    , { smallBlind = 800, bigBlind = 1600, smallBlindInput = "800", bigBlindInput = "1600" }
+    , { smallBlind = 1000, bigBlind = 2000, smallBlindInput = "1000", bigBlindInput = "2000" }
+    , { smallBlind = 2000, bigBlind = 4000, smallBlindInput = "2000", bigBlindInput = "4000" }
+    ]
+
+
+blindLevelsFromSettings : List Page.Settings.BlindLevelSetting -> Page.Game.BlindLevels
+blindLevelsFromSettings settings =
+    let
+        blinds =
+            List.map (\s -> { smallBlind = s.smallBlind, bigBlind = s.bigBlind }) settings
+    in
+    case Page.Game.blindLevelsFromList blinds of
+        Just levels ->
+            levels
+
+        Nothing ->
+            Page.Game.defaultBlindLevels
 
 
 championViewData : Model -> Page.Champion.ViewData

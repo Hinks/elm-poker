@@ -1,4 +1,4 @@
-module Page.Settings exposing (ChipSetting, Intent(..), ViewData, view)
+module Page.Settings exposing (BlindLevelSetting, ChipSetting, Intent(..), ViewData, view)
 
 import Element
 import Element.Background as Background
@@ -22,14 +22,25 @@ type alias ChipSetting =
     }
 
 
+type alias BlindLevelSetting =
+    { smallBlind : Int
+    , bigBlind : Int
+    , smallBlindInput : String
+    , bigBlindInput : String
+    }
+
+
 type alias ViewData =
     { chipSettings : List ChipSetting
+    , blindLevelSettings : List BlindLevelSetting
     }
 
 
 type Intent
     = ChipToggled Page.Game.ChipColor
     | ChipValueChanged Page.Game.ChipColor String
+    | BlindSmallChanged Int String
+    | BlindBigChanged Int String
 
 
 
@@ -59,6 +70,13 @@ view vd theme =
             , Element.row
                 [ Element.spacing 20 ]
                 (List.map (\cs -> viewChipSlot cs colors) vd.chipSettings)
+            ]
+        , Element.column
+            [ Element.spacing 15 ]
+            [ Element.el [ Font.size 16 ] (Element.text "Blind Levels")
+            , Element.column
+                [ Element.spacing 10 ]
+                (List.indexedMap (\i bl -> viewBlindLevelRow i bl colors) vd.blindLevelSettings)
             ]
         ]
 
@@ -126,5 +144,45 @@ viewChipSlot cs colors =
             , text = cs.valueInput
             , placeholder = Nothing
             , label = Input.labelHidden "Chip value"
+            }
+        ]
+
+
+viewBlindLevelRow : Int -> BlindLevelSetting -> Theme.ColorPalette -> Element.Element Intent
+viewBlindLevelRow index bl colors =
+    let
+        inputAttrs =
+            [ Element.width (Element.px 80)
+            , Element.padding 5
+            , Font.size 14
+            , Border.width 1
+            , Border.color colors.border
+            , Background.color colors.surface
+            , Font.color colors.text
+            ]
+    in
+    Element.row
+        [ Element.spacing 10
+        , Element.width Element.fill
+        ]
+        [ Element.el
+            [ Element.width (Element.px 60)
+            , Font.size 14
+            ]
+            (Element.text ("Level " ++ String.fromInt (index + 1)))
+        , Input.text
+            inputAttrs
+            { onChange = BlindSmallChanged index
+            , text = bl.smallBlindInput
+            , placeholder = Just (Input.placeholder [] (Element.text "SB"))
+            , label = Input.labelHidden ("Small blind level " ++ String.fromInt (index + 1))
+            }
+        , Element.el [ Font.size 14 ] (Element.text "/")
+        , Input.text
+            inputAttrs
+            { onChange = BlindBigChanged index
+            , text = bl.bigBlindInput
+            , placeholder = Just (Input.placeholder [] (Element.text "BB"))
+            , label = Input.labelHidden ("Big blind level " ++ String.fromInt (index + 1))
             }
         ]

@@ -1,4 +1,4 @@
-module Page.Game exposing (Blind, BlindLevels, Chip(..), ChipColor(..), Intent(..), Seconds, TimerState(..), ViewData, advanceBlindLevels, blindLevelsCurrent, blindLevelsHasNext, blindLevelsHasPrevious, canAddBuyIn, chipColorToElementColor, currentBlindNumber, defaultBlindLevels, getChipTextColor, isPlayerInBuyIns, rewindBlindLevels, subscriptions, upcomingBlinds, view)
+module Page.Game exposing (Blind, BlindLevels, Chip(..), ChipColor(..), Intent(..), Seconds, TimerState(..), ViewData, advanceBlindLevels, blindLevelsCurrent, blindLevelsFromList, blindLevelsHasNext, blindLevelsHasPrevious, canAddBuyIn, chipColorToElementColor, currentBlindNumber, defaultBlindLevels, getChipTextColor, isPlayerInBuyIns, rewindBlindLevels, subscriptions, upcomingBlinds, view)
 
 import Element
 import Element.Background
