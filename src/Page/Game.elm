@@ -723,6 +723,13 @@ viewRightLevels vd =
         ]
 
 
+chipValue : Chip -> Int
+chipValue chip =
+    case chip of
+        Chip _ val ->
+            val
+
+
 viewChips : List Chip -> Theme.ColorPalette -> Element.Element Msg
 viewChips chips colors =
     Element.el
@@ -733,7 +740,7 @@ viewChips chips colors =
             [ Element.spacing 20
             , Element.centerX
             ]
-            (List.map (\chip -> viewChip chip colors) chips)
+            (List.map (\chip -> viewChip chip colors) (List.sortBy chipValue chips))
         )
 
 
