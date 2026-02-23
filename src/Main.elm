@@ -24,10 +24,24 @@ import Url.Parser exposing (Parser, s, top)
 -- MODEL
 
 
+type alias ChipSetting =
+    { color : Page.Game.ChipColor
+    , value : Int
+    , valueInput : String
+    , enabled : Bool
+    }
+
+
+type alias AppSettings =
+    { chipSettings : List ChipSetting
+    }
+
+
 type alias Model =
     { navigationKey : Navigation.Key
     , activePage : Page
     , theme : Theme
+    , settings : AppSettings
 
     -- Players
     , players : List Page.Players.PlayerEntry
@@ -36,7 +50,6 @@ type alias Model =
     , playerListCollapsed : Bool
 
     -- Game
-    , chips : List Page.Game.Chip
     , blindLevels : Page.Game.BlindLevels
     , blindDuration : Page.Game.Seconds
     , blindDurationInput : String
@@ -85,6 +98,7 @@ type Msg
     | GotPlayersIntent Page.Players.Intent
     | GotGameIntent Page.Game.Intent
     | GotChampionIntent Page.Champion.Intent
+    | GotSettingsIntent Page.Settings.Intent
     | ThemeToggled
     | PortsMsg Ports.Incoming
 
@@ -123,6 +137,14 @@ update msg model =
             case model.activePage of
                 ChampionPage ->
                     updateChampion championIntent model
+
+                _ ->
+                    ( model, Cmd.none )
+
+        GotSettingsIntent settingsIntent ->
+            case model.activePage of
+                SettingsPage ->
+                    updateSettings settingsIntent model
 
                 _ ->
                     ( model, Cmd.none )
@@ -186,6 +208,15 @@ init _ url key =
             { navigationKey = key
             , activePage = NotFoundPage
             , theme = Theme.defaultTheme
+            , settings =
+                { chipSettings =
+                    [ { color = Page.Game.White, value = 50, valueInput = "50", enabled = True }
+                    , { color = Page.Game.Red, value = 100, valueInput = "100", enabled = True }
+                    , { color = Page.Game.Blue, value = 200, valueInput = "200", enabled = True }
+                    , { color = Page.Game.Green, value = 250, valueInput = "250", enabled = True }
+                    , { color = Page.Game.Black, value = 500, valueInput = "500", enabled = True }
+                    ]
+                }
 
             -- Players
             , players = []
@@ -194,13 +225,6 @@ init _ url key =
             , playerListCollapsed = False
 
             -- Game
-            , chips =
-                [ Page.Game.Chip Page.Game.White 50
-                , Page.Game.Chip Page.Game.Red 100
-                , Page.Game.Chip Page.Game.Blue 200
-                , Page.Game.Chip Page.Game.Green 250
-                , Page.Game.Chip Page.Game.Black 500
-                ]
             , blindLevels = Page.Game.defaultBlindLevels
             , blindDuration = initialBlindDuration
             , blindDurationInput = "12"
@@ -652,6 +676,60 @@ updateChampion intent model =
 
 
 
+-- UPDATE: SETTINGS
+
+
+updateSettings : Page.Settings.Intent -> Model -> ( Model, Cmd Msg )
+updateSettings intent model =
+    let
+        settings =
+            model.settings
+
+        chipSettings =
+            settings.chipSettings
+    in
+    case intent of
+        Page.Settings.ChipToggled targetColor ->
+            let
+                updatedChipSettings =
+                    List.map
+                        (\cs ->
+                            if cs.color == targetColor then
+                                { cs | enabled = not cs.enabled }
+
+                            else
+                                cs
+                        )
+                        chipSettings
+            in
+            ( { model | settings = { settings | chipSettings = updatedChipSettings } }
+            , Cmd.none
+            )
+
+        Page.Settings.ChipValueChanged targetColor str ->
+            let
+                updatedChipSettings =
+                    List.map
+                        (\cs ->
+                            if cs.color == targetColor then
+                                case String.toInt str of
+                                    Just v ->
+                                        { cs | valueInput = str, value = v }
+
+                                    Nothing ->
+                                        { cs | valueInput = str }
+
+                            else
+                                cs
+                        )
+                        chipSettings
+            in
+            ( { model | settings = { settings | chipSettings = updatedChipSettings } }
+            , Cmd.none
+            )
+
+
+
 -- SUBSCRIPTIONS
 
 
@@ -783,7 +861,10 @@ viewPageContent model =
             Page.Playground.view model.theme
 
         SettingsPage ->
-            Page.Settings.view model.theme
+            Page.Settings.view
+                (settingsViewData model)
+                model.theme
+                |> Element.map GotSettingsIntent
 
         NotFoundPage ->
             Element.el
@@ -838,7 +919,10 @@ playersViewData model =
 
 gameViewData : Model -> Page.Game.ViewData
 gameViewData model =
-    { chips = model.chips
+    { chips =
+        model.settings.chipSettings
+            |> List.filter .enabled
+            |> List.map (\cs -> Page.Game.Chip cs.color cs.value)
     , blindLevels = model.blindLevels
     , blindDuration = model.blindDuration
     , blindDurationInput = model.blindDurationInput
@@ -854,6 +938,21 @@ gameViewData model =
     , buyInRemainingTime = model.buyInRemainingTime
     , buyInTimerState = model.buyInTimerState
     , buyInListCollapsed = model.buyInListCollapsed
+    }
+
+
+settingsViewData : Model -> Page.Settings.ViewData
+settingsViewData model =
+    { chipSettings =
+        List.map
+            (\cs ->
+                { color = cs.color
+                , value = cs.value
+                , valueInput = cs.valueInput
+                , enabled = cs.enabled
+                }
+            )
+            model.settings.chipSettings
     }
 
 
