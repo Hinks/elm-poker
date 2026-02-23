@@ -6,6 +6,8 @@ import Element
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
+import Html
+import Html.Attributes
 import Page.Champion
 import Page.Game
 import Page.Home
@@ -814,7 +816,11 @@ view model =
     in
     { title = "PokerNight App"
     , body =
-        [ Element.layout
+        [ Html.node "style"
+            []
+            [ Html.text ("html, body { background-color: " ++ themeBackgroundCss model.theme ++ "; }")
+            ]
+        , Element.layout
             [ Background.color colors.background
             ]
             (Element.column
@@ -958,6 +964,16 @@ viewThemeToggle theme =
 
 
 -- Helper functions
+
+
+themeBackgroundCss : Theme -> String
+themeBackgroundCss theme =
+    case theme of
+        Light ->
+            "rgb(250, 250, 252)"
+
+        Dark ->
+            "rgb(18, 18, 18)"
 
 
 playersViewData : Model -> Page.Players.ViewData
