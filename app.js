@@ -6163,14 +6163,14 @@ var $author$project$Main$init = F3(
 			T: initialBuyInTimerDuration,
 			an: initialBuyInTimerDuration,
 			aa: '30',
-			s: 2,
+			t: 2,
 			n: _List_Nil,
 			F: 0,
 			bm: key,
 			at: '',
 			af: false,
 			d: _List_Nil,
-			z: initialBlindDuration,
+			A: initialBlindDuration,
 			ay: $elm$core$Maybe$Nothing,
 			G: {
 				S: $author$project$Main$defaultBlindLevelSettings,
@@ -6183,8 +6183,8 @@ var $author$project$Main$init = F3(
 						{p: 4, D: true, ak: 500, R: '500'}
 					])
 			},
-			A: $author$project$Theme$defaultTheme,
-			r: 2,
+			r: $author$project$Theme$defaultTheme,
+			s: 2,
 			al: $author$project$Page$Champion$AwaitingDivision
 		};
 		return A2($author$project$Main$updateUrl, url, initialModel);
@@ -6233,7 +6233,7 @@ var $author$project$Main$gameViewData = function (model) {
 		T: model.T,
 		an: model.an,
 		aa: model.aa,
-		s: model.s,
+		t: model.t,
 		n: model.n,
 		da: A2(
 			$elm$core$List$map,
@@ -6247,7 +6247,7 @@ var $author$project$Main$gameViewData = function (model) {
 				},
 				model.G.ab)),
 		F: model.F,
-		z: model.z,
+		A: model.A,
 		d6: A2(
 			$elm$core$List$map,
 			function ($) {
@@ -6255,7 +6255,7 @@ var $author$project$Main$gameViewData = function (model) {
 			},
 			model.d),
 		ay: model.ay,
-		r: model.r
+		s: model.s
 	};
 };
 var $elm$core$Platform$Sub$map = _Platform_map;
@@ -6545,7 +6545,7 @@ var $author$project$Page$Game$subscriptions = function (vd) {
 		_List_fromArray(
 			[
 				function () {
-				var _v0 = vd.r;
+				var _v0 = vd.s;
 				switch (_v0) {
 					case 0:
 						return A2($elm$time$Time$every, 1000, $author$project$Page$Game$TimerTick);
@@ -6558,7 +6558,7 @@ var $author$project$Page$Game$subscriptions = function (vd) {
 				}
 			}(),
 				function () {
-				var _v1 = vd.s;
+				var _v1 = vd.t;
 				switch (_v1) {
 					case 0:
 						return A2($elm$time$Time$every, 1000, $author$project$Page$Game$BuyInTimerTick);
@@ -7040,7 +7040,7 @@ var $author$project$Page$Game$isPlayerInBuyIns = F2(
 		return A2($elm$core$List$member, player, buyIns);
 	});
 var $author$project$Page$Game$canAddBuyIn = function (vd) {
-	return (vd.s !== 3) && ((!_Utils_eq(vd.ay, $elm$core$Maybe$Nothing)) && function () {
+	return (vd.t !== 3) && ((!_Utils_eq(vd.ay, $elm$core$Maybe$Nothing)) && function () {
 		var _v0 = vd.ay;
 		if (!_v0.$) {
 			var player = _v0.a;
@@ -7237,7 +7237,7 @@ var $author$project$Main$updateGame = F2(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 1:
 				var str = intent.a;
-				if (model.r === 2) {
+				if (model.s === 2) {
 					var _v1 = $elm$core$String$toInt(str);
 					if (!_v1.$) {
 						var minutes = _v1.a;
@@ -7246,7 +7246,7 @@ var $author$project$Main$updateGame = F2(
 							return _Utils_Tuple2(
 								_Utils_update(
 									model,
-									{K: durationInSeconds, _: str, z: durationInSeconds}),
+									{K: durationInSeconds, _: str, A: durationInSeconds}),
 								$elm$core$Platform$Cmd$none);
 						} else {
 							return _Utils_Tuple2(
@@ -7266,35 +7266,35 @@ var $author$project$Main$updateGame = F2(
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 			case 2:
-				return (!model.r) ? ((model.z > 0) ? _Utils_Tuple2(
+				return (!model.s) ? ((model.A > 0) ? _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{z: model.z - 1}),
+						{A: model.A - 1}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{r: 3}),
+						{s: 3}),
 					$author$project$Ports$send(0))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 3:
-				var _v2 = model.r;
+				var _v2 = model.s;
 				switch (_v2) {
 					case 2:
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{r: 0}),
+								{s: 0}),
 							$elm$core$Platform$Cmd$none);
 					case 1:
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{r: 0}),
+								{s: 0}),
 							$elm$core$Platform$Cmd$none);
 					case 0:
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{r: 1}),
+								{s: 1}),
 							$elm$core$Platform$Cmd$none);
 					default:
 						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -7306,8 +7306,8 @@ var $author$project$Main$updateGame = F2(
 						{
 							_: $elm$core$String$fromInt((model.K / 60) | 0),
 							j: $author$project$Main$blindLevelsFromSettings(model.G.S),
-							z: model.K,
-							r: 2
+							A: model.K,
+							s: 2
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 5:
@@ -7316,7 +7316,7 @@ var $author$project$Main$updateGame = F2(
 						model,
 						{
 							j: $author$project$Page$Game$advanceBlindLevels(model.j),
-							z: model.K
+							A: model.K
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 6:
@@ -7325,7 +7325,7 @@ var $author$project$Main$updateGame = F2(
 						model,
 						{
 							j: $author$project$Page$Game$rewindBlindLevels(model.j),
-							z: model.K
+							A: model.K
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 7:
@@ -7353,8 +7353,8 @@ var $author$project$Main$updateGame = F2(
 						model,
 						{
 							j: $author$project$Page$Game$advanceBlindLevels(model.j),
-							z: model.K,
-							r: 0
+							A: model.K,
+							s: 0
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 10:
@@ -7366,7 +7366,7 @@ var $author$project$Main$updateGame = F2(
 					$elm$core$Platform$Cmd$none);
 			case 11:
 				var str = intent.a;
-				if (model.s === 2) {
+				if (model.t === 2) {
 					var _v3 = $elm$core$String$toInt(str);
 					if (!_v3.$) {
 						var minutes = _v3.a;
@@ -7438,35 +7438,35 @@ var $author$project$Main$updateGame = F2(
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 14:
-				return (!model.s) ? ((model.T > 0) ? _Utils_Tuple2(
+				return (!model.t) ? ((model.T > 0) ? _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{T: model.T - 1}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{s: 3}),
+						{t: 3}),
 					$elm$core$Platform$Cmd$none)) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 15:
-				var _v6 = model.s;
+				var _v6 = model.t;
 				switch (_v6) {
 					case 2:
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{s: 0}),
+								{t: 0}),
 							$elm$core$Platform$Cmd$none);
 					case 1:
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{s: 0}),
+								{t: 0}),
 							$elm$core$Platform$Cmd$none);
 					case 0:
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{s: 1}),
+								{t: 1}),
 							$elm$core$Platform$Cmd$none);
 					default:
 						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -7478,7 +7478,7 @@ var $author$project$Main$updateGame = F2(
 						{
 							T: model.an,
 							aa: $elm$core$String$fromInt((model.an / 60) | 0),
-							s: 2
+							t: 2
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -8040,8 +8040,8 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							A: function () {
-								var _v6 = model.A;
+							r: function () {
+								var _v6 = model.r;
 								if (!_v6) {
 									return 1;
 								} else {
@@ -10668,7 +10668,7 @@ var $mdgriffith$elm_ui$Internal$Model$fontName = function (font) {
 			var url = font.b;
 			return '\"' + (name + '\"');
 		default:
-			var name = font.a.x;
+			var name = font.a.y;
 			return '\"' + (name + '\"');
 	}
 };
@@ -13772,7 +13772,7 @@ var $mdgriffith$elm_ui$Internal$Model$renderFontClassName = F2(
 							$elm$core$String$words(
 								$elm$core$String$toLower(name)));
 					default:
-						var name = font.a.x;
+						var name = font.a.y;
 						return A2(
 							$elm$core$String$join,
 							'-',
@@ -13841,6 +13841,7 @@ var $mdgriffith$elm_ui$Element$layoutWith = F3(
 	});
 var $mdgriffith$elm_ui$Element$layout = $mdgriffith$elm_ui$Element$layoutWith(
 	{dU: _List_Nil});
+var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $mdgriffith$elm_ui$Internal$Model$PaddingStyle = F5(
 	function (a, b, c, d, e) {
 		return {$: 7, a: a, b: b, c: c, d: d, e: e};
@@ -13903,6 +13904,13 @@ var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 };
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
+};
+var $author$project$Main$themeBackgroundCss = function (theme) {
+	if (!theme) {
+		return 'rgb(250, 250, 252)';
+	} else {
+		return 'rgb(18, 18, 18)';
+	}
 };
 var $author$project$Main$isActive = function (_v0) {
 	var link = _v0.b0;
@@ -15341,7 +15349,7 @@ var $mdgriffith$elm_ui$Element$Input$redistributeOver = F4(
 							return _Utils_update(
 								els,
 								{
-									u: A2($elm$core$List$cons, attr, els.u),
+									v: A2($elm$core$List$cons, attr, els.v),
 									a: A2($elm$core$List$cons, attr, els.a)
 								});
 						} else {
@@ -15372,7 +15380,7 @@ var $mdgriffith$elm_ui$Element$Input$redistributeOver = F4(
 							return _Utils_update(
 								els,
 								{
-									u: A2($elm$core$List$cons, attr, els.u),
+									v: A2($elm$core$List$cons, attr, els.v),
 									k: A2(
 										$elm$core$List$cons,
 										newHeight,
@@ -15385,14 +15393,14 @@ var $mdgriffith$elm_ui$Element$Input$redistributeOver = F4(
 						return _Utils_update(
 							els,
 							{
-								u: A2($elm$core$List$cons, attr, els.u),
+								v: A2($elm$core$List$cons, attr, els.v),
 								a: A2($elm$core$List$cons, attr, els.a)
 							});
 					case 10:
 						return _Utils_update(
 							els,
 							{
-								u: A2($elm$core$List$cons, attr, els.u),
+								v: A2($elm$core$List$cons, attr, els.v),
 								a: A2($elm$core$List$cons, attr, els.a)
 							});
 					case 2:
@@ -15450,7 +15458,7 @@ var $mdgriffith$elm_ui$Element$Input$redistribute = F3(
 	function (isMultiline, stacked, attrs) {
 		return function (redist) {
 			return {
-				u: $elm$core$List$reverse(redist.u),
+				v: $elm$core$List$reverse(redist.v),
 				c: $elm$core$List$reverse(redist.c),
 				k: $elm$core$List$reverse(redist.k),
 				a: $elm$core$List$reverse(redist.a),
@@ -15460,7 +15468,7 @@ var $mdgriffith$elm_ui$Element$Input$redistribute = F3(
 			A3(
 				$elm$core$List$foldl,
 				A2($mdgriffith$elm_ui$Element$Input$redistributeOver, isMultiline, stacked),
-				{u: _List_Nil, c: _List_Nil, k: _List_Nil, a: _List_Nil, aM: _List_Nil},
+				{v: _List_Nil, c: _List_Nil, k: _List_Nil, a: _List_Nil, aM: _List_Nil},
 				attrs));
 	});
 var $mdgriffith$elm_ui$Element$Input$renderBox = function (_v0) {
@@ -15754,7 +15762,7 @@ var $mdgriffith$elm_ui$Element$Input$textHelper = F3(
 											return _List_fromArray(
 												[
 													$mdgriffith$elm_ui$Element$behindContent(
-													A3($mdgriffith$elm_ui$Element$Input$renderPlaceholder, place, redistributed.u, textOptions.cm === ''))
+													A3($mdgriffith$elm_ui$Element$Input$renderPlaceholder, place, redistributed.v, textOptions.cm === ''))
 												]);
 										}
 									}()
@@ -16027,7 +16035,6 @@ var $author$project$Marquee$itemStyles = function (animationDuration) {
 		]);
 };
 var $author$project$Marquee$keyframesCss = '@keyframes marquee-content {\n' + ('    0% {\n' + ('        transform: translateX(0%);\n' + ('    }\n' + ('    100% {\n' + ('        transform: translateX(-100%);\n' + ('    }\n' + '}'))))));
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $author$project$Marquee$view = function (strings) {
 	var minDurationSeconds = 20.0;
 	var marqueeText = A2($elm$core$String$join, '   •   ', strings);
@@ -16706,10 +16713,10 @@ var $author$project$Page$Game$viewLeftControls = F3(
 		var timerFaceColor = A2($author$project$Page$Game$getTimerBackgroundColor, theme, colors);
 		var timerDurationMinutes = vd.K / 60.0;
 		var timerArmColor = colors.bq;
-		var progress = (vd.K > 0) ? (vd.z / vd.K) : 0.0;
-		var isInputDisabled = vd.r !== 2;
+		var progress = (vd.K > 0) ? (vd.A / vd.K) : 0.0;
+		var isInputDisabled = vd.s !== 2;
 		var controlButtons = function () {
-			var _v0 = vd.r;
+			var _v0 = vd.s;
 			if (_v0 === 3) {
 				return A2($author$project$Page$Game$viewBlinkingStartNextBlindButton, vd, colors);
 			} else {
@@ -16734,7 +16741,7 @@ var $author$project$Page$Game$viewLeftControls = F3(
 							{
 								b$: $mdgriffith$elm_ui$Element$text(
 									function () {
-										var _v1 = vd.r;
+										var _v1 = vd.s;
 										switch (_v1) {
 											case 0:
 												return 'Pause';
@@ -17040,12 +17047,12 @@ var $author$project$Page$Game$viewBuyInPlayerSelector = F2(
 					A2(
 					$elm$html$Html$Attributes$style,
 					'background-color',
-					(vd.s === 3) ? '#cccccc' : 'transparent'),
+					(vd.t === 3) ? '#cccccc' : 'transparent'),
 					A2(
 					$elm$html$Html$Attributes$style,
 					'color',
-					(vd.s === 3) ? '#666666' : 'inherit'),
-					$elm$html$Html$Attributes$disabled(vd.s === 3),
+					(vd.t === 3) ? '#666666' : 'inherit'),
+					$elm$html$Html$Attributes$disabled(vd.t === 3),
 					$elm$html$Html$Events$onInput(
 					function (val) {
 						return (val === '') ? $author$project$Page$Game$BuyInPlayerSelected($elm$core$Maybe$Nothing) : A2(
@@ -17149,7 +17156,7 @@ var $author$project$Page$Game$formatTime = function (seconds) {
 };
 var $author$project$Page$Game$viewBuyInTimerControls = F2(
 	function (vd, colors) {
-		var isInputDisabled = vd.s !== 2;
+		var isInputDisabled = vd.t !== 2;
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -17206,7 +17213,7 @@ var $author$project$Page$Game$viewBuyInTimerControls = F2(
 							{
 								b$: $mdgriffith$elm_ui$Element$text(
 									function () {
-										var _v0 = vd.s;
+										var _v0 = vd.t;
 										switch (_v0) {
 											case 0:
 												return 'Pause';
@@ -17294,7 +17301,7 @@ var $author$project$Icons$Spade = 2;
 var $author$project$PokerHandRanking$handRankings = _List_fromArray(
 	[
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: 'A', bz: 0},
 				{bs: 'K', bz: 0},
@@ -17302,11 +17309,11 @@ var $author$project$PokerHandRanking$handRankings = _List_fromArray(
 				{bs: 'J', bz: 0},
 				{bs: '10', bz: 0}
 			]),
-		x: 'Royal Flush',
-		y: 1
+		y: 'Royal Flush',
+		z: 1
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: 'J', bz: 2},
 				{bs: '10', bz: 2},
@@ -17314,22 +17321,22 @@ var $author$project$PokerHandRanking$handRankings = _List_fromArray(
 				{bs: '8', bz: 2},
 				{bs: '7', bz: 2}
 			]),
-		x: 'Straight Flush',
-		y: 2
+		y: 'Straight Flush',
+		z: 2
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: '9', bz: 1},
 				{bs: '9', bz: 3},
 				{bs: '9', bz: 0},
 				{bs: '9', bz: 2}
 			]),
-		x: 'Four of a Kind',
-		y: 3
+		y: 'Four of a Kind',
+		z: 3
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: 'A', bz: 1},
 				{bs: 'A', bz: 3},
@@ -17337,11 +17344,11 @@ var $author$project$PokerHandRanking$handRankings = _List_fromArray(
 				{bs: '3', bz: 2},
 				{bs: '3', bz: 1}
 			]),
-		x: 'Full House',
-		y: 4
+		y: 'Full House',
+		z: 4
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: 'K', bz: 3},
 				{bs: '10', bz: 3},
@@ -17349,11 +17356,11 @@ var $author$project$PokerHandRanking$handRankings = _List_fromArray(
 				{bs: '7', bz: 3},
 				{bs: '5', bz: 3}
 			]),
-		x: 'Flush',
-		y: 5
+		y: 'Flush',
+		z: 5
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: '10', bz: 1},
 				{bs: '9', bz: 3},
@@ -17361,46 +17368,46 @@ var $author$project$PokerHandRanking$handRankings = _List_fromArray(
 				{bs: '7', bz: 2},
 				{bs: '6', bz: 1}
 			]),
-		x: 'Straight',
-		y: 6
+		y: 'Straight',
+		z: 6
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: '7', bz: 1},
 				{bs: '7', bz: 0},
 				{bs: '7', bz: 3}
 			]),
-		x: 'Three of a Kind',
-		y: 7
+		y: 'Three of a Kind',
+		z: 7
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: 'J', bz: 1},
 				{bs: 'J', bz: 3},
 				{bs: '7', bz: 0},
 				{bs: '7', bz: 2}
 			]),
-		x: 'Two Pair',
-		y: 8
+		y: 'Two Pair',
+		z: 8
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: 'A', bz: 1},
 				{bs: 'A', bz: 3}
 			]),
-		x: 'Pair',
-		y: 9
+		y: 'Pair',
+		z: 9
 	},
 		{
-		t: _List_fromArray(
+		u: _List_fromArray(
 			[
 				{bs: 'K', bz: 1}
 			]),
-		x: 'High Card',
-		y: 10
+		y: 'High Card',
+		z: 10
 	}
 	]);
 var $mdgriffith$elm_ui$Internal$Model$Bottom = 2;
@@ -17767,7 +17774,7 @@ var $author$project$PokerHandRanking$viewHandRanking = F4(
 	function (cardSize, colors, shouldAnimate, ranking) {
 		var textDisplay = function () {
 			if (shouldAnimate) {
-				var animatedTextConfig = {dp: 1.0, dq: 0.3, dr: '4vh', dL: ranking.x, d2: 1, ej: 10.0, bC: colors.cm};
+				var animatedTextConfig = {dp: 1.0, dq: 0.3, dr: '4vh', dL: ranking.y, d2: 1, ej: 10.0, bC: colors.cm};
 				return $mdgriffith$elm_ui$Element$html(
 					$author$project$TextAnimation$view(animatedTextConfig));
 			} else {
@@ -17777,7 +17784,7 @@ var $author$project$PokerHandRanking$viewHandRanking = F4(
 		var containerWidth = $elm$core$Basics$round((5 * cardSize) + 40);
 		var containerHeight = $elm$core$Basics$round(cardSize);
 		var cardRow = function () {
-			var paddedCards = A2($author$project$PokerHandRanking$padCardsToFive, ranking.y, ranking.t);
+			var paddedCards = A2($author$project$PokerHandRanking$padCardsToFive, ranking.z, ranking.u);
 			return A2(
 				$mdgriffith$elm_ui$Element$row,
 				_List_fromArray(
@@ -19963,7 +19970,7 @@ var $author$project$Main$viewPageContent = function (model) {
 	var _v0 = model.g;
 	switch (_v0) {
 		case 0:
-			return $author$project$Page$Home$view(model.A);
+			return $author$project$Page$Home$view(model.r);
 		case 1:
 			return A2(
 				$mdgriffith$elm_ui$Element$map,
@@ -19971,7 +19978,7 @@ var $author$project$Main$viewPageContent = function (model) {
 				A2(
 					$author$project$Page$Players$view,
 					$author$project$Main$playersViewData(model),
-					model.A));
+					model.r));
 		case 2:
 			return A2(
 				$mdgriffith$elm_ui$Element$map,
@@ -19979,7 +19986,7 @@ var $author$project$Main$viewPageContent = function (model) {
 				A2(
 					$author$project$Page$Game$view,
 					$author$project$Main$gameViewData(model),
-					model.A));
+					model.r));
 		case 3:
 			return A2(
 				$mdgriffith$elm_ui$Element$map,
@@ -19987,9 +19994,9 @@ var $author$project$Main$viewPageContent = function (model) {
 				A2(
 					$author$project$Page$Champion$view,
 					$author$project$Main$championViewData(model),
-					model.A));
+					model.r));
 		case 4:
-			return $author$project$Page$Playground$view(model.A);
+			return $author$project$Page$Playground$view(model.r);
 		case 5:
 			return A2(
 				$mdgriffith$elm_ui$Element$map,
@@ -19997,7 +20004,7 @@ var $author$project$Main$viewPageContent = function (model) {
 				A2(
 					$author$project$Page$Settings$view,
 					$author$project$Main$settingsViewData(model),
-					model.A));
+					model.r));
 		default:
 			return A2(
 				$mdgriffith$elm_ui$Element$el,
@@ -20041,10 +20048,19 @@ var $author$project$Main$viewThemeToggle = function (theme) {
 		});
 };
 var $author$project$Main$view = function (model) {
-	var colors = $author$project$Theme$getColors(model.A);
+	var colors = $author$project$Theme$getColors(model.r);
 	return {
 		cQ: _List_fromArray(
 			[
+				A3(
+				$elm$html$Html$node,
+				'style',
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						'html, body { background-color: ' + ($author$project$Main$themeBackgroundCss(model.r) + '; }'))
+					])),
 				A2(
 				$mdgriffith$elm_ui$Element$layout,
 				_List_fromArray(
@@ -20082,7 +20098,7 @@ var $author$project$Main$view = function (model) {
 									$mdgriffith$elm_ui$Element$el,
 									_List_fromArray(
 										[$mdgriffith$elm_ui$Element$alignRight]),
-									$author$project$Main$viewThemeToggle(model.A))
+									$author$project$Main$viewThemeToggle(model.r))
 								])),
 							$author$project$Main$viewPageContent(model)
 						])))
