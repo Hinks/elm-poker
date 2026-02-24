@@ -18,6 +18,8 @@ type alias ChipSetting =
     { color : Page.Game.ChipColor
     , value : Int
     , valueInput : String
+    , startingQuantity : Int
+    , startingQuantityInput : String
     , enabled : Bool
     }
 
@@ -39,6 +41,7 @@ type alias ViewData =
 type Intent
     = ChipToggled Page.Game.ChipColor
     | ChipValueChanged Page.Game.ChipColor String
+    | ChipStartingQuantityChanged Page.Game.ChipColor String
     | BlindSmallChanged Int String
     | BlindBigChanged Int String
 
@@ -52,6 +55,12 @@ view vd theme =
     let
         colors =
             Theme.getColors theme
+
+        enabledChipSettings =
+            List.filter .enabled vd.chipSettings
+
+        startingStackTotal =
+            List.sum (List.map (\cs -> cs.value * cs.startingQuantity) enabledChipSettings)
     in
     Element.column
         [ Element.width Element.fill
@@ -70,6 +79,28 @@ view vd theme =
             , Element.row
                 [ Element.spacing 20 ]
                 (List.map (\cs -> viewChipSlot cs colors) vd.chipSettings)
+            , Element.column
+                [ Element.spacing 10 ]
+                [ Element.el [ Font.size 16 ] (Element.text "Starting Stack")
+                , if List.isEmpty enabledChipSettings then
+                    Element.el
+                        [ Font.color colors.textSecondary
+                        , Font.italic
+                        ]
+                        (Element.text "Enable at least one chip to configure starting quantities.")
+
+                  else
+                    Element.row
+                        [ Element.spacing 20
+                        , Element.width Element.fill
+                        ]
+                        (List.map (\cs -> viewStartingQuantitySlot cs colors) enabledChipSettings)
+                , Element.el
+                    [ Font.size 15
+                    , Font.bold
+                    ]
+                    (Element.text ("Total starting stack value: " ++ String.fromInt startingStackTotal))
+                ]
             ]
         , Element.column
             [ Element.spacing 15 ]
@@ -144,6 +175,56 @@ viewChipSlot cs colors =
             , text = cs.valueInput
             , placeholder = Nothing
             , label = Input.labelHidden "Chip value"
+            }
+        ]
+
+
+viewStartingQuantitySlot : ChipSetting -> Theme.ColorPalette -> Element.Element Intent
+viewStartingQuantitySlot cs colors =
+    let
+        chipElementColor =
+            Page.Game.chipColorToElementColor cs.color colors
+
+        textColor =
+            Page.Game.getChipTextColor cs.color colors
+
+        chipSize =
+            50.0
+    in
+    Element.column
+        [ Element.spacing 8
+        , Element.alignTop
+        , Element.width (Element.px 60)
+        ]
+        [ Element.el
+            [ Element.centerX
+            , Element.width (Element.px (round chipSize))
+            , Element.height (Element.px (round chipSize))
+            ]
+            (Element.html
+                (Icons.pokerChip
+                    { size = chipSize
+                    , color = chipElementColor
+                    , spinSpeed = 0
+                    , value = Just cs.value
+                    , textColor = textColor
+                    }
+                )
+            )
+        , Input.text
+            [ Element.width (Element.px 60)
+            , Element.padding 5
+            , Font.size 14
+            , Element.centerX
+            , Border.width 1
+            , Border.color colors.border
+            , Background.color colors.surface
+            , Font.color colors.text
+            ]
+            { onChange = ChipStartingQuantityChanged cs.color
+            , text = cs.startingQuantityInput
+            , placeholder = Just (Input.placeholder [] (Element.text "Qty"))
+            , label = Input.labelHidden ("Starting quantity for chip value " ++ String.fromInt cs.value)
             }
         ]
 

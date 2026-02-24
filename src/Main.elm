@@ -2,12 +2,12 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Navigation
+import Char
 import Element
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Html
-import Html.Attributes
 import Page.Champion
 import Page.Game
 import Page.Home
@@ -30,6 +30,8 @@ type alias ChipSetting =
     { color : Page.Game.ChipColor
     , value : Int
     , valueInput : String
+    , startingQuantity : Int
+    , startingQuantityInput : String
     , enabled : Bool
     }
 
@@ -213,11 +215,11 @@ init _ url key =
             , theme = Theme.defaultTheme
             , settings =
                 { chipSettings =
-                    [ { color = Page.Game.White, value = 50, valueInput = "50", enabled = True }
-                    , { color = Page.Game.Red, value = 100, valueInput = "100", enabled = True }
-                    , { color = Page.Game.Blue, value = 200, valueInput = "200", enabled = True }
-                    , { color = Page.Game.Green, value = 250, valueInput = "250", enabled = True }
-                    , { color = Page.Game.Black, value = 500, valueInput = "500", enabled = True }
+                    [ { color = Page.Game.White, value = 50, valueInput = "50", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
+                    , { color = Page.Game.Red, value = 100, valueInput = "100", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
+                    , { color = Page.Game.Blue, value = 200, valueInput = "200", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
+                    , { color = Page.Game.Green, value = 250, valueInput = "250", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
+                    , { color = Page.Game.Black, value = 500, valueInput = "500", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
                     ]
                 , blindLevelSettings = defaultBlindLevelSettings
                 }
@@ -683,6 +685,11 @@ updateChampion intent model =
 -- UPDATE: SETTINGS
 
 
+sanitizeNumericInput : String -> String
+sanitizeNumericInput input =
+    String.filter Char.isDigit input
+
+
 updateSettings : Page.Settings.Intent -> Model -> ( Model, Cmd Msg )
 updateSettings intent model =
     let
@@ -712,16 +719,44 @@ updateSettings intent model =
 
         Page.Settings.ChipValueChanged targetColor str ->
             let
+                sanitizedInput =
+                    sanitizeNumericInput str
+
                 updatedChipSettings =
                     List.map
                         (\cs ->
                             if cs.color == targetColor then
-                                case String.toInt str of
+                                case String.toInt sanitizedInput of
                                     Just v ->
-                                        { cs | valueInput = str, value = v }
+                                        { cs | valueInput = sanitizedInput, value = v }
 
                                     Nothing ->
-                                        { cs | valueInput = str }
+                                        { cs | valueInput = sanitizedInput }
+
+                            else
+                                cs
+                        )
+                        chipSettings
+            in
+            ( { model | settings = { settings | chipSettings = updatedChipSettings } }
+            , Cmd.none
+            )
+
+        Page.Settings.ChipStartingQuantityChanged targetColor str ->
+            let
+                sanitizedInput =
+                    sanitizeNumericInput str
+
+                updatedChipSettings =
+                    List.map
+                        (\cs ->
+                            if cs.color == targetColor then
+                                case String.toInt sanitizedInput of
+                                    Just v ->
+                                        { cs | startingQuantityInput = sanitizedInput, startingQuantity = v }
+
+                                    Nothing ->
+                                        { cs | startingQuantityInput = sanitizedInput, startingQuantity = 0 }
 
                             else
                                 cs
@@ -734,16 +769,19 @@ updateSettings intent model =
 
         Page.Settings.BlindSmallChanged targetIndex str ->
             let
+                sanitizedInput =
+                    sanitizeNumericInput str
+
                 updatedBlindSettings =
                     List.indexedMap
                         (\i bl ->
                             if i == targetIndex then
-                                case String.toInt str of
+                                case String.toInt sanitizedInput of
                                     Just v ->
-                                        { bl | smallBlindInput = str, smallBlind = v }
+                                        { bl | smallBlindInput = sanitizedInput, smallBlind = v }
 
                                     Nothing ->
-                                        { bl | smallBlindInput = str }
+                                        { bl | smallBlindInput = sanitizedInput }
 
                             else
                                 bl
@@ -759,16 +797,19 @@ updateSettings intent model =
 
         Page.Settings.BlindBigChanged targetIndex str ->
             let
+                sanitizedInput =
+                    sanitizeNumericInput str
+
                 updatedBlindSettings =
                     List.indexedMap
                         (\i bl ->
                             if i == targetIndex then
-                                case String.toInt str of
+                                case String.toInt sanitizedInput of
                                     Just v ->
-                                        { bl | bigBlindInput = str, bigBlind = v }
+                                        { bl | bigBlindInput = sanitizedInput, bigBlind = v }
 
                                     Nothing ->
-                                        { bl | bigBlindInput = str }
+                                        { bl | bigBlindInput = sanitizedInput }
 
                             else
                                 bl
@@ -987,10 +1028,22 @@ playersViewData model =
 
 gameViewData : Model -> Page.Game.ViewData
 gameViewData model =
+    let
+        enabledChipSettings =
+            model.settings.chipSettings
+                |> List.filter .enabled
+    in
     { chips =
-        model.settings.chipSettings
-            |> List.filter .enabled
+        enabledChipSettings
             |> List.map (\cs -> Page.Game.Chip cs.color cs.value)
+    , chipQuantities =
+        enabledChipSettings
+            |> List.map
+                (\cs ->
+                    { color = cs.color
+                    , quantity = cs.startingQuantity
+                    }
+                )
     , blindLevels = model.blindLevels
     , blindDuration = model.blindDuration
     , blindDurationInput = model.blindDurationInput
@@ -1017,6 +1070,8 @@ settingsViewData model =
                 { color = cs.color
                 , value = cs.value
                 , valueInput = cs.valueInput
+                , startingQuantity = cs.startingQuantity
+                , startingQuantityInput = cs.startingQuantityInput
                 , enabled = cs.enabled
                 }
             )

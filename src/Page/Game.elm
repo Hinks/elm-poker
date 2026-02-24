@@ -21,6 +21,7 @@ import Time
 
 type alias ViewData =
     { chips : List Chip
+    , chipQuantities : List ChipQuantity
     , blindLevels : BlindLevels
     , blindDuration : Seconds
     , blindDurationInput : String
@@ -164,6 +165,12 @@ type ChipColor
 
 type Chip
     = Chip ChipColor Int
+
+
+type alias ChipQuantity =
+    { color : ChipColor
+    , quantity : Int
+    }
 
 
 chipColorToElementColor : ChipColor -> Theme.ColorPalette -> Element.Color
@@ -340,7 +347,7 @@ viewTableWithOverlays vd theme colors tableSize =
         , Element.centerX
         , Element.inFront (viewPotOverlay vd colors)
         , Element.inFront (viewCenterBlindsOverlay vd theme colors)
-        , Element.inFront (viewChipsOverlay vd.chips colors)
+        , Element.inFront (viewChipsOverlay vd.chips vd.chipQuantities colors)
         ]
         (viewPokerTable colors)
 
@@ -399,13 +406,13 @@ viewCenterBlindsOverlay vd theme colors =
         (viewCenterBlinds vd theme colors)
 
 
-viewChipsOverlay : List Chip -> Theme.ColorPalette -> Element.Element Msg
-viewChipsOverlay chips colors =
+viewChipsOverlay : List Chip -> List ChipQuantity -> Theme.ColorPalette -> Element.Element Msg
+viewChipsOverlay chips chipQuantities colors =
     Element.el
         [ Element.width Element.fill
         , Element.alignBottom
         ]
-        (viewChips chips colors)
+        (viewChips chips chipQuantities colors)
 
 
 viewFooter : Theme.ColorPalette -> Element.Element Msg
@@ -730,8 +737,8 @@ chipValue chip =
             val
 
 
-viewChips : List Chip -> Theme.ColorPalette -> Element.Element Msg
-viewChips chips colors =
+viewChips : List Chip -> List ChipQuantity -> Theme.ColorPalette -> Element.Element Msg
+viewChips chips chipQuantities colors =
     Element.el
         [ Element.width Element.fill
         , Element.centerX
@@ -740,17 +747,20 @@ viewChips chips colors =
             [ Element.spacing 20
             , Element.centerX
             ]
-            (List.map (\chip -> viewChip chip colors) (List.sortBy chipValue chips))
+            (List.map (\chip -> viewChip chip chipQuantities colors) (List.sortBy chipValue chips))
         )
 
 
-viewChip : Chip -> Theme.ColorPalette -> Element.Element Msg
-viewChip chip colors =
+viewChip : Chip -> List ChipQuantity -> Theme.ColorPalette -> Element.Element Msg
+viewChip chip chipQuantities colors =
     let
         ( chipColor, value ) =
             case chip of
                 Chip color val ->
                     ( color, val )
+
+        quantity =
+            getChipQuantity chipColor chipQuantities
 
         chipElementColor =
             chipColorToElementColor chipColor colors
@@ -764,15 +774,39 @@ viewChip chip colors =
         textColor =
             getChipTextColor chipColor colors
     in
-    Element.html
-        (Icons.pokerChip
-            { size = chipSize
-            , color = chipElementColor
-            , spinSpeed = spinSpeed
-            , value = Just value
-            , textColor = textColor
-            }
-        )
+    Element.column
+        [ Element.spacing 8
+        , Element.centerX
+        ]
+        [ Element.html
+            (Icons.pokerChip
+                { size = chipSize
+                , color = chipElementColor
+                , spinSpeed = spinSpeed
+                , value = Just value
+                , textColor = textColor
+                }
+            )
+        , if quantity > 0 then
+            Element.el
+                [ Element.centerX
+                , Element.Font.size 20
+                , Element.Font.bold
+                ]
+                (Element.text ("x" ++ String.fromInt quantity))
+
+          else
+            Element.none
+        ]
+
+
+getChipQuantity : ChipColor -> List ChipQuantity -> Int
+getChipQuantity targetColor chipQuantities =
+    chipQuantities
+        |> List.filter (\entry -> entry.color == targetColor)
+        |> List.head
+        |> Maybe.map .quantity
+        |> Maybe.withDefault 0
 
 
 viewPokerTable : Theme.ColorPalette -> Element.Element Msg
