@@ -215,11 +215,11 @@ init _ url key =
             , theme = Theme.defaultTheme
             , settings =
                 { chipSettings =
-                    [ { color = Page.Game.White, value = 50, valueInput = "50", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
-                    , { color = Page.Game.Red, value = 100, valueInput = "100", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
-                    , { color = Page.Game.Blue, value = 200, valueInput = "200", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
-                    , { color = Page.Game.Green, value = 250, valueInput = "250", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
-                    , { color = Page.Game.Black, value = 500, valueInput = "500", startingQuantity = 0, startingQuantityInput = "0", enabled = True }
+                    [ { color = Page.Game.White, value = 5, valueInput = "5", startingQuantity = 20, startingQuantityInput = "20", enabled = True }
+                    , { color = Page.Game.Red, value = 10, valueInput = "10", startingQuantity = 12, startingQuantityInput = "12", enabled = True }
+                    , { color = Page.Game.Blue, value = 50, valueInput = "50", startingQuantity = 8, startingQuantityInput = "8", enabled = True }
+                    , { color = Page.Game.Green, value = 25, valueInput = "25", startingQuantity = 10, startingQuantityInput = "10", enabled = True }
+                    , { color = Page.Game.Black, value = 100, valueInput = "100", startingQuantity = 6, startingQuantityInput = "6", enabled = True }
                     ]
                 , blindLevelSettings = defaultBlindLevelSettings
                 }
@@ -1082,14 +1082,16 @@ settingsViewData model =
 
 defaultBlindLevelSettings : List Page.Settings.BlindLevelSetting
 defaultBlindLevelSettings =
-    [ { smallBlind = 100, bigBlind = 200, smallBlindInput = "100", bigBlindInput = "200" }
+    [ { smallBlind = 5, bigBlind = 10, smallBlindInput = "5", bigBlindInput = "10" }
+    , { smallBlind = 10, bigBlind = 20, smallBlindInput = "10", bigBlindInput = "20" }
+    , { smallBlind = 15, bigBlind = 30, smallBlindInput = "15", bigBlindInput = "30" }
+    , { smallBlind = 20, bigBlind = 40, smallBlindInput = "20", bigBlindInput = "40" }
+    , { smallBlind = 25, bigBlind = 50, smallBlindInput = "25", bigBlindInput = "50" }
+    , { smallBlind = 40, bigBlind = 80, smallBlindInput = "40", bigBlindInput = "80" }
+    , { smallBlind = 60, bigBlind = 120, smallBlindInput = "60", bigBlindInput = "120" }
+    , { smallBlind = 100, bigBlind = 200, smallBlindInput = "100", bigBlindInput = "200" }
+    , { smallBlind = 150, bigBlind = 300, smallBlindInput = "150", bigBlindInput = "300" }
     , { smallBlind = 200, bigBlind = 400, smallBlindInput = "200", bigBlindInput = "400" }
-    , { smallBlind = 300, bigBlind = 600, smallBlindInput = "300", bigBlindInput = "600" }
-    , { smallBlind = 400, bigBlind = 800, smallBlindInput = "400", bigBlindInput = "800" }
-    , { smallBlind = 500, bigBlind = 1000, smallBlindInput = "500", bigBlindInput = "1000" }
-    , { smallBlind = 800, bigBlind = 1600, smallBlindInput = "800", bigBlindInput = "1600" }
-    , { smallBlind = 1000, bigBlind = 2000, smallBlindInput = "1000", bigBlindInput = "2000" }
-    , { smallBlind = 2000, bigBlind = 4000, smallBlindInput = "2000", bigBlindInput = "4000" }
     ]
 
 
