@@ -8,8 +8,12 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Html
+import File exposing (File)
+import File.Download
+import File.Select
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Task
 import Page.Champion
 import Page.Game
 import Page.Home
@@ -112,6 +116,8 @@ type Msg
     | GotSettingsIntent Page.Settings.Intent
     | ThemeToggled
     | PortsMsg Ports.Incoming
+    | GotSettingsFile File
+    | GotSettingsFileContent String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -176,6 +182,22 @@ update msg model =
         PortsMsg incoming ->
             case incoming of
                 Ports.IncomingNoOp ->
+                    ( model, Cmd.none )
+
+        GotSettingsFile file ->
+            ( model, Task.perform GotSettingsFileContent (File.toString file) )
+
+        GotSettingsFileContent content ->
+            case Decode.decodeString decodeAppSettings content of
+                Ok importedSettings ->
+                    ( { model
+                        | settings = importedSettings
+                        , blindLevels = blindLevelsFromSettings importedSettings.blindLevelSettings
+                      }
+                    , saveSettings importedSettings
+                    )
+
+                Err _ ->
                     ( model, Cmd.none )
 
 
@@ -914,6 +936,20 @@ updateSettings intent model =
                 , blindLevels = blindLevelsFromSettings defaultSettings.blindLevelSettings
               }
             , saveSettings defaultSettings
+            )
+
+        Page.Settings.ExportSettings ->
+            let
+                jsonString =
+                    Encode.encode 2 (encodeAppSettings model.settings)
+            in
+            ( model
+            , File.Download.string "elm-poker-settings.json" "application/json" jsonString
+            )
+
+        Page.Settings.ImportSettings ->
+            ( model
+            , File.Select.file [ "application/json" ] GotSettingsFile
             )
 
 

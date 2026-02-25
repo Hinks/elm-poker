@@ -51,6 +51,8 @@ type Intent
     | BlindSmallChanged Int String
     | BlindBigChanged Int String
     | ResetToDefaults
+    | ExportSettings
+    | ImportSettings
 
 
 
@@ -83,16 +85,43 @@ view vd theme =
             , viewBlindLevelsColumn vd colors
             ]
         , viewDivider colors
-        , Input.button
-            [ Element.padding 10
-            , Background.color colors.removeButton
-            , Font.color colors.buttonText
-            , Font.size 14
-            , Border.rounded 4
+        , Element.row
+            [ Element.spacing 10 ]
+            [ Input.button
+                [ Element.padding 10
+                , Background.color colors.surface
+                , Font.color colors.text
+                , Font.size 14
+                , Border.rounded 4
+                , Border.width 1
+                , Border.color colors.border
+                ]
+                { onPress = Just ExportSettings
+                , label = Element.text "Export Settings"
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.surface
+                , Font.color colors.text
+                , Font.size 14
+                , Border.rounded 4
+                , Border.width 1
+                , Border.color colors.border
+                ]
+                { onPress = Just ImportSettings
+                , label = Element.text "Import Settings"
+                }
+            , Input.button
+                [ Element.padding 10
+                , Background.color colors.removeButton
+                , Font.color colors.buttonText
+                , Font.size 14
+                , Border.rounded 4
+                ]
+                { onPress = Just ResetToDefaults
+                , label = Element.text "Reset to Defaults"
+                }
             ]
-            { onPress = Just ResetToDefaults
-            , label = Element.text "Reset to Defaults"
-            }
         ]
 
 
