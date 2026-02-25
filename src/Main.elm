@@ -908,6 +908,14 @@ updateSettings intent model =
             , saveSettings updatedSettings
             )
 
+        Page.Settings.ResetToDefaults ->
+            ( { model
+                | settings = defaultSettings
+                , blindLevels = blindLevelsFromSettings defaultSettings.blindLevelSettings
+              }
+            , saveSettings defaultSettings
+            )
+
 
 
 -- SUBSCRIPTIONS

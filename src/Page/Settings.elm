@@ -50,6 +50,7 @@ type Intent
     | PlayerCountChanged String
     | BlindSmallChanged Int String
     | BlindBigChanged Int String
+    | ResetToDefaults
 
 
 
@@ -81,6 +82,17 @@ view vd theme =
             , viewVerticalDivider colors
             , viewBlindLevelsColumn vd colors
             ]
+        , viewDivider colors
+        , Input.button
+            [ Element.padding 10
+            , Background.color colors.removeButton
+            , Font.color colors.buttonText
+            , Font.size 14
+            , Border.rounded 4
+            ]
+            { onPress = Just ResetToDefaults
+            , label = Element.text "Reset to Defaults"
+            }
         ]
 
 
