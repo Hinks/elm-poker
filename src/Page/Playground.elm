@@ -6,7 +6,6 @@ import Element.Font
 import Html
 import Icons
 import Marquee
-import PokerHandRanking
 import TextAnimation
 import Theme exposing (Theme)
 
@@ -145,6 +144,13 @@ view theme =
                         (Icons.dollar
                             { size = 100
                             , color = colors.accent
+                            }
+                        )
+                    , viewIconSection "Coin Stack"
+                        colors
+                        (Icons.coinStack
+                            { size = 140
+                            , color = colors.prizeGold
                             }
                         )
                     , viewIconSection "Strawberry"

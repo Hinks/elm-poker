@@ -1,9 +1,9 @@
-module Icons exposing (BlindOptions, CardOptions, CircleOptions, DollarOptions, PokerChipOptions, PokerTableOptions, StrawberryOptions, Suit(..), TimerOptions, bigBlind, dollar, pokerCard, pokerChip, pokerTable, smallBlind, strawberry, timer)
+module Icons exposing (BlindOptions, CardOptions, CircleOptions, CoinStackOptions, DollarOptions, PokerChipOptions, PokerTableOptions, StrawberryOptions, Suit(..), TimerOptions, bigBlind, coinStack, dollar, pokerCard, pokerChip, pokerTable, smallBlind, strawberry, timer)
 
 import Element exposing (Color)
 import Html
 import Icons.BigBlind
-import Icons.BlindOptions
+import Icons.CoinStack
 import Icons.Dollar
 import Icons.PokerCard
 import Icons.PokerChip
@@ -43,6 +43,12 @@ type alias CircleOptions =
 
 
 type alias DollarOptions =
+    { size : Float
+    , color : Color
+    }
+
+
+type alias CoinStackOptions =
     { size : Float
     , color : Color
     }
@@ -127,6 +133,14 @@ bigBlind options =
 dollar : DollarOptions -> Html.Html msg
 dollar options =
     Icons.Dollar.dollar
+        { size = options.size
+        , color = options.color
+        }
+
+
+coinStack : CoinStackOptions -> Html.Html msg
+coinStack options =
+    Icons.CoinStack.coinStack
         { size = options.size
         , color = options.color
         }
