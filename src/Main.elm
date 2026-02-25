@@ -261,9 +261,9 @@ defaultSettings : AppSettings
 defaultSettings =
     { chipSettings =
         [ { color = Page.Game.White, value = 5, valueInput = "5", startingQuantity = 20, startingQuantityInput = "20", ownedQuantity = 200, ownedQuantityInput = "200", enabled = True }
-        , { color = Page.Game.Red, value = 10, valueInput = "10", startingQuantity = 12, startingQuantityInput = "12", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
-        , { color = Page.Game.Blue, value = 50, valueInput = "50", startingQuantity = 8, startingQuantityInput = "8", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+        , { color = Page.Game.Red, value = 10, valueInput = "10", startingQuantity = 15, startingQuantityInput = "15", ownedQuantity = 150, ownedQuantityInput = "150", enabled = True }
         , { color = Page.Game.Green, value = 25, valueInput = "25", startingQuantity = 10, startingQuantityInput = "10", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+        , { color = Page.Game.Blue, value = 50, valueInput = "50", startingQuantity = 8, startingQuantityInput = "8", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
         , { color = Page.Game.Black, value = 100, valueInput = "100", startingQuantity = 6, startingQuantityInput = "6", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
         ]
     , blindLevelSettings = defaultBlindLevelSettings
