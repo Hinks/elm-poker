@@ -374,6 +374,17 @@ viewInventorySlot playerCount cs colors =
         chipElementColor =
             Page.Game.chipColorToElementColor cs.color colors
 
+        coinStackColor =
+            case cs.color of
+                Page.Game.Black ->
+                    Element.rgb255 55 55 55
+
+                Page.Game.White ->
+                    Element.rgb255 200 200 200
+
+                _ ->
+                    chipElementColor
+
         usedCount =
             playerCount * cs.startingQuantity
 
@@ -393,7 +404,7 @@ viewInventorySlot playerCount cs colors =
             (Element.html
                 (Icons.coinStack
                     { size = chipSize
-                    , color = chipElementColor
+                    , color = coinStackColor
                     }
                 )
             )
