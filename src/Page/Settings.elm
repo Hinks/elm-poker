@@ -436,17 +436,17 @@ viewBlindLevelRow index bl colors =
             (Element.text ("Level " ++ String.fromInt (index + 1)))
         , Input.text
             inputAttrs
-            { onChange = BlindSmallChanged index
-            , text = bl.smallBlindInput
-            , placeholder = Just (Input.placeholder [] (Element.text "SB"))
-            , label = Input.labelHidden ("Small blind level " ++ String.fromInt (index + 1))
-            }
-        , Element.el [ Font.size 14 ] (Element.text "/")
-        , Input.text
-            inputAttrs
             { onChange = BlindBigChanged index
             , text = bl.bigBlindInput
             , placeholder = Just (Input.placeholder [] (Element.text "BB"))
             , label = Input.labelHidden ("Big blind level " ++ String.fromInt (index + 1))
+            }
+        , Element.el [ Font.size 14 ] (Element.text "/")
+        , Input.text
+            inputAttrs
+            { onChange = BlindSmallChanged index
+            , text = bl.smallBlindInput
+            , placeholder = Just (Input.placeholder [] (Element.text "SB"))
+            , label = Input.labelHidden ("Small blind level " ++ String.fromInt (index + 1))
             }
         ]

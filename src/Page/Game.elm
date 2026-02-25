@@ -720,9 +720,9 @@ viewRightLevels vd =
                                 ("Level "
                                     ++ String.fromInt (currentLevelNumberIndex + idx + 1)
                                     ++ ":  "
-                                    ++ formatBlindValue upcomingBlind.smallBlind
-                                    ++ " / "
                                     ++ formatBlindValue upcomingBlind.bigBlind
+                                    ++ " / "
+                                    ++ formatBlindValue upcomingBlind.smallBlind
                                 )
                             )
                     )
