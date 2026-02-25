@@ -377,10 +377,10 @@ viewInventorySlot playerCount cs colors =
         coinStackColor =
             case cs.color of
                 Page.Game.Black ->
-                    Element.rgb255 55 55 55
+                    colors.coinStackBlack
 
                 Page.Game.White ->
-                    Element.rgb255 200 200 200
+                    colors.coinStackWhite
 
                 _ ->
                     chipElementColor

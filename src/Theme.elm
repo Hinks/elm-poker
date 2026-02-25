@@ -24,6 +24,8 @@ type alias ColorPalette =
     , chipBlue : Color
     , chipGreen : Color
     , chipBlack : Color
+    , coinStackWhite : Color
+    , coinStackBlack : Color
     , bigBlindBackground : Color
     , smallBlindBackground : Color
     , timerBackground : Color
@@ -57,6 +59,8 @@ getColors theme =
             , chipBlue = rgb255 30 144 255
             , chipGreen = rgb255 34 139 34
             , chipBlack = rgb255 0 0 0
+            , coinStackWhite = rgb255 200 200 200
+            , coinStackBlack = rgb255 0 0 0
             , bigBlindBackground = rgb255 220 170 80
             , smallBlindBackground = rgb255 160 210 255
             , timerBackground = rgb255 180 230 210
@@ -86,6 +90,8 @@ getColors theme =
             , chipBlue = rgb255 30 144 255
             , chipGreen = rgb255 34 139 34
             , chipBlack = rgb255 0 0 0
+            , coinStackWhite = rgb255 255 255 255
+            , coinStackBlack = rgb255 55 55 55
             , bigBlindBackground = rgb255 220 170 80
             , smallBlindBackground = rgb255 160 210 255
             , timerBackground = rgb255 180 230 210
