@@ -1180,7 +1180,6 @@ viewFooterMarquee _ =
                     , "Don't say what you folded"
                     , "Don't show your cards before showdown"
                     , "Don't act before your turn"
-                    , "Don't talk about someone else's hand"
                     , "Don't touch other players' chips or cards"
                     , "Keep your cards on the table while playing"
                     ]
