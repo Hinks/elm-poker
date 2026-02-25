@@ -32,6 +32,8 @@ type alias ChipSetting =
     , valueInput : String
     , startingQuantity : Int
     , startingQuantityInput : String
+    , ownedQuantity : Int
+    , ownedQuantityInput : String
     , enabled : Bool
     }
 
@@ -39,6 +41,8 @@ type alias ChipSetting =
 type alias AppSettings =
     { chipSettings : List ChipSetting
     , blindLevelSettings : List Page.Settings.BlindLevelSetting
+    , playerCount : Int
+    , playerCountInput : String
     }
 
 
@@ -215,13 +219,15 @@ init _ url key =
             , theme = Theme.defaultTheme
             , settings =
                 { chipSettings =
-                    [ { color = Page.Game.White, value = 5, valueInput = "5", startingQuantity = 20, startingQuantityInput = "20", enabled = True }
-                    , { color = Page.Game.Red, value = 10, valueInput = "10", startingQuantity = 12, startingQuantityInput = "12", enabled = True }
-                    , { color = Page.Game.Blue, value = 50, valueInput = "50", startingQuantity = 8, startingQuantityInput = "8", enabled = True }
-                    , { color = Page.Game.Green, value = 25, valueInput = "25", startingQuantity = 10, startingQuantityInput = "10", enabled = True }
-                    , { color = Page.Game.Black, value = 100, valueInput = "100", startingQuantity = 6, startingQuantityInput = "6", enabled = True }
+                    [ { color = Page.Game.White, value = 5, valueInput = "5", startingQuantity = 20, startingQuantityInput = "20", ownedQuantity = 200, ownedQuantityInput = "200", enabled = True }
+                    , { color = Page.Game.Red, value = 10, valueInput = "10", startingQuantity = 12, startingQuantityInput = "12", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+                    , { color = Page.Game.Blue, value = 50, valueInput = "50", startingQuantity = 8, startingQuantityInput = "8", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+                    , { color = Page.Game.Green, value = 25, valueInput = "25", startingQuantity = 10, startingQuantityInput = "10", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+                    , { color = Page.Game.Black, value = 100, valueInput = "100", startingQuantity = 6, startingQuantityInput = "6", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
                     ]
                 , blindLevelSettings = defaultBlindLevelSettings
+                , playerCount = 8
+                , playerCountInput = "8"
                 }
 
             -- Players
@@ -767,6 +773,48 @@ updateSettings intent model =
             , Cmd.none
             )
 
+        Page.Settings.ChipOwnedQuantityChanged targetColor str ->
+            let
+                sanitizedInput =
+                    sanitizeNumericInput str
+
+                updatedChipSettings =
+                    List.map
+                        (\cs ->
+                            if cs.color == targetColor then
+                                case String.toInt sanitizedInput of
+                                    Just v ->
+                                        { cs | ownedQuantityInput = sanitizedInput, ownedQuantity = v }
+
+                                    Nothing ->
+                                        { cs | ownedQuantityInput = sanitizedInput, ownedQuantity = 0 }
+
+                            else
+                                cs
+                        )
+                        chipSettings
+            in
+            ( { model | settings = { settings | chipSettings = updatedChipSettings } }
+            , Cmd.none
+            )
+
+        Page.Settings.PlayerCountChanged str ->
+            let
+                sanitizedInput =
+                    sanitizeNumericInput str
+
+                updatedSettings =
+                    case String.toInt sanitizedInput of
+                        Just playerCount ->
+                            { settings | playerCountInput = sanitizedInput, playerCount = playerCount }
+
+                        Nothing ->
+                            { settings | playerCountInput = sanitizedInput, playerCount = 0 }
+            in
+            ( { model | settings = updatedSettings }
+            , Cmd.none
+            )
+
         Page.Settings.BlindSmallChanged targetIndex str ->
             let
                 sanitizedInput =
@@ -1072,11 +1120,15 @@ settingsViewData model =
                 , valueInput = cs.valueInput
                 , startingQuantity = cs.startingQuantity
                 , startingQuantityInput = cs.startingQuantityInput
+                , ownedQuantity = cs.ownedQuantity
+                , ownedQuantityInput = cs.ownedQuantityInput
                 , enabled = cs.enabled
                 }
             )
             model.settings.chipSettings
     , blindLevelSettings = model.settings.blindLevelSettings
+    , playerCount = model.settings.playerCount
+    , playerCountInput = model.settings.playerCountInput
     }
 
 
