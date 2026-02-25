@@ -8,6 +8,8 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Html
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Page.Champion
 import Page.Game
 import Page.Home
@@ -204,9 +206,17 @@ updateUrl url model =
             ( { model | activePage = NotFoundPage }, Cmd.none )
 
 
-init : () -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init _ url key =
+init : Decode.Value -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+init flags url key =
     let
+        savedSettings =
+            Decode.decodeValue decodeAppSettings flags
+                |> Result.toMaybe
+
+        settings =
+            savedSettings
+                |> Maybe.withDefault defaultSettings
+
         initialBlindDuration =
             12 * 60
 
@@ -217,18 +227,7 @@ init _ url key =
             { navigationKey = key
             , activePage = NotFoundPage
             , theme = Theme.defaultTheme
-            , settings =
-                { chipSettings =
-                    [ { color = Page.Game.White, value = 5, valueInput = "5", startingQuantity = 20, startingQuantityInput = "20", ownedQuantity = 200, ownedQuantityInput = "200", enabled = True }
-                    , { color = Page.Game.Red, value = 10, valueInput = "10", startingQuantity = 12, startingQuantityInput = "12", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
-                    , { color = Page.Game.Blue, value = 50, valueInput = "50", startingQuantity = 8, startingQuantityInput = "8", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
-                    , { color = Page.Game.Green, value = 25, valueInput = "25", startingQuantity = 10, startingQuantityInput = "10", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
-                    , { color = Page.Game.Black, value = 100, valueInput = "100", startingQuantity = 6, startingQuantityInput = "6", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
-                    ]
-                , blindLevelSettings = defaultBlindLevelSettings
-                , playerCount = 8
-                , playerCountInput = "8"
-                }
+            , settings = settings
 
             -- Players
             , players = []
@@ -237,7 +236,7 @@ init _ url key =
             , playerListCollapsed = False
 
             -- Game
-            , blindLevels = blindLevelsFromSettings defaultBlindLevelSettings
+            , blindLevels = blindLevelsFromSettings settings.blindLevelSettings
             , blindDuration = initialBlindDuration
             , blindDurationInput = "12"
             , remainingTime = initialBlindDuration
@@ -256,6 +255,21 @@ init _ url key =
             }
     in
     updateUrl url initialModel
+
+
+defaultSettings : AppSettings
+defaultSettings =
+    { chipSettings =
+        [ { color = Page.Game.White, value = 5, valueInput = "5", startingQuantity = 20, startingQuantityInput = "20", ownedQuantity = 200, ownedQuantityInput = "200", enabled = True }
+        , { color = Page.Game.Red, value = 10, valueInput = "10", startingQuantity = 12, startingQuantityInput = "12", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+        , { color = Page.Game.Blue, value = 50, valueInput = "50", startingQuantity = 8, startingQuantityInput = "8", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+        , { color = Page.Game.Green, value = 25, valueInput = "25", startingQuantity = 10, startingQuantityInput = "10", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+        , { color = Page.Game.Black, value = 100, valueInput = "100", startingQuantity = 6, startingQuantityInput = "6", ownedQuantity = 100, ownedQuantityInput = "100", enabled = True }
+        ]
+    , blindLevelSettings = defaultBlindLevelSettings
+    , playerCount = 8
+    , playerCountInput = "8"
+    }
 
 
 
@@ -691,6 +705,11 @@ updateChampion intent model =
 -- UPDATE: SETTINGS
 
 
+saveSettings : AppSettings -> Cmd msg
+saveSettings settings =
+    Ports.send (Ports.SaveSettings (encodeAppSettings settings))
+
+
 sanitizeNumericInput : String -> String
 sanitizeNumericInput input =
     String.filter Char.isDigit input
@@ -718,9 +737,12 @@ updateSettings intent model =
                                 cs
                         )
                         chipSettings
+
+                updatedSettings =
+                    { settings | chipSettings = updatedChipSettings }
             in
-            ( { model | settings = { settings | chipSettings = updatedChipSettings } }
-            , Cmd.none
+            ( { model | settings = updatedSettings }
+            , saveSettings updatedSettings
             )
 
         Page.Settings.ChipValueChanged targetColor str ->
@@ -743,9 +765,12 @@ updateSettings intent model =
                                 cs
                         )
                         chipSettings
+
+                updatedSettings =
+                    { settings | chipSettings = updatedChipSettings }
             in
-            ( { model | settings = { settings | chipSettings = updatedChipSettings } }
-            , Cmd.none
+            ( { model | settings = updatedSettings }
+            , saveSettings updatedSettings
             )
 
         Page.Settings.ChipStartingQuantityChanged targetColor str ->
@@ -768,9 +793,12 @@ updateSettings intent model =
                                 cs
                         )
                         chipSettings
+
+                updatedSettings =
+                    { settings | chipSettings = updatedChipSettings }
             in
-            ( { model | settings = { settings | chipSettings = updatedChipSettings } }
-            , Cmd.none
+            ( { model | settings = updatedSettings }
+            , saveSettings updatedSettings
             )
 
         Page.Settings.ChipOwnedQuantityChanged targetColor str ->
@@ -793,9 +821,12 @@ updateSettings intent model =
                                 cs
                         )
                         chipSettings
+
+                updatedSettings =
+                    { settings | chipSettings = updatedChipSettings }
             in
-            ( { model | settings = { settings | chipSettings = updatedChipSettings } }
-            , Cmd.none
+            ( { model | settings = updatedSettings }
+            , saveSettings updatedSettings
             )
 
         Page.Settings.PlayerCountChanged str ->
@@ -812,7 +843,7 @@ updateSettings intent model =
                             { settings | playerCountInput = sanitizedInput, playerCount = 0 }
             in
             ( { model | settings = updatedSettings }
-            , Cmd.none
+            , saveSettings updatedSettings
             )
 
         Page.Settings.BlindSmallChanged targetIndex str ->
@@ -835,12 +866,15 @@ updateSettings intent model =
                                 bl
                         )
                         settings.blindLevelSettings
+
+                updatedSettings =
+                    { settings | blindLevelSettings = updatedBlindSettings }
             in
             ( { model
-                | settings = { settings | blindLevelSettings = updatedBlindSettings }
+                | settings = updatedSettings
                 , blindLevels = blindLevelsFromSettings updatedBlindSettings
               }
-            , Cmd.none
+            , saveSettings updatedSettings
             )
 
         Page.Settings.BlindBigChanged targetIndex str ->
@@ -863,12 +897,15 @@ updateSettings intent model =
                                 bl
                         )
                         settings.blindLevelSettings
+
+                updatedSettings =
+                    { settings | blindLevelSettings = updatedBlindSettings }
             in
             ( { model
-                | settings = { settings | blindLevelSettings = updatedBlindSettings }
+                | settings = updatedSettings
                 , blindLevels = blindLevelsFromSettings updatedBlindSettings
               }
-            , Cmd.none
+            , saveSettings updatedSettings
             )
 
 
@@ -1178,6 +1215,134 @@ championViewData model =
     }
 
 
+-- JSON
+
+
+encodeAppSettings : AppSettings -> Encode.Value
+encodeAppSettings settings =
+    Encode.object
+        [ ( "chipSettings", Encode.list encodeChipSetting settings.chipSettings )
+        , ( "blindLevelSettings", Encode.list encodeBlindLevelSetting settings.blindLevelSettings )
+        , ( "playerCount", Encode.int settings.playerCount )
+        ]
+
+
+encodeChipSetting : ChipSetting -> Encode.Value
+encodeChipSetting cs =
+    Encode.object
+        [ ( "color", encodeChipColor cs.color )
+        , ( "value", Encode.int cs.value )
+        , ( "startingQuantity", Encode.int cs.startingQuantity )
+        , ( "ownedQuantity", Encode.int cs.ownedQuantity )
+        , ( "enabled", Encode.bool cs.enabled )
+        ]
+
+
+encodeChipColor : Page.Game.ChipColor -> Encode.Value
+encodeChipColor color =
+    Encode.string
+        (case color of
+            Page.Game.White ->
+                "White"
+
+            Page.Game.Red ->
+                "Red"
+
+            Page.Game.Blue ->
+                "Blue"
+
+            Page.Game.Green ->
+                "Green"
+
+            Page.Game.Black ->
+                "Black"
+        )
+
+
+encodeBlindLevelSetting : Page.Settings.BlindLevelSetting -> Encode.Value
+encodeBlindLevelSetting bl =
+    Encode.object
+        [ ( "smallBlind", Encode.int bl.smallBlind )
+        , ( "bigBlind", Encode.int bl.bigBlind )
+        ]
+
+
+decodeAppSettings : Decode.Decoder AppSettings
+decodeAppSettings =
+    Decode.map3
+        (\chipSettings blindLevelSettings playerCount ->
+            { chipSettings = chipSettings
+            , blindLevelSettings = blindLevelSettings
+            , playerCount = playerCount
+            , playerCountInput = String.fromInt playerCount
+            }
+        )
+        (Decode.field "chipSettings" (Decode.list decodeChipSetting))
+        (Decode.field "blindLevelSettings" (Decode.list decodeBlindLevelSetting))
+        (Decode.field "playerCount" Decode.int)
+
+
+decodeChipSetting : Decode.Decoder ChipSetting
+decodeChipSetting =
+    Decode.map5
+        (\color value startingQuantity ownedQuantity enabled ->
+            { color = color
+            , value = value
+            , valueInput = String.fromInt value
+            , startingQuantity = startingQuantity
+            , startingQuantityInput = String.fromInt startingQuantity
+            , ownedQuantity = ownedQuantity
+            , ownedQuantityInput = String.fromInt ownedQuantity
+            , enabled = enabled
+            }
+        )
+        (Decode.field "color" decodeChipColor)
+        (Decode.field "value" Decode.int)
+        (Decode.field "startingQuantity" Decode.int)
+        (Decode.field "ownedQuantity" Decode.int)
+        (Decode.field "enabled" Decode.bool)
+
+
+decodeChipColor : Decode.Decoder Page.Game.ChipColor
+decodeChipColor =
+    Decode.string
+        |> Decode.andThen
+            (\str ->
+                case str of
+                    "White" ->
+                        Decode.succeed Page.Game.White
+
+                    "Red" ->
+                        Decode.succeed Page.Game.Red
+
+                    "Blue" ->
+                        Decode.succeed Page.Game.Blue
+
+                    "Green" ->
+                        Decode.succeed Page.Game.Green
+
+                    "Black" ->
+                        Decode.succeed Page.Game.Black
+
+                    _ ->
+                        Decode.fail ("Unknown chip color: " ++ str)
+            )
+
+
+decodeBlindLevelSetting : Decode.Decoder Page.Settings.BlindLevelSetting
+decodeBlindLevelSetting =
+    Decode.map2
+        (\smallBlind bigBlind ->
+            { smallBlind = smallBlind
+            , bigBlind = bigBlind
+            , smallBlindInput = String.fromInt smallBlind
+            , bigBlindInput = String.fromInt bigBlind
+            }
+        )
+        (Decode.field "smallBlind" Decode.int)
+        (Decode.field "bigBlind" Decode.int)
+
+
 isActive : { link : Route, activePage : Page } -> Bool
 isActive { link, activePage } =
     case ( link, activePage ) of
@@ -1284,7 +1449,7 @@ onUrlChange url =
     ChangedUrl url
 
 
-main : Program () Model Msg
+main : Program Decode.Value Model Msg
 main =
     Browser.application
         { init = init

@@ -12,6 +12,7 @@ port fromJs : (Decode.Value -> msg) -> Sub msg
 
 type Outgoing
     = BlindTimerAlert
+    | SaveSettings Encode.Value
 
 
 type Incoming
@@ -25,6 +26,12 @@ encodeOutgoing outgoing =
             Encode.object
                 [ ( "tag", Encode.string "BlindTimerAlert" )
                 , ( "data", Encode.null )
+                ]
+
+        SaveSettings settingsValue ->
+            Encode.object
+                [ ( "tag", Encode.string "SaveSettings" )
+                , ( "data", settingsValue )
                 ]
 
 
