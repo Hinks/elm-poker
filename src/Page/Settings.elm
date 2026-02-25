@@ -79,84 +79,132 @@ view vd theme =
             , Font.bold
             ]
             (Element.text "Settings")
-        , Element.column
-            [ Element.spacing 15 ]
-            [ Element.el [ Font.size 16 ] (Element.text "Poker Chips")
-            , Element.row
-                [ Element.spacing 20 ]
-                (List.map (\cs -> viewChipSlot cs colors) vd.chipSettings)
-            , Element.column
-                [ Element.spacing 10 ]
-                [ Element.el [ Font.size 16 ] (Element.text "Starting Stack")
-                , if List.isEmpty enabledChipSettings then
-                    Element.el
-                        [ Font.color colors.textSecondary
-                        , Font.italic
-                        ]
-                        (Element.text "Enable at least one chip to configure starting quantities.")
-
-                  else
-                    Element.row
-                        [ Element.spacing 20
-                        , Element.width Element.fill
-                        ]
-                        (List.map (\cs -> viewStartingQuantitySlot cs colors) enabledChipSettings)
-                , Element.el
-                    [ Font.size 15
-                    , Font.bold
-                    ]
-                    (Element.text ("Total starting stack value: " ++ String.fromInt startingStackTotal))
+        , Element.wrappedRow
+            [ Element.width Element.fill
+            , Element.spacing 24
+            , Element.alignTop
+            , Element.alignLeft
+            ]
+            [ Element.column
+                [ Element.spacing 15
+                , Element.width Element.shrink
+                , Element.alignTop
+                , Element.alignLeft
+                ]
+                [ Element.el [ Font.size 16 ] (Element.text "Poker Chips")
+                , Element.row
+                    [ Element.spacing 20 ]
+                    (List.map (\cs -> viewChipSlot cs colors) vd.chipSettings)
+                , viewChipDivider colors
                 , Element.column
                     [ Element.spacing 10 ]
-                    [ Element.el [ Font.size 16 ] (Element.text "Chip Inventory Planner")
-                    , Element.row
-                        [ Element.spacing 10
-                        , Element.width Element.fill
-                        ]
-                        [ Element.el
-                            [ Font.size 14
-                            , Element.centerY
-                            ]
-                            (Element.text "Players")
-                        , Input.text
-                            [ Element.width (Element.px 60)
-                            , Element.padding 5
-                            , Font.size 14
-                            , Border.width 1
-                            , Border.color colors.border
-                            , Background.color colors.surface
-                            , Font.color colors.text
-                            ]
-                            { onChange = PlayerCountChanged
-                            , text = vd.playerCountInput
-                            , placeholder = Just (Input.placeholder [] (Element.text "Players"))
-                            , label = Input.labelHidden "Number of players"
-                            }
-                        ]
+                    [ Element.el [ Font.size 16 ] (Element.text "Starting Stack")
                     , if List.isEmpty enabledChipSettings then
                         Element.el
                             [ Font.color colors.textSecondary
                             , Font.italic
                             ]
-                            (Element.text "Enable at least one chip to plan chip inventory.")
+                            (Element.text "Enable at least one chip to configure starting quantities.")
 
                       else
                         Element.row
                             [ Element.spacing 20
                             , Element.width Element.fill
                             ]
-                            (List.map (\cs -> viewInventorySlot vd.playerCount cs colors) enabledChipSettings)
+                            (List.map (\cs -> viewStartingQuantitySlot cs colors) enabledChipSettings)
+                    , Element.el
+                        [ Font.size 15
+                        , Font.bold
+                        ]
+                        (Element.text ("Total starting stack value: " ++ String.fromInt startingStackTotal))
+                    , viewDivider colors
+                    , Element.column
+                        [ Element.spacing 10 ]
+                        [ Element.el [ Font.size 16 ] (Element.text "Chip Inventory Planner")
+                        , Element.row
+                            [ Element.spacing 10
+                            , Element.width Element.fill
+                            ]
+                            [ Element.el
+                                [ Font.size 14
+                                , Element.centerY
+                                ]
+                                (Element.text "Players")
+                            , Input.text
+                                [ Element.width (Element.px 60)
+                                , Element.padding 5
+                                , Font.size 14
+                                , Border.width 1
+                                , Border.color colors.border
+                                , Background.color colors.surface
+                                , Font.color colors.text
+                                ]
+                                { onChange = PlayerCountChanged
+                                , text = vd.playerCountInput
+                                , placeholder = Just (Input.placeholder [] (Element.text "Players"))
+                                , label = Input.labelHidden "Number of players"
+                                }
+                            ]
+                        , if List.isEmpty enabledChipSettings then
+                            Element.el
+                                [ Font.color colors.textSecondary
+                                , Font.italic
+                                ]
+                                (Element.text "Enable at least one chip to plan chip inventory.")
+
+                          else
+                            Element.row
+                                [ Element.spacing 20
+                                , Element.width Element.fill
+                                ]
+                                (List.map (\cs -> viewInventorySlot vd.playerCount cs colors) enabledChipSettings)
+                        ]
                     ]
                 ]
-            ]
-        , Element.column
-            [ Element.spacing 15 ]
-            [ Element.el [ Font.size 16 ] (Element.text "Blind Levels")
+            , viewVerticalDivider colors
             , Element.column
-                [ Element.spacing 10 ]
-                (List.indexedMap (\i bl -> viewBlindLevelRow i bl colors) vd.blindLevelSettings)
+                [ Element.spacing 15
+                , Element.width Element.shrink
+                , Element.alignTop
+                , Element.alignLeft
+                ]
+                [ Element.el [ Font.size 16 ] (Element.text "Blind Levels")
+                , Element.column
+                    [ Element.spacing 10 ]
+                    (List.indexedMap (\i bl -> viewBlindLevelRow i bl colors) vd.blindLevelSettings)
+                ]
             ]
         ]
+
+
+viewDivider : Theme.ColorPalette -> Element.Element msg
+viewDivider colors =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height (Element.px 1)
+        , Background.color colors.border
+        ]
+        Element.none
+
+
+viewChipDivider : Theme.ColorPalette -> Element.Element msg
+viewChipDivider colors =
+    Element.el
+        [ Element.width (Element.px 380)
+        , Element.height (Element.px 1)
+        , Background.color colors.border
+        ]
+        Element.none
+
+
+viewVerticalDivider : Theme.ColorPalette -> Element.Element msg
+viewVerticalDivider colors =
+    Element.el
+        [ Element.width (Element.px 1)
+        , Element.height Element.fill
+        , Background.color colors.border
+        ]
+        Element.none
 
 
 viewChipSlot : ChipSetting -> Theme.ColorPalette -> Element.Element Intent
@@ -294,7 +342,7 @@ viewInventorySlot playerCount cs colors =
     Element.column
         [ Element.spacing 8
         , Element.alignTop
-        , Element.width (Element.px 80)
+        , Element.width (Element.px 60)
         ]
         [ Element.el
             [ Element.centerX
@@ -323,18 +371,18 @@ viewInventorySlot playerCount cs colors =
             , placeholder = Just (Input.placeholder [] (Element.text "Owned"))
             , label = Input.labelHidden "Owned quantity for chip color"
             }
-        , Element.paragraph
+        , Element.el
             [ Font.size 13
             , Font.color colors.textSecondary
             , Element.centerX
             ]
-            [ Element.text ("(" ++ String.fromInt usedCount ++ " used)") ]
-        , Element.paragraph
+            (Element.text ("(" ++ String.fromInt usedCount ++ " used)"))
+        , Element.el
             [ Font.size 13
             , Font.color colors.textSecondary
             , Element.centerX
             ]
-            [ Element.text ("(" ++ String.fromInt leftCount ++ " left)") ]
+            (Element.text ("(" ++ String.fromInt leftCount ++ " left)"))
         ]
 
 
