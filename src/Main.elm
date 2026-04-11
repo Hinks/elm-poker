@@ -7,13 +7,13 @@ import Element
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
-import Html
 import File exposing (File)
 import File.Download
 import File.Select
+import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Task
+import Marquee
 import Page.Champion
 import Page.Game
 import Page.Home
@@ -23,6 +23,7 @@ import Page.Settings
 import Player exposing (Player(..))
 import Ports
 import Random
+import Task
 import Theme exposing (Theme(..))
 import Url exposing (Url)
 import Url.Parser exposing (Parser, s, top)
@@ -50,6 +51,7 @@ type alias AppSettings =
     , playerCount : Int
     , playerCountInput : String
     , animateGameChips : Bool
+    , marqueeFontSizePx : Int
     }
 
 
@@ -293,6 +295,7 @@ defaultSettings =
     , playerCount = 8
     , playerCountInput = "8"
     , animateGameChips = True
+    , marqueeFontSizePx = Marquee.defaultFontSizePx
     }
 
 
@@ -862,6 +865,30 @@ updateSettings intent model =
             , saveSettings updatedSettings
             )
 
+        Page.Settings.MarqueeFontSizeDecreased ->
+            let
+                updatedSettings =
+                    { settings
+                        | marqueeFontSizePx =
+                            Marquee.clampMarqueeFontSizePx (settings.marqueeFontSizePx - Marquee.marqueeFontSizeStep)
+                    }
+            in
+            ( { model | settings = updatedSettings }
+            , saveSettings updatedSettings
+            )
+
+        Page.Settings.MarqueeFontSizeIncreased ->
+            let
+                updatedSettings =
+                    { settings
+                        | marqueeFontSizePx =
+                            Marquee.clampMarqueeFontSizePx (settings.marqueeFontSizePx + Marquee.marqueeFontSizeStep)
+                    }
+            in
+            ( { model | settings = updatedSettings }
+            , saveSettings updatedSettings
+            )
+
         Page.Settings.PlayerCountChanged str ->
             let
                 sanitizedInput =
@@ -1200,6 +1227,7 @@ gameViewData model =
     , buyInTimerState = model.buyInTimerState
     , buyInListCollapsed = model.buyInListCollapsed
     , animateGameChips = model.settings.animateGameChips
+    , marqueeFontSizePx = model.settings.marqueeFontSizePx
     }
 
 
@@ -1223,6 +1251,7 @@ settingsViewData model =
     , playerCount = model.settings.playerCount
     , playerCountInput = model.settings.playerCountInput
     , animateGameChips = model.settings.animateGameChips
+    , marqueeFontSizePx = model.settings.marqueeFontSizePx
     }
 
 
@@ -1272,6 +1301,7 @@ championViewData model =
     }
 
 
+
 -- JSON
 
 
@@ -1282,6 +1312,7 @@ encodeAppSettings settings =
         , ( "blindLevelSettings", Encode.list encodeBlindLevelSetting settings.blindLevelSettings )
         , ( "playerCount", Encode.int settings.playerCount )
         , ( "animateGameChips", Encode.bool settings.animateGameChips )
+        , ( "marqueeFontSizePx", Encode.int settings.marqueeFontSizePx )
         ]
 
 
@@ -1327,13 +1358,14 @@ encodeBlindLevelSetting bl =
 
 decodeAppSettings : Decode.Decoder AppSettings
 decodeAppSettings =
-    Decode.map4
-        (\chipSettings blindLevelSettings playerCount animateGameChips ->
+    Decode.map5
+        (\chipSettings blindLevelSettings playerCount animateGameChips marqueeFontSizePx ->
             { chipSettings = chipSettings
             , blindLevelSettings = blindLevelSettings
             , playerCount = playerCount
             , playerCountInput = String.fromInt playerCount
             , animateGameChips = animateGameChips
+            , marqueeFontSizePx = Marquee.clampMarqueeFontSizePx marqueeFontSizePx
             }
         )
         (Decode.field "chipSettings" (Decode.list decodeChipSetting))
@@ -1342,6 +1374,11 @@ decodeAppSettings =
         (Decode.oneOf
             [ Decode.field "animateGameChips" Decode.bool
             , Decode.succeed True
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "marqueeFontSizePx" Decode.int
+            , Decode.succeed Marquee.defaultFontSizePx
             ]
         )
 

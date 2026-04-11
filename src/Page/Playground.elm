@@ -86,6 +86,7 @@ view theme =
                     ]
                     (Element.text "Marquee")
                 , Marquee.view
+                    Marquee.defaultFontSizePx
                     [ "Welcome to Elm Poker"
                     , "Test marquee component"
                     , "Scrolling text animation"

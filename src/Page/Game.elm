@@ -38,6 +38,7 @@ type alias ViewData =
     , buyInTimerState : TimerState
     , buyInListCollapsed : Bool
     , animateGameChips : Bool
+    , marqueeFontSizePx : Int
     }
 
 
@@ -315,7 +316,7 @@ viewGameLayout vd theme colors tableSize cardSize =
         , Element.Font.color colors.text
         ]
         [ viewMainArea vd theme colors tableSize cardSize
-        , viewFooter colors
+        , viewFooter vd colors
         ]
 
 
@@ -418,13 +419,13 @@ viewChipsOverlay vd colors =
         (viewChips vd colors)
 
 
-viewFooter : Theme.ColorPalette -> Element.Element Msg
-viewFooter colors =
+viewFooter : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewFooter vd colors =
     Element.el
         [ Element.width Element.fill
         , Element.Background.color colors.surface
         ]
-        (viewFooterMarquee colors)
+        (viewFooterMarquee vd)
 
 
 viewBlindsSection : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
@@ -1160,8 +1161,8 @@ viewBuyInCollapseExpandButton vd colors =
         Element.none
 
 
-viewFooterMarquee : Theme.ColorPalette -> Element.Element Msg
-viewFooterMarquee _ =
+viewFooterMarquee : ViewData -> Element.Element Msg
+viewFooterMarquee vd =
     Element.html
         (Html.div
             [ Html.Attributes.style "position" "fixed"
@@ -1174,6 +1175,7 @@ viewFooterMarquee _ =
                 { options = [ Element.noStaticStyleSheet ] }
                 []
                 (Marquee.view
+                    vd.marqueeFontSizePx
                     [ "Blinds move clockwise"
                     , "You must at least match the big blind to play"
                     , "A raise must be at least as big as the last raise"
