@@ -1,17 +1,50 @@
-module Marquee exposing (view)
+module Marquee exposing
+    ( clampMarqueeFontSizePx
+    , defaultFontSizePx
+    , marqueeFontSizeMax
+    , marqueeFontSizeMin
+    , marqueeFontSizeStep
+    , view
+    )
 
 import Element
 import Html
 import Html.Attributes as Attr
 
 
+marqueeFontSizeMin : Int
+marqueeFontSizeMin =
+    10
+
+
+marqueeFontSizeMax : Int
+marqueeFontSizeMax =
+    32
+
+
+marqueeFontSizeStep : Int
+marqueeFontSizeStep =
+    2
+
+
+defaultFontSizePx : Int
+defaultFontSizePx =
+    24
+
+
+clampMarqueeFontSizePx : Int -> Int
+clampMarqueeFontSizePx n =
+    min marqueeFontSizeMax (max marqueeFontSizeMin n)
+
+
+
 -- Style Helpers
 
 
-containerStyles : List (Html.Attribute msg)
-containerStyles =
+containerStyles : Int -> List (Html.Attribute msg)
+containerStyles rowHeightPx =
     [ Attr.style "width" "100%"
-    , Attr.style "height" "40px"
+    , Attr.style "height" (String.fromInt rowHeightPx ++ "px")
     , Attr.style "background-color" "transparent"
     , Attr.style "overflow" "hidden"
     , Attr.style "white-space" "nowrap"
@@ -20,12 +53,16 @@ containerStyles =
     ]
 
 
-itemStyles : String -> List (Html.Attribute msg)
-itemStyles animationDuration =
+itemStyles : String -> Int -> Int -> List (Html.Attribute msg)
+itemStyles animationDuration fontSizePx rowHeightPx =
+    let
+        verticalPad =
+            max 2 (fontSizePx // 3)
+    in
     [ Attr.style "animation" ("marquee-content " ++ animationDuration ++ " linear infinite")
-    , Attr.style "padding" "5px 15px"
-    , Attr.style "line-height" "40px"
-    , Attr.style "font-size" "16px"
+    , Attr.style "padding" (String.fromInt verticalPad ++ "px 15px")
+    , Attr.style "line-height" (String.fromInt rowHeightPx ++ "px")
+    , Attr.style "font-size" (String.fromInt fontSizePx ++ "px")
     , Attr.style "color" "rgb(255, 255, 255)"
     , Attr.style "font-weight" "500"
     , Attr.style "white-space" "nowrap"
@@ -45,11 +82,14 @@ keyframesCss =
         ++ "}"
 
 
-view : List String -> Element.Element msg
-view strings =
+view : Int -> List String -> Element.Element msg
+view fontSizePx strings =
     let
         marqueeText =
             String.join "   •   " strings
+
+        rowHeightPx =
+            max 28 (fontSizePx * 5 // 2)
 
         -- Calculate duration based on text length to maintain consistent speed
         -- Using character count as a proxy for width
@@ -72,17 +112,20 @@ view strings =
 
         animationDuration =
             String.fromFloat finalDurationSeconds ++ "s"
+
+        itemAttrs =
+            itemStyles animationDuration fontSizePx rowHeightPx
     in
     Element.html <|
         Html.div []
             [ Html.node "style" [] [ Html.text keyframesCss ]
             , Html.div
-                containerStyles
+                (containerStyles rowHeightPx)
                 [ Html.div
-                    (itemStyles animationDuration)
+                    itemAttrs
                     [ Html.text marqueeText ]
                 , Html.div
-                    (itemStyles animationDuration)
+                    itemAttrs
                     [ Html.text marqueeText ]
                 ]
             ]

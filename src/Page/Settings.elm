@@ -40,6 +40,7 @@ type alias ViewData =
     , playerCount : Int
     , playerCountInput : String
     , animateGameChips : Bool
+    , marqueeFontSizePx : Int
     }
 
 
@@ -52,6 +53,8 @@ type Intent
     | BlindSmallChanged Int String
     | BlindBigChanged Int String
     | GameChipAnimationToggled
+    | MarqueeFontSizeDecreased
+    | MarqueeFontSizeIncreased
     | ResetToDefaults
     | ExportSettings
     | ImportSettings
@@ -236,6 +239,55 @@ viewBlindLevelsColumn vd colors =
         , viewDivider colors
         , viewSectionTitle "Chip animation"
         , viewGameChipAnimationSlot vd colors
+        , viewDivider colors
+        , viewSectionTitle "Marquee footer"
+        , viewMarqueeFooterSection vd colors
+        ]
+
+
+viewMarqueeFooterSection : ViewData -> Theme.ColorPalette -> Element.Element Intent
+viewMarqueeFooterSection vd colors =
+    Element.column
+        [ Element.spacing 10
+        , Element.alignTop
+        , Element.width Element.shrink
+        ]
+        [ viewMutedHint colors "Scrolling tips at the bottom of the game page"
+        , Element.row
+            [ Element.spacing 10
+            , Element.centerY
+            ]
+            [ Input.button
+                [ Element.paddingXY 14 8
+                , Background.color colors.surface
+                , Font.color colors.text
+                , Font.size 16
+                , Border.rounded 4
+                , Border.width 1
+                , Border.color colors.border
+                ]
+                { onPress = Just MarqueeFontSizeDecreased
+                , label = Element.text "−"
+                }
+            , Element.paragraph
+                [ Font.size 14
+                , Font.center
+                , Element.width (Element.px 72)
+                ]
+                [ Element.text (String.fromInt vd.marqueeFontSizePx ++ " px") ]
+            , Input.button
+                [ Element.paddingXY 14 8
+                , Background.color colors.surface
+                , Font.color colors.text
+                , Font.size 16
+                , Border.rounded 4
+                , Border.width 1
+                , Border.color colors.border
+                ]
+                { onPress = Just MarqueeFontSizeIncreased
+                , label = Element.text "+"
+                }
+            ]
         ]
 
 
@@ -425,7 +477,6 @@ viewStartingQuantitySlot cs colors =
 
         textColor =
             Page.Game.getChipTextColor cs.color colors
-
     in
     Element.column
         [ Element.spacing 8
