@@ -12,6 +12,7 @@ type alias PokerChipOptions =
     { size : Float
     , color : Color
     , spinSpeed : Float
+    , animated : Bool
     , value : Maybe Int
     , textColor : Color
     }
@@ -25,6 +26,13 @@ pokerChip options =
 
         spinSpeedStr =
             String.fromFloat options.spinSpeed ++ "s"
+
+        containerAnimation =
+            if options.animated then
+                "chipSpin " ++ spinSpeedStr ++ " linear infinite"
+
+            else
+                "none"
 
         textColorStr =
             Icons.Internal.colorToRgbString options.textColor
@@ -71,9 +79,6 @@ pokerChip options =
                     }
                 }
                 .poker-chip-container {
-                    animation: chipSpin """
-                    ++ spinSpeedStr
-                    ++ """ linear infinite;
                     transform-style: preserve-3d;
                     display: inline-block;
                     transform-origin: center center;
@@ -102,6 +107,7 @@ pokerChip options =
         , Html.div
             [ Html.Attributes.class "poker-chip-container"
             , Html.Attributes.style "position" "relative"
+            , Html.Attributes.style "animation" containerAnimation
             ]
             (Svg.svg
                 [ Svg.Attributes.width sizeStr

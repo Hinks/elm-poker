@@ -37,6 +37,7 @@ type alias ViewData =
     , buyInRemainingTime : Seconds
     , buyInTimerState : TimerState
     , buyInListCollapsed : Bool
+    , animateGameChips : Bool
     }
 
 
@@ -349,7 +350,7 @@ viewTableWithOverlays vd theme colors tableSize =
         , Element.centerX
         , Element.inFront (viewPotOverlay vd colors)
         , Element.inFront (viewCenterBlindsOverlay vd theme colors)
-        , Element.inFront (viewChipsOverlay vd.chips vd.chipQuantities colors)
+        , Element.inFront (viewChipsOverlay vd colors)
         ]
         (viewPokerTable colors)
 
@@ -408,13 +409,13 @@ viewCenterBlindsOverlay vd theme colors =
         (viewCenterBlinds vd theme colors)
 
 
-viewChipsOverlay : List Chip -> List ChipQuantity -> Theme.ColorPalette -> Element.Element Msg
-viewChipsOverlay chips chipQuantities colors =
+viewChipsOverlay : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewChipsOverlay vd colors =
     Element.el
         [ Element.width Element.fill
         , Element.alignBottom
         ]
-        (viewChips chips chipQuantities colors)
+        (viewChips vd colors)
 
 
 viewFooter : Theme.ColorPalette -> Element.Element Msg
@@ -739,8 +740,8 @@ chipValue chip =
             val
 
 
-viewChips : List Chip -> List ChipQuantity -> Theme.ColorPalette -> Element.Element Msg
-viewChips chips chipQuantities colors =
+viewChips : ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewChips vd colors =
     Element.el
         [ Element.width Element.fill
         , Element.centerX
@@ -749,12 +750,12 @@ viewChips chips chipQuantities colors =
             [ Element.spacing 20
             , Element.centerX
             ]
-            (List.map (\chip -> viewChip chip chipQuantities colors) (List.sortBy chipValue chips))
+            (List.map (\chip -> viewChip chip vd colors) (List.sortBy chipValue vd.chips))
         )
 
 
-viewChip : Chip -> List ChipQuantity -> Theme.ColorPalette -> Element.Element Msg
-viewChip chip chipQuantities colors =
+viewChip : Chip -> ViewData -> Theme.ColorPalette -> Element.Element Msg
+viewChip chip vd colors =
     let
         ( chipColor, value ) =
             case chip of
@@ -762,7 +763,7 @@ viewChip chip chipQuantities colors =
                     ( color, val )
 
         quantity =
-            getChipQuantity chipColor chipQuantities
+            getChipQuantity chipColor vd.chipQuantities
 
         chipElementColor =
             chipColorToElementColor chipColor colors
@@ -785,6 +786,7 @@ viewChip chip chipQuantities colors =
                 { size = chipSize
                 , color = chipElementColor
                 , spinSpeed = spinSpeed
+                , animated = vd.animateGameChips
                 , value = Just value
                 , textColor = textColor
                 }

@@ -58,6 +58,7 @@ type alias PokerChipOptions =
     { size : Float
     , color : Color
     , spinSpeed : Float
+    , animated : Bool
     , value : Maybe Int
     , textColor : Color
     }
@@ -164,6 +165,7 @@ pokerChip options =
         { size = options.size
         , color = options.color
         , spinSpeed = options.spinSpeed
+        , animated = options.animated
         , value = options.value
         , textColor = options.textColor
         }

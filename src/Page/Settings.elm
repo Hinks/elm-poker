@@ -39,6 +39,7 @@ type alias ViewData =
     , blindLevelSettings : List BlindLevelSetting
     , playerCount : Int
     , playerCountInput : String
+    , animateGameChips : Bool
     }
 
 
@@ -50,6 +51,7 @@ type Intent
     | PlayerCountChanged String
     | BlindSmallChanged Int String
     | BlindBigChanged Int String
+    | GameChipAnimationToggled
     | ResetToDefaults
     | ExportSettings
     | ImportSettings
@@ -166,6 +168,48 @@ chipSize =
     50.0
 
 
+viewGameChipAnimationSlot : ViewData -> Theme.ColorPalette -> Element.Element Intent
+viewGameChipAnimationSlot vd colors =
+    let
+        previewChipColor =
+            Page.Game.chipColorToElementColor Page.Game.Green colors
+
+        previewTextColor =
+            Page.Game.getChipTextColor Page.Game.Green colors
+    in
+    Element.column
+        [ Element.spacing 8
+        , Element.alignTop
+        , Element.width (Element.px chipSlotWidth)
+        ]
+        [ Element.el
+            [ Element.centerX
+            , Element.width (Element.px (round chipSize))
+            , Element.height (Element.px (round chipSize))
+            ]
+            (Element.html
+                (Icons.pokerChip
+                    { size = chipSize
+                    , color = previewChipColor
+                    , spinSpeed = 3.0
+                    , animated = vd.animateGameChips
+                    , value = Just 25
+                    , textColor = previewTextColor
+                    }
+                )
+            )
+        , Input.checkbox
+            [ Element.centerX
+            , Element.width Element.shrink
+            ]
+            { onChange = \_ -> GameChipAnimationToggled
+            , icon = Input.defaultCheckbox
+            , checked = vd.animateGameChips
+            , label = Input.labelHidden "Animate chips on game table"
+            }
+        ]
+
+
 viewChipPlannerColumn : ViewData -> Theme.ColorPalette -> List ChipSetting -> Int -> Element.Element Intent
 viewChipPlannerColumn vd colors enabledChipSettings startingStackTotal =
     Element.column
@@ -189,6 +233,9 @@ viewBlindLevelsColumn vd colors =
         , Element.column
             [ Element.spacing 10 ]
             (List.indexedMap (\i bl -> viewBlindLevelRow i bl colors) vd.blindLevelSettings)
+        , viewDivider colors
+        , viewSectionTitle "Chip animation"
+        , viewGameChipAnimationSlot vd colors
         ]
 
 
@@ -344,7 +391,8 @@ viewChipSlot cs colors =
                 (Icons.pokerChip
                     { size = chipSize
                     , color = chipElementColor
-                    , spinSpeed = 0
+                    , spinSpeed = 3.0
+                    , animated = False
                     , value = Nothing
                     , textColor = textColor
                     }
@@ -393,7 +441,8 @@ viewStartingQuantitySlot cs colors =
                 (Icons.pokerChip
                     { size = chipSize
                     , color = chipElementColor
-                    , spinSpeed = 0
+                    , spinSpeed = 3.0
+                    , animated = False
                     , value = Just cs.value
                     , textColor = textColor
                     }
