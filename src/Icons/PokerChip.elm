@@ -12,6 +12,7 @@ type alias PokerChipOptions =
     { size : Float
     , color : Color
     , spinSpeed : Float
+    , animated : Bool
     , value : Maybe Int
     , textColor : Color
     }
@@ -25,6 +26,13 @@ pokerChip options =
 
         spinSpeedStr =
             String.fromFloat options.spinSpeed ++ "s"
+
+        containerAnimationRule =
+            if options.animated then
+                "animation: chipSpin " ++ spinSpeedStr ++ " linear infinite;"
+
+            else
+                "animation: none;"
 
         textColorStr =
             Icons.Internal.colorToRgbString options.textColor
@@ -71,9 +79,9 @@ pokerChip options =
                     }
                 }
                 .poker-chip-container {
-                    animation: chipSpin """
-                    ++ spinSpeedStr
-                    ++ """ linear infinite;
+                    """
+                ++ containerAnimationRule
+                ++ """
                     transform-style: preserve-3d;
                     display: inline-block;
                     transform-origin: center center;

@@ -39,6 +39,7 @@ type alias ViewData =
     , blindLevelSettings : List BlindLevelSetting
     , playerCount : Int
     , playerCountInput : String
+    , animateGameChips : Bool
     }
 
 
@@ -50,6 +51,7 @@ type Intent
     | PlayerCountChanged String
     | BlindSmallChanged Int String
     | BlindBigChanged Int String
+    | GameChipAnimationToggled
     | ResetToDefaults
     | ExportSettings
     | ImportSettings
@@ -171,6 +173,15 @@ viewChipPlannerColumn vd colors enabledChipSettings startingStackTotal =
     Element.column
         plannerColumnAttrs
         [ viewSectionTitle "Poker Chips"
+        , Input.checkbox
+            [ Element.paddingEach { top = 0, right = 0, bottom = 8, left = 0 } ]
+            { onChange = \_ -> GameChipAnimationToggled
+            , icon = Input.defaultCheckbox
+            , checked = vd.animateGameChips
+            , label =
+                Input.labelLeft [ Element.paddingEach { top = 0, right = 0, bottom = 0, left = 8 } ]
+                    (Element.text "Animate chips on game table")
+            }
         , Element.row
             [ Element.spacing chipSlotSpacing ]
             (List.map (\cs -> viewChipSlot cs colors) vd.chipSettings)
@@ -344,7 +355,8 @@ viewChipSlot cs colors =
                 (Icons.pokerChip
                     { size = chipSize
                     , color = chipElementColor
-                    , spinSpeed = 0
+                    , spinSpeed = 3.0
+                    , animated = False
                     , value = Nothing
                     , textColor = textColor
                     }
@@ -393,7 +405,8 @@ viewStartingQuantitySlot cs colors =
                 (Icons.pokerChip
                     { size = chipSize
                     , color = chipElementColor
-                    , spinSpeed = 0
+                    , spinSpeed = 3.0
+                    , animated = False
                     , value = Just cs.value
                     , textColor = textColor
                     }

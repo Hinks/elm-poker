@@ -128,6 +128,7 @@ view theme =
                             { size = 100
                             , color = colors.primary
                             , spinSpeed = 3.0
+                            , animated = True
                             , value = Just 100
                             , textColor = colors.chipTextOnLight
                             }

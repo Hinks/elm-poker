@@ -49,6 +49,7 @@ type alias AppSettings =
     , blindLevelSettings : List Page.Settings.BlindLevelSetting
     , playerCount : Int
     , playerCountInput : String
+    , animateGameChips : Bool
     }
 
 
@@ -291,6 +292,7 @@ defaultSettings =
     , blindLevelSettings = defaultBlindLevelSettings
     , playerCount = 8
     , playerCountInput = "8"
+    , animateGameChips = True
     }
 
 
@@ -851,6 +853,15 @@ updateSettings intent model =
             , saveSettings updatedSettings
             )
 
+        Page.Settings.GameChipAnimationToggled ->
+            let
+                updatedSettings =
+                    { settings | animateGameChips = not settings.animateGameChips }
+            in
+            ( { model | settings = updatedSettings }
+            , saveSettings updatedSettings
+            )
+
         Page.Settings.PlayerCountChanged str ->
             let
                 sanitizedInput =
@@ -1188,6 +1199,7 @@ gameViewData model =
     , buyInRemainingTime = model.buyInRemainingTime
     , buyInTimerState = model.buyInTimerState
     , buyInListCollapsed = model.buyInListCollapsed
+    , animateGameChips = model.settings.animateGameChips
     }
 
 
@@ -1210,6 +1222,7 @@ settingsViewData model =
     , blindLevelSettings = model.settings.blindLevelSettings
     , playerCount = model.settings.playerCount
     , playerCountInput = model.settings.playerCountInput
+    , animateGameChips = model.settings.animateGameChips
     }
 
 
@@ -1268,6 +1281,7 @@ encodeAppSettings settings =
         [ ( "chipSettings", Encode.list encodeChipSetting settings.chipSettings )
         , ( "blindLevelSettings", Encode.list encodeBlindLevelSetting settings.blindLevelSettings )
         , ( "playerCount", Encode.int settings.playerCount )
+        , ( "animateGameChips", Encode.bool settings.animateGameChips )
         ]
 
 
@@ -1313,17 +1327,23 @@ encodeBlindLevelSetting bl =
 
 decodeAppSettings : Decode.Decoder AppSettings
 decodeAppSettings =
-    Decode.map3
-        (\chipSettings blindLevelSettings playerCount ->
+    Decode.map4
+        (\chipSettings blindLevelSettings playerCount animateGameChips ->
             { chipSettings = chipSettings
             , blindLevelSettings = blindLevelSettings
             , playerCount = playerCount
             , playerCountInput = String.fromInt playerCount
+            , animateGameChips = animateGameChips
             }
         )
         (Decode.field "chipSettings" (Decode.list decodeChipSetting))
         (Decode.field "blindLevelSettings" (Decode.list decodeBlindLevelSetting))
         (Decode.field "playerCount" Decode.int)
+        (Decode.oneOf
+            [ Decode.field "animateGameChips" Decode.bool
+            , Decode.succeed True
+            ]
+        )
 
 
 decodeChipSetting : Decode.Decoder ChipSetting
