@@ -168,20 +168,53 @@ chipSize =
     50.0
 
 
+viewGameChipAnimationSlot : ViewData -> Theme.ColorPalette -> Element.Element Intent
+viewGameChipAnimationSlot vd colors =
+    let
+        previewChipColor =
+            Page.Game.chipColorToElementColor Page.Game.Green colors
+
+        previewTextColor =
+            Page.Game.getChipTextColor Page.Game.Green colors
+    in
+    Element.column
+        [ Element.spacing 8
+        , Element.alignTop
+        , Element.width (Element.px chipSlotWidth)
+        ]
+        [ Element.el
+            [ Element.centerX
+            , Element.width (Element.px (round chipSize))
+            , Element.height (Element.px (round chipSize))
+            ]
+            (Element.html
+                (Icons.pokerChip
+                    { size = chipSize
+                    , color = previewChipColor
+                    , spinSpeed = 3.0
+                    , animated = vd.animateGameChips
+                    , value = Just 25
+                    , textColor = previewTextColor
+                    }
+                )
+            )
+        , Input.checkbox
+            [ Element.centerX
+            , Element.width Element.shrink
+            ]
+            { onChange = \_ -> GameChipAnimationToggled
+            , icon = Input.defaultCheckbox
+            , checked = vd.animateGameChips
+            , label = Input.labelHidden "Animate chips on game table"
+            }
+        ]
+
+
 viewChipPlannerColumn : ViewData -> Theme.ColorPalette -> List ChipSetting -> Int -> Element.Element Intent
 viewChipPlannerColumn vd colors enabledChipSettings startingStackTotal =
     Element.column
         plannerColumnAttrs
         [ viewSectionTitle "Poker Chips"
-        , Input.checkbox
-            [ Element.paddingEach { top = 0, right = 0, bottom = 8, left = 0 } ]
-            { onChange = \_ -> GameChipAnimationToggled
-            , icon = Input.defaultCheckbox
-            , checked = vd.animateGameChips
-            , label =
-                Input.labelLeft [ Element.paddingEach { top = 0, right = 0, bottom = 0, left = 8 } ]
-                    (Element.text "Animate chips on game table")
-            }
         , Element.row
             [ Element.spacing chipSlotSpacing ]
             (List.map (\cs -> viewChipSlot cs colors) vd.chipSettings)
@@ -200,6 +233,9 @@ viewBlindLevelsColumn vd colors =
         , Element.column
             [ Element.spacing 10 ]
             (List.indexedMap (\i bl -> viewBlindLevelRow i bl colors) vd.blindLevelSettings)
+        , viewDivider colors
+        , viewSectionTitle "Chip animation"
+        , viewGameChipAnimationSlot vd colors
         ]
 
 

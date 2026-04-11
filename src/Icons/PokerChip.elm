@@ -27,12 +27,12 @@ pokerChip options =
         spinSpeedStr =
             String.fromFloat options.spinSpeed ++ "s"
 
-        containerAnimationRule =
+        containerAnimation =
             if options.animated then
-                "animation: chipSpin " ++ spinSpeedStr ++ " linear infinite;"
+                "chipSpin " ++ spinSpeedStr ++ " linear infinite"
 
             else
-                "animation: none;"
+                "none"
 
         textColorStr =
             Icons.Internal.colorToRgbString options.textColor
@@ -79,9 +79,6 @@ pokerChip options =
                     }
                 }
                 .poker-chip-container {
-                    """
-                ++ containerAnimationRule
-                ++ """
                     transform-style: preserve-3d;
                     display: inline-block;
                     transform-origin: center center;
@@ -110,6 +107,7 @@ pokerChip options =
         , Html.div
             [ Html.Attributes.class "poker-chip-container"
             , Html.Attributes.style "position" "relative"
+            , Html.Attributes.style "animation" containerAnimation
             ]
             (Svg.svg
                 [ Svg.Attributes.width sizeStr
