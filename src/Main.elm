@@ -1275,8 +1275,8 @@ defaultBlindLevelSettings =
     , { smallBlind = 15, bigBlind = 30, smallBlindInput = "15", bigBlindInput = "30" }
     , { smallBlind = 20, bigBlind = 40, smallBlindInput = "20", bigBlindInput = "40" }
     , { smallBlind = 25, bigBlind = 50, smallBlindInput = "25", bigBlindInput = "50" }
-    , { smallBlind = 40, bigBlind = 80, smallBlindInput = "40", bigBlindInput = "80" }
-    , { smallBlind = 60, bigBlind = 120, smallBlindInput = "60", bigBlindInput = "120" }
+    , { smallBlind = 50, bigBlind = 100, smallBlindInput = "50", bigBlindInput = "100" }
+    , { smallBlind = 75, bigBlind = 150, smallBlindInput = "75", bigBlindInput = "150" }
     , { smallBlind = 100, bigBlind = 200, smallBlindInput = "100", bigBlindInput = "200" }
     , { smallBlind = 150, bigBlind = 300, smallBlindInput = "150", bigBlindInput = "300" }
     , { smallBlind = 200, bigBlind = 400, smallBlindInput = "200", bigBlindInput = "400" }
