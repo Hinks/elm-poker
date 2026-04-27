@@ -52,6 +52,7 @@ type alias AppSettings =
     , playerCountInput : String
     , animateGameChips : Bool
     , marqueeFontSizePx : Int
+    , rebuyAmount : Page.Settings.RebuyAmount
     }
 
 
@@ -296,6 +297,7 @@ defaultSettings =
     , playerCountInput = "8"
     , animateGameChips = True
     , marqueeFontSizePx = Marquee.defaultFontSizePx
+    , rebuyAmount = Page.Settings.FullRebuy
     }
 
 
@@ -889,6 +891,15 @@ updateSettings intent model =
             , saveSettings updatedSettings
             )
 
+        Page.Settings.RebuyAmountChanged rebuyAmount ->
+            let
+                updatedSettings =
+                    { settings | rebuyAmount = rebuyAmount }
+            in
+            ( { model | settings = updatedSettings }
+            , saveSettings updatedSettings
+            )
+
         Page.Settings.PlayerCountChanged str ->
             let
                 sanitizedInput =
@@ -1228,6 +1239,7 @@ gameViewData model =
     , buyInListCollapsed = model.buyInListCollapsed
     , animateGameChips = model.settings.animateGameChips
     , marqueeFontSizePx = model.settings.marqueeFontSizePx
+    , rebuyAmount = rebuyAmountValue model.settings.rebuyAmount model.initialBuyIn
     }
 
 
@@ -1252,6 +1264,7 @@ settingsViewData model =
     , playerCountInput = model.settings.playerCountInput
     , animateGameChips = model.settings.animateGameChips
     , marqueeFontSizePx = model.settings.marqueeFontSizePx
+    , rebuyAmount = model.settings.rebuyAmount
     }
 
 
@@ -1284,20 +1297,34 @@ blindLevelsFromSettings settings =
             Page.Game.defaultBlindLevels
 
 
+rebuyAmountValue : Page.Settings.RebuyAmount -> Int -> Int
+rebuyAmountValue rebuyAmount initialBuyIn =
+    case rebuyAmount of
+        Page.Settings.FullRebuy ->
+            initialBuyIn
+
+        Page.Settings.HalfRebuy ->
+            initialBuyIn // 2
+
+
 championViewData : Model -> Page.Champion.ViewData
 championViewData model =
     let
         currentRoster =
             List.map .player model.players
 
+        rebuyAmount =
+            rebuyAmountValue model.settings.rebuyAmount model.initialBuyIn
+
         totalPot =
-            (List.length currentRoster + List.length model.buyIns) * model.initialBuyIn
+            (List.length currentRoster * model.initialBuyIn) + (List.length model.buyIns * rebuyAmount)
     in
     { winnerFlow = model.winnerFlow
     , players = currentRoster
     , totalPot = totalPot
     , buyInPlayers = model.buyIns
     , initialBuyIn = model.initialBuyIn
+    , rebuyAmount = rebuyAmount
     }
 
 
@@ -1313,6 +1340,7 @@ encodeAppSettings settings =
         , ( "playerCount", Encode.int settings.playerCount )
         , ( "animateGameChips", Encode.bool settings.animateGameChips )
         , ( "marqueeFontSizePx", Encode.int settings.marqueeFontSizePx )
+        , ( "rebuyAmount", encodeRebuyAmount settings.rebuyAmount )
         ]
 
 
@@ -1356,16 +1384,29 @@ encodeBlindLevelSetting bl =
         ]
 
 
+encodeRebuyAmount : Page.Settings.RebuyAmount -> Encode.Value
+encodeRebuyAmount rebuyAmount =
+    Encode.string
+        (case rebuyAmount of
+            Page.Settings.FullRebuy ->
+                "Full"
+
+            Page.Settings.HalfRebuy ->
+                "Half"
+        )
+
+
 decodeAppSettings : Decode.Decoder AppSettings
 decodeAppSettings =
-    Decode.map5
-        (\chipSettings blindLevelSettings playerCount animateGameChips marqueeFontSizePx ->
+    Decode.map6
+        (\chipSettings blindLevelSettings playerCount animateGameChips marqueeFontSizePx rebuyAmount ->
             { chipSettings = chipSettings
             , blindLevelSettings = blindLevelSettings
             , playerCount = playerCount
             , playerCountInput = String.fromInt playerCount
             , animateGameChips = animateGameChips
             , marqueeFontSizePx = Marquee.clampMarqueeFontSizePx marqueeFontSizePx
+            , rebuyAmount = rebuyAmount
             }
         )
         (Decode.field "chipSettings" (Decode.list decodeChipSetting))
@@ -1379,6 +1420,11 @@ decodeAppSettings =
         (Decode.oneOf
             [ Decode.field "marqueeFontSizePx" Decode.int
             , Decode.succeed Marquee.defaultFontSizePx
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "rebuyAmount" decodeRebuyAmount
+            , Decode.succeed Page.Settings.FullRebuy
             ]
         )
 
@@ -1442,6 +1488,23 @@ decodeBlindLevelSetting =
         )
         (Decode.field "smallBlind" Decode.int)
         (Decode.field "bigBlind" Decode.int)
+
+
+decodeRebuyAmount : Decode.Decoder Page.Settings.RebuyAmount
+decodeRebuyAmount =
+    Decode.string
+        |> Decode.andThen
+            (\str ->
+                case str of
+                    "Full" ->
+                        Decode.succeed Page.Settings.FullRebuy
+
+                    "Half" ->
+                        Decode.succeed Page.Settings.HalfRebuy
+
+                    _ ->
+                        Decode.fail ("Unknown rebuy amount: " ++ str)
+            )
 
 
 isActive : { link : Route, activePage : Page } -> Bool

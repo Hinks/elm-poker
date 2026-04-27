@@ -42,6 +42,7 @@ type alias ViewData =
     , totalPot : Int
     , buyInPlayers : List Player
     , initialBuyIn : Int
+    , rebuyAmount : Int
     }
 
 
@@ -668,7 +669,7 @@ calculatePayments viewData =
                     calculateWinnerPayouts selection.division viewData.totalPot selection.winners viewData.players
 
                 playerContributions =
-                    calculatePlayerContributions viewData.players viewData.buyInPlayers viewData.initialBuyIn
+                    calculatePlayerContributions viewData.players viewData.buyInPlayers viewData.initialBuyIn viewData.rebuyAmount
 
                 nonWinners =
                     viewData.players
@@ -705,8 +706,8 @@ calculatePayments viewData =
                     )
 
 
-calculatePlayerContributions : List Player -> List Player -> Int -> List ( Player, Int )
-calculatePlayerContributions players buyInPlayers initialBuyIn =
+calculatePlayerContributions : List Player -> List Player -> Int -> Int -> List ( Player, Int )
+calculatePlayerContributions players buyInPlayers initialBuyIn rebuyAmount =
     let
         countBuyInsForPlayer : Player -> List Player -> Int
         countBuyInsForPlayer player buyInPlayerList =
@@ -722,7 +723,7 @@ calculatePlayerContributions players buyInPlayers initialBuyIn =
                                 countBuyInsForPlayer player buyInPlayers
 
                             contribution =
-                                initialBuyIn + (additionalBuyInCount * initialBuyIn)
+                                initialBuyIn + (additionalBuyInCount * rebuyAmount)
                         in
                         ( player, contribution )
                     )

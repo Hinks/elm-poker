@@ -1,13 +1,16 @@
-module Page.Settings exposing (BlindLevelSetting, ChipSetting, Intent(..), ViewData, view)
+module Page.Settings exposing (BlindLevelSetting, ChipSetting, Intent(..), RebuyAmount(..), ViewData, view)
 
 import Element
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
+import Html
+import Html.Attributes
+import Html.Events
 import Icons
 import Page.Game
-import Theme exposing (Theme)
+import Theme exposing (Theme(..))
 
 
 
@@ -34,6 +37,11 @@ type alias BlindLevelSetting =
     }
 
 
+type RebuyAmount
+    = FullRebuy
+    | HalfRebuy
+
+
 type alias ViewData =
     { chipSettings : List ChipSetting
     , blindLevelSettings : List BlindLevelSetting
@@ -41,6 +49,7 @@ type alias ViewData =
     , playerCountInput : String
     , animateGameChips : Bool
     , marqueeFontSizePx : Int
+    , rebuyAmount : RebuyAmount
     }
 
 
@@ -55,6 +64,7 @@ type Intent
     | GameChipAnimationToggled
     | MarqueeFontSizeDecreased
     | MarqueeFontSizeIncreased
+    | RebuyAmountChanged RebuyAmount
     | ResetToDefaults
     | ExportSettings
     | ImportSettings
@@ -85,7 +95,7 @@ view vd theme =
             (Element.text "Settings")
         , Element.wrappedRow
             layoutColumnsAttrs
-            [ viewChipPlannerColumn vd colors enabledChipSettings startingStackTotal
+            [ viewChipPlannerColumn vd theme colors enabledChipSettings startingStackTotal
             , viewVerticalDivider colors
             , viewBlindLevelsColumn vd colors
             ]
@@ -213,8 +223,8 @@ viewGameChipAnimationSlot vd colors =
         ]
 
 
-viewChipPlannerColumn : ViewData -> Theme.ColorPalette -> List ChipSetting -> Int -> Element.Element Intent
-viewChipPlannerColumn vd colors enabledChipSettings startingStackTotal =
+viewChipPlannerColumn : ViewData -> Theme -> Theme.ColorPalette -> List ChipSetting -> Int -> Element.Element Intent
+viewChipPlannerColumn vd theme colors enabledChipSettings startingStackTotal =
     Element.column
         plannerColumnAttrs
         [ viewSectionTitle "Poker Chips"
@@ -225,6 +235,9 @@ viewChipPlannerColumn vd colors enabledChipSettings startingStackTotal =
         , viewStartingStackSection colors enabledChipSettings startingStackTotal
         , viewDivider colors
         , viewInventoryPlannerSection vd colors enabledChipSettings
+        , viewDivider colors
+        , viewSectionTitle "Rebuy amount"
+        , viewRebuyAmountSection vd theme colors
         ]
 
 
@@ -289,6 +302,88 @@ viewMarqueeFooterSection vd colors =
                 }
             ]
         ]
+
+
+viewRebuyAmountSection : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Intent
+viewRebuyAmountSection vd theme colors =
+    Element.column
+        [ Element.spacing 10
+        , Element.alignTop
+        , Element.width Element.shrink
+        ]
+        [ viewMutedHint colors "Amount added to the pot for each rebuy"
+        , Element.el
+            [ Element.width (Element.px 180) ]
+            (Element.html (viewRebuyAmountSelect vd.rebuyAmount theme))
+        ]
+
+
+viewRebuyAmountSelect : RebuyAmount -> Theme -> Html.Html Intent
+viewRebuyAmountSelect selectedRebuyAmount theme =
+    let
+        colors =
+            selectColorStrings theme
+
+        optionFor : RebuyAmount -> String -> Html.Html Intent
+        optionFor rebuyAmount label =
+            Html.option
+                [ Html.Attributes.value (rebuyAmountToValue rebuyAmount)
+                , Html.Attributes.selected (selectedRebuyAmount == rebuyAmount)
+                , Html.Attributes.style "background-color" colors.surface
+                , Html.Attributes.style "color" colors.text
+                ]
+                [ Html.text label ]
+    in
+    Html.select
+        [ Html.Attributes.style "width" "100%"
+        , Html.Attributes.style "padding" "8px 10px"
+        , Html.Attributes.style "background-color" colors.surface
+        , Html.Attributes.style "color" colors.text
+        , Html.Attributes.style "border" ("1px solid " ++ colors.border)
+        , Html.Attributes.style "border-radius" "4px"
+        , Html.Attributes.style "font-size" "14px"
+        , Html.Attributes.style "outline" "none"
+        , Html.Events.onInput (RebuyAmountChanged << rebuyAmountFromValue)
+        ]
+        [ optionFor FullRebuy "Full buy-in"
+        , optionFor HalfRebuy "Half buy-in"
+        ]
+
+
+rebuyAmountToValue : RebuyAmount -> String
+rebuyAmountToValue rebuyAmount =
+    case rebuyAmount of
+        FullRebuy ->
+            "Full"
+
+        HalfRebuy ->
+            "Half"
+
+
+rebuyAmountFromValue : String -> RebuyAmount
+rebuyAmountFromValue value =
+    case value of
+        "Half" ->
+            HalfRebuy
+
+        _ ->
+            FullRebuy
+
+
+selectColorStrings : Theme -> { surface : String, text : String, border : String }
+selectColorStrings theme =
+    case theme of
+        Light ->
+            { surface = "rgb(255, 255, 255)"
+            , text = "rgb(45, 50, 60)"
+            , border = "rgb(180, 190, 200)"
+            }
+
+        Dark ->
+            { surface = "rgb(30, 30, 30)"
+            , text = "rgb(255, 255, 255)"
+            , border = "rgb(66, 66, 66)"
+            }
 
 
 viewSectionTitle : String -> Element.Element msg

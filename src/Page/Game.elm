@@ -31,6 +31,7 @@ type alias ViewData =
     , selectedPlayerForBuyIn : Maybe Player
     , roster : List Player
     , initialBuyIn : Int
+    , rebuyAmount : Int
     , buyIns : List Player
     , buyInTimerDuration : Seconds
     , buyInTimerDurationInput : String
@@ -396,7 +397,7 @@ viewPotOverlay vd colors =
         , Element.centerX
         , Element.centerY
         ]
-        (viewPriceMoney (calculateTotalPot vd.roster vd.initialBuyIn vd.buyIns) colors)
+        (viewPriceMoney (calculateTotalPot vd.roster vd.initialBuyIn vd.buyIns vd.rebuyAmount) colors)
 
 
 viewCenterBlindsOverlay : ViewData -> Theme -> Theme.ColorPalette -> Element.Element Msg
@@ -1196,9 +1197,9 @@ viewFooterMarquee vd =
 -- Helper functions
 
 
-calculateTotalPot : List Player -> Int -> List Player -> Int
-calculateTotalPot players buyIn buyIns =
-    (List.length players + List.length buyIns) * buyIn
+calculateTotalPot : List Player -> Int -> List Player -> Int -> Int
+calculateTotalPot players initialBuyIn buyIns rebuyAmount =
+    (List.length players * initialBuyIn) + (List.length buyIns * rebuyAmount)
 
 
 formatTime : Int -> String
