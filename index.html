@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
     <head>
         <meta charset="UTF-8" />
@@ -17,7 +17,7 @@
     <body>
         <div id="app"></div>
 
-        <script src="app.js"></script>
+        <script src="/app.js"></script>
 
         <script>
             var savedSettings = null;
@@ -36,8 +36,9 @@
             });
 
             function blindTimerAlert() {
-                const ctx = new (window.AudioContext ||
-                    window.webkitAudioContext)();
+                const ctx = new (
+                    window.AudioContext || window.webkitAudioContext
+                )();
 
                 function tone(freq, startTime, duration) {
                     const osc = ctx.createOscillator();
@@ -50,11 +51,11 @@
                     gain.gain.setValueAtTime(0.0001, startTime);
                     gain.gain.exponentialRampToValueAtTime(
                         1.0,
-                        startTime + 0.02
+                        startTime + 0.02,
                     ); // quick attack
                     gain.gain.exponentialRampToValueAtTime(
                         0.0001,
-                        startTime + duration
+                        startTime + duration,
                     );
 
                     osc.connect(gain);
@@ -85,7 +86,7 @@
                         try {
                             localStorage.setItem(
                                 "elm-poker-settings",
-                                JSON.stringify(payload.data)
+                                JSON.stringify(payload.data),
                             );
                         } catch (e) {
                             console.warn("Failed to save settings:", e);

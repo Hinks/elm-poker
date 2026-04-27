@@ -4,7 +4,7 @@
     "description": "",
     "main": "",
     "scripts": {
-        "prepare-dist": "rm -rf dist && mkdir -p dist && cp index.html dist/",
+        "prepare-dist": "rm -rf dist && mkdir -p dist && cp index.html dist/index.html && cp index.html dist/404.html",
         "watch": "npm run prepare-dist && npx elm-watch hot",
         "build": "npm run prepare-dist && npx elm-watch make --optimize"
     },
