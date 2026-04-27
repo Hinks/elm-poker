@@ -178,7 +178,7 @@ getPlaceholderCards rankingNumber =
 
         8 ->
             -- Two Pair: 1 placeholder
-            [ { rank = "7", suit = Heart } ]
+            [ { rank = "2", suit = Heart } ]
 
         9 ->
             -- Pair: 3 placeholders
